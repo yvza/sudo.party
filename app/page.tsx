@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 const Page = () => {
   const [currentDateTime, setCurrentDateTime] = useState(getFormattedDateTime())
@@ -43,21 +44,33 @@ const Page = () => {
   }
 
   return (
-    <section className='flex items-center justify-center flex-col h-full'>
-      <header>
-        <h5>sudo.party</h5>
-        <h6>{currentDateTime} JKT/IDN</h6>
-      </header>
+    <section className='flex items-center justify-center flex-col h-screen bg-black text-white font-frontpage text-xs'>
+      <section>
+        <header>
+          <h5>sudo.party</h5>
+          <h6>{currentDateTime} IDN</h6>
+        </header>
 
-      <main>
-        <ul>
-          <li>blog</li>
-          <li>archived</li>
-          <li>---</li>
-          <li>---</li>
-          <li>---</li>
-        </ul>
-      </main>
+        <main className='mt-16 ml-4'>
+          <ul>
+            <li className='mb-4 w-fit hover:bg-red-500'>
+              <Link href="/blog">blog</Link>
+            </li>
+            <li className='mb-4 w-fit hover:bg-red-500'>
+              <Link href="/archived">archived</Link>
+            </li>
+            <li className='mb-4 w-fit hover:bg-red-500'>
+              <Link href="/blog">project</Link>
+            </li>
+            <li className='mb-4 w-fit hover:bg-red-500'>
+              <Link href="/blog">x (formerly twitter)</Link>
+            </li>
+            <li className='mb-4 w-fit hover:bg-red-500'>
+              <Link href="/blog">facebook</Link>
+            </li>
+          </ul>
+        </main>
+      </section>
     </section>
   )
 }
