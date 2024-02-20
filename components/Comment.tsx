@@ -1,4 +1,4 @@
-import { Giscus, GiscusProps } from 'pliny/comments/Giscus';
+import Giscus, { GiscusProps } from '@giscus/react';
 
 const config = {
     giscusConfig: {
