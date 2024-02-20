@@ -18,7 +18,7 @@ export function shouldILogin(visibility: string) {
   }
 }
 
-export function displayPosts(post: Post) {
+export function displayPosts(post: Post[]) {
   return removeDraft(shortingPostDesc(post))
 }
 
@@ -26,15 +26,15 @@ export function displaySinglePost(post: Post[], slug: string) {
   return post.find((post) => post._raw.flattenedPath === slug)
 }
 
-function shortingPostDesc(post: Post) {
+function shortingPostDesc(post: Post[]) {
   return post.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)))
 }
 
-function removeDraft(post: Post) {
+function removeDraft(post: Post[]) {
   return post.filter(post => !post.draft)
 }
 
-export function displayDateTime(date) {
+export function displayDateTime(date: any) {
   return format(parseISO(date), 'LLLL d, yyyy')
 }
 
