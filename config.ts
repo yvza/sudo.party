@@ -28,6 +28,6 @@ const db = DynamoDBDocument.from(new DynamoDB(dynamoConfig), {
 const isProd = process.env.NEXT_PUBLIC_NODE_ENV === 'production';
 const appUrl = !isProd
   ? 'http://localhost:3000'
-  : 'https://clerk-aws-nextjs-stripe-saas-guide.vercel.app';
+  : 'https://sudo.party';
 
 export { dynamoConfig, db, appUrl, isProd };

@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -18,12 +17,17 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-
+import { lang } from "@/lib/constants"
 import { useState, useEffect } from "react"
+import { useUnicorn as doLogin } from "@/lib/hooks/dummy"
+import axios from "axios"
+import { ReloadIcon } from "@radix-ui/react-icons"
+import { useRouter } from "next/navigation"
+import { isProd } from "@/config"
 
 const formSchema = z.object({
-  key: z.string().min(2, {
-    message: "Whoops!",
+  key: z.string().min(35, {
+    message: lang.invalid,
   }),
 })
 
@@ -31,6 +35,9 @@ const ProfileForm = () => {
   const { toast } = useToast()
   const [chosenOption, setChosenOption] = useState('option-one')
   const [disablingForm, setDisableForm] = useState(false)
+  const [buttonLoading, setButtonLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false);
+  const { push } = useRouter()
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -39,15 +46,27 @@ const ProfileForm = () => {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    toast({
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      ),
-    })
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setButtonLoading(true);
+
+    try {
+      const response = await axios.post('/api/auth', values);
+      if (!isProd) console.log(response);
+      if (response.data === 'Not found') {
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: "There was a problem with your request."
+        })
+        setButtonLoading(false)
+        return
+      }
+
+      setIsSuccess(true);
+      setDisableForm(true);
+    } catch (error) {
+      setButtonLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -65,43 +84,76 @@ const ProfileForm = () => {
     }
   }, [chosenOption]);
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <RadioGroup
-          defaultValue={chosenOption}
-          onValueChange={setChosenOption}
-          name="option">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="option-one" id="option-one" />
-              <Label htmlFor="option-one">sudo.party pass</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="option-two" id="option-two" />
-              <Label htmlFor="option-two">SGB Code</Label>
-            </div>
-        </RadioGroup>
+  const renderButtonContent = () => {
+    if (buttonLoading) {
+      return <>
+        <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+        Please wait
+      </>
+    }
 
-        <FormField
-          disabled={disablingForm}
-          control={form.control}
-          name="key"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Key</FormLabel>
-              <FormControl>
-                <Input placeholder="Secret code" {...field} />
-              </FormControl>
-              <FormDescription>
-                Input your key.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Submit</Button>
-      </form>
-    </Form>
+    return <>Submit</>
+  }
+
+  const renderButton = () => {
+    if (isSuccess) {
+      setTimeout(() => {
+        push('/blog')
+      }, 250)
+      return <em className="text-green-500 text-sm">Success, redirecting...</em>
+    }
+
+    return <Button
+      disabled={buttonLoading}
+      type="submit"
+    >
+      {renderButtonContent()}
+    </Button>
+  }
+
+  return (
+    <div className="w-full h-screen flex items-center justify-center">
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-8 w-80 p-5 border-solid border-2 border-primary rounded-md"
+        >
+          <RadioGroup
+            defaultValue={chosenOption}
+            onValueChange={setChosenOption}
+            name="option">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="option-one" id="option-one" />
+                <Label htmlFor="option-one">{lang.sudoPartyPass}</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="option-two" id="option-two" />
+                <Label htmlFor="option-two">{lang.sgbCode}</Label>
+              </div>
+          </RadioGroup>
+
+          <FormField
+            disabled={disablingForm}
+            control={form.control}
+            name="key"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Access Key</FormLabel>
+                <FormControl>
+                  <Input placeholder="Secret code" {...field} />
+                </FormControl>
+                <FormDescription>
+                  {chosenOption === 'option-two' && <em className="text-red-600">{lang.currentlyNotAvailable}</em>}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {renderButton()}
+        </form>
+      </Form>
+    </div>
   )
 }
 

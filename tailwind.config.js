@@ -78,7 +78,8 @@ module.exports = {
       },
     },
     fontFamily: {
-      'frontpage': ['Courier New', 'Courier', 'Monaco']
+      'front-page': ['Courier New', 'Courier', 'Monaco'],
+      'blog-page': ['IBM Plex Sans', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji']
     }
   },
   plugins: [require("tailwindcss-animate")],

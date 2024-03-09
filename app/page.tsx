@@ -44,7 +44,7 @@ const Page = () => {
   }
 
   return (
-    <section className='flex items-center justify-center flex-col h-screen bg-black text-white font-frontpage text-xs'>
+    <section className='flex items-center justify-center flex-col h-screen bg-black text-white font-front-page text-xs'>
       <section>
         <header>
           <h5>sudo.party</h5>
@@ -53,20 +53,17 @@ const Page = () => {
 
         <main className='mt-16 ml-4'>
           <ul>
-            <li className='mb-4 w-fit hover:bg-red-500'>
+            <li className='mb-4 w-fit hover:bg-white hover:text-black'>
               <Link href="/blog">blog</Link>
             </li>
-            <li className='mb-4 w-fit hover:bg-red-500'>
-              <Link href="/archived">archived</Link>
-            </li>
-            <li className='mb-4 w-fit hover:bg-red-500'>
+            <li className='mb-4 w-fit hover:bg-white hover:text-black'>
               <Link href="/blog">project</Link>
             </li>
-            <li className='mb-4 w-fit hover:bg-red-500'>
-              <Link href="/blog">x (formerly twitter)</Link>
+            <li className='mb-4 w-fit hover:bg-white hover:text-black'>
+              <Link href="https://twitter.com/sudoweth">x (formerly twitter)</Link>
             </li>
-            <li className='mb-4 w-fit hover:bg-red-500'>
-              <Link href="/blog">facebook</Link>
+            <li className='mb-4 w-fit hover:bg-white hover:text-black'>
+              <Link href="https://warpcast.com/0day">warpcast</Link>
             </li>
           </ul>
         </main>

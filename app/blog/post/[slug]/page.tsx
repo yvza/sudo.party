@@ -8,14 +8,16 @@ import { shouldILogin, displaySinglePost } from '@/lib/utils'
 import Dialog from '@/components/Dialog'
 import MockingFakeContent from '@/components/MockingFakeContent'
 import { useRouter } from 'next/navigation'
+import useSession from '@/lib/iron-session/session'
 
 const DisplayPostLayout = ({ params }: { params: { slug: string } }) => {
   const post = displaySinglePost(allPosts, params.slug)
   const router = useRouter()
+  const { session, isLoading } = useSession()
 
   if (!post) redirect('/oops')
 
-  if (shouldILogin(post.visibility)) {
+  if (shouldILogin(post!.visibility) && !session.isLoggedIn && !isLoading) {
     return (
       <div>
         <Dialog
@@ -27,28 +29,28 @@ const DisplayPostLayout = ({ params }: { params: { slug: string } }) => {
 
         <article className="mx-auto max-w-xl py-8">
           <div className="mb-8 text-center">
-            <time dateTime={post.date} className="mb-1 text-xs text-gray-600">
-              {format(parseISO(post.date), 'LLLL d, yyyy')}
+            <time dateTime={post!.date} className="mb-1 text-xs text-gray-600">
+              {format(parseISO(post!.date), 'LLLL d, yyyy')}
             </time>
-            <h1 className="text-3xl font-bold">{post.title}</h1>
+            <h1 className="text-3xl font-bold">{post!.title}</h1>
           </div>
-          <MockingFakeContent content={post.body.html} />
+          <MockingFakeContent content={post!.body.html} />
         </article>
       </div>
     )
   }
 
   return (
-    <article className="mx-auto max-w-xl py-8">
+    <div className="mx-auto max-w-xl py-8">
       <div className="mb-8 text-center">
-        <time dateTime={post.date} className="mb-1 text-xs text-gray-600">
-          {format(parseISO(post.date), 'LLLL d, yyyy')}
+        <time dateTime={post!.date} className="mb-1 text-xs text-gray-600">
+          {format(parseISO(post!.date), 'LLLL d, yyyy')}
         </time>
-        <h1 className="text-3xl font-bold">{post.title}</h1>
+        <h1 className="text-3xl font-bold">{post!.title}</h1>
       </div>
-      <div className="[&>*]:mb-3 [&>*:last-child]:mb-0" dangerouslySetInnerHTML={{ __html: post.body.html }} />
+      <div className="[&>*]:mb-3 [&>*:last-child]:mb-0" dangerouslySetInnerHTML={{ __html: post!.body.html }} />
       <BlogComments />
-    </article>
+    </div>
   )
 }
 
