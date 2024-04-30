@@ -6,12 +6,14 @@ export const sessionApiRoute = "/api/auth";
 export interface SessionData {
   sk: string,
   identifier: string,
+  type: string,
   isLoggedIn: boolean
 }
 
 export const defaultSession: SessionData = {
   sk: '',
   identifier: '',
+  type: '',
   isLoggedIn: false,
 };
 

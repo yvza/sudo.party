@@ -17,7 +17,7 @@ export default function PostCard(post: Post) {
 
 	return (
 		<div className="mb-8 mx-5 sm:mx-auto">
-			<h2 className="mb-1 text-lg md:text-xl font-medium mb-2 cursor-pointer">
+			<h2 className="text-lg md:text-xl font-medium mb-2 cursor-pointer">
 				<Link href={urlPath(post.url)}>
 						{post.title}
 				</Link>

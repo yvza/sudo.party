@@ -38,6 +38,13 @@ export function displayDateTime(date: any) {
   return format(parseISO(date), 'LLLL d, yyyy')
 }
 
+export function removeImgFromMarkdown(markdown: string) {
+  const pattern = /!\[.*?\]\(.*?\)/g;
+  const modifiedMarkdown = markdown.replace(pattern, '');
+
+  return modifiedMarkdown;
+}
+
 export function randomizeCharacter() {
   // Generate a random number between 0 and 25 (inclusive)
   var randomNumber = Math.floor(Math.random() * 26);

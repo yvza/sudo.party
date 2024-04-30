@@ -1,27 +1,27 @@
 import React from 'react'
 import { randomizeCharacter } from '@/lib/utils'
-
+import Markdown from 'markdown-to-jsx'
 interface MockingFakeContentProps {
   content: string
 }
 
 const MockingFakeContent: React.FC<MockingFakeContentProps> = ({ content }) => {
   const rewrite = () => {
-    let withinTag = false;
+    // let withinTag = false;
     const originalText = content;
     const modifiedText = originalText.split('').map((char) => {
-      if (char === '<') {
-        withinTag = true;
-        return char;
-      }
+      // if (char === '<') {
+      //   withinTag = true;
+      //   return char;
+      // }
 
-      if (withinTag && char !== '>') {
-        return char;
-      }
+      // if (withinTag && char !== '>') {
+      //   return char;
+      // }
 
-      withinTag = false;
+      // withinTag = false;
 
-      if (char.match(/[a-zA-Z]/)) {
+      if (char.match(/[a-zA-Z0-9]/)) {
         return randomizeCharacter();
       }
 
@@ -32,7 +32,7 @@ const MockingFakeContent: React.FC<MockingFakeContentProps> = ({ content }) => {
   }
 
   return (
-    <div className="[&>*]:mb-3 [&>*:last-child]:mb-0" dangerouslySetInnerHTML={{ __html:rewrite() }} />
+    <Markdown>{rewrite()}</Markdown>
   )
 }
 

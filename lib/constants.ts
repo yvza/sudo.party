@@ -1,6 +1,6 @@
 export const lang = {
   siteUrl: 'sudo.party',
-  slogan: 'straight to the point',
+  slogan: 'straightforward content',
   invalid: 'Invalid',
   accessKey: 'Access Key',
   submit: 'Submit',

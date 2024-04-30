@@ -24,6 +24,10 @@ import axios from "axios"
 import { ReloadIcon } from "@radix-ui/react-icons"
 import { useRouter } from "next/navigation"
 import { isProd } from "@/config"
+import localFont from 'next/font/local'
+import Link from "next/link"
+
+const honkFont = localFont({ src: '../fonts/Honk-Regular.ttf' })
 
 const formSchema = z.object({
   key: z.string().min(35, {
@@ -65,6 +69,11 @@ const ProfileForm = () => {
       setIsSuccess(true);
       setDisableForm(true);
     } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem with your request."
+      })
       setButtonLoading(false);
     }
   }
@@ -112,12 +121,15 @@ const ProfileForm = () => {
   }
 
   return (
-    <div className="w-full h-screen flex items-center justify-center">
+    <div className="w-full h-screen flex items-center justify-center bg-slate-50">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 w-80 p-5 border-solid border-2 border-primary rounded-md"
+          className="space-y-8 w-80 p-5 rounded-md bg-white shadow-md"
         >
+          <Link href='/blog'>
+            <h1 className={`text-center text-5xl font-black ${honkFont.className}`}>{lang.siteUrl}</h1>
+          </Link>
           <RadioGroup
             defaultValue={chosenOption}
             onValueChange={setChosenOption}

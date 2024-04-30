@@ -43,6 +43,23 @@ const Page = () => {
     return number < 10 ? `0${number}` : number;
   }
 
+  function renderSocialLink() {
+    return <ul>
+      <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
+        <Link href="/blog">blog</Link>
+      </li>
+      <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
+        <Link href="/blog">project</Link>
+      </li>
+      <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
+        <Link href="https://twitter.com/sudoweth">x</Link>
+      </li>
+      <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
+        <Link href="https://warpcast.com/0day">farcaster</Link>
+      </li>
+    </ul>
+  }
+
   return (
     <section className='flex items-center justify-center flex-col h-screen bg-black text-white font-front-page text-xs'>
       <section>
@@ -52,20 +69,7 @@ const Page = () => {
         </header>
 
         <main className='mt-16 ml-4'>
-          <ul>
-            <li className='mb-4 w-fit hover:bg-white hover:text-black'>
-              <Link href="/blog">blog</Link>
-            </li>
-            <li className='mb-4 w-fit hover:bg-white hover:text-black'>
-              <Link href="/blog">project</Link>
-            </li>
-            <li className='mb-4 w-fit hover:bg-white hover:text-black'>
-              <Link href="https://twitter.com/sudoweth">x (formerly twitter)</Link>
-            </li>
-            <li className='mb-4 w-fit hover:bg-white hover:text-black'>
-              <Link href="https://warpcast.com/0day">warpcast</Link>
-            </li>
-          </ul>
+          {renderSocialLink()}
         </main>
       </section>
     </section>

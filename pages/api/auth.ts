@@ -37,6 +37,7 @@ export default async function handler(
 
       session.sk = query.Item.sk,
       session.identifier = query.Item.identifier,
+      session.type = query.Item.type,
       session.isLoggedIn = true;
       await session.save();
 

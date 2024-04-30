@@ -17,6 +17,9 @@ module.exports = {
       },
     },
     extend: {
+      rotate: {
+        '360': '360deg',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -78,9 +81,11 @@ module.exports = {
       },
     },
     fontFamily: {
-      'front-page': ['Courier New', 'Courier', 'Monaco'],
-      'blog-page': ['IBM Plex Sans', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji']
+      'front-page': ['Courier New', 'Courier', 'Monaco']
     }
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require('@tailwindcss/typography')
+  ],
 }
