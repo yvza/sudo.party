@@ -34,13 +34,13 @@ export default function Page() {
     // setId(generated);
     // const decrypted = decryptSubscriptionPass('msmtde8SwSDYGn5y+kWIaw==:pv0ods9SENw5NI8WcGcjmnFBeu9UEUrxElvMudZZdWs=');
     // setRaw(decrypted);
-    lol('Rgmk8JZ/OjPuS6JgfqvE0A==:g/gLF6+QST2HOCOAkurIkeTnf1U1Ed8TYc2jU0oSWgY=')
+    // lol('Rgmk8JZ/OjPuS6JgfqvE0A==:g/gLF6+QST2HOCOAkurIkeTnf1U1Ed8TYc2jU0oSWgY=')
   }, []);
 
   return (
     <div>
-      {/* {id} x {raw ? `SP2${raw.randomString}${raw.timestamp}` : 'Decrypting...'}
-      {raw ? `SP2${raw.randomString}${raw.timestamp}` : 'Decrypting...'} */}
+      {/* {id} x {raw ? `SP2${raw.randomString}${raw.timestamp}` : 'Decrypting...'} */}
+      {/* {raw ? `SP2${raw.randomString}${raw.timestamp}` : 'Decrypting...'} */}
       {/* {id} */}
     </div>
   );

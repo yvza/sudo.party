@@ -17,6 +17,9 @@ module.exports = {
       },
     },
     extend: {
+      rotate: {
+        '360': '360deg',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -78,8 +81,11 @@ module.exports = {
       },
     },
     fontFamily: {
-      'frontpage': ['Courier New', 'Courier', 'Monaco']
+      'front-page': ['Courier New', 'Courier', 'Monaco']
     }
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require('@tailwindcss/typography')
+  ],
 }

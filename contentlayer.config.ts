@@ -9,7 +9,8 @@ export const Post = defineDocumentType(() => ({
     date: { type: 'date', required: true },
     draft: { type: 'boolean', required: true },
     visibility: { type: 'string', required: true },
-    membership: { type: 'string' }
+    membership: { type: 'string' },
+    description: { type: 'string' }
   },
   computedFields: {
     url: { type: 'string', resolve: (post) => `/posts/${post._raw.flattenedPath}` },

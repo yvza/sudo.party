@@ -1,21 +1,36 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { allPosts } from 'contentlayer/generated';
-import { displaySinglePost } from './lib/utils';
+import { Ratelimit } from '@upstash/ratelimit';
+import { kv } from '@vercel/kv';
+import { cookies } from 'next/headers'
+import { getIronSession } from 'iron-session'
+import { SessionData, sessionOptions } from './lib/iron-session/helper';
+import { isProd } from './config';
 
-export function middleware(request: NextRequest) {
-  // if (request.nextUrl.pathname.startsWith('/posts')) {
-      // let key: any = '0day'
-      // if (!!!key) { console.log('Kosong!'); return; }
+const ratelimit = new Ratelimit({
+  redis: kv,
+  // 5 requests from the same IP in 10 seconds
+  limiter: Ratelimit.slidingWindow(5, '10 s'),
+});
 
-      // if (key !== '0day') { console.log('Salah!'); return; }
+// Define which routes you want to rate limit
+export const config = {
+  matcher: ['/', '/auth', '/blog'],
+};
 
-      // console.log('masuk')
-      // console.log(request)
-      // return NextResponse.rewrite(new URL('/blog', request.url))
-      // return NextResponse.rewrite(new URL('/about-2', request.url))
-      /**
-       * Thinking about the flow :')
-       */
-  // }
+export default async function middleware(request: NextRequest) {
+  const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+
+  if (request.nextUrl.pathname.startsWith('/auth') && session.isLoggedIn) {
+    return NextResponse.redirect(new URL('/blog', request.url))
+  }
+
+  // You could alternatively limit based on user ID or similar
+  const ip = request.ip ?? '127.0.0.1';
+  const { success, pending, limit, reset, remaining } = await ratelimit.limit(
+    ip
+  );
+  return success
+    ? NextResponse.next()
+    : NextResponse.redirect(new URL('/blocked', request.url));
 }

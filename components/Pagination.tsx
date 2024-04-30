@@ -1,9 +1,6 @@
-import Link from "next/link";
-
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -21,60 +18,66 @@ const Pager = ({ totalPages, currentPage = 1 }: Props) => {
   const endPage = Math.min(startPage + pagesToShow - 1, totalPages);
 
   return (
-    <div className="flex gap-6">
+    <Pagination>
+      <PaginationContent>
       {currentPage === 1 ? (
-        <button
-          disabled
-          className="cursor-not-allowed">
-            Prev
-        </button>
+        <PaginationItem>
+          <PaginationPrevious
+            className="cursor-not-allowed"
+            href="#"
+            isActive={false}
+            scroll={false}
+          />
+        </PaginationItem>
       ) : (
-        <Link
-          href={{
-            pathname: "/blog",
-            query: { page: currentPage - 1 }
-          }}
-        >
-          Prev
-        </Link>
+        <PaginationItem>
+          <PaginationPrevious
+            href={{
+              pathname: "/blog",
+              query: { page: currentPage - 1 }
+            }}
+            isActive
+          />
+        </PaginationItem>
       )}
 
       {Array.from({ length: endPage - startPage + 1 }).map((_, i) => {
         const page = startPage + i;
-        return <Link
-          key={i}
-          href={{
-            pathname: "/blog",
-            query: { page }
-          }}
-          className={`${
-            currentPage === page
-            ? "bg-blue-500 rounded-full w-8 text-center text-white"
-            : "bg-gray-200 rounded-full w-8 text-center text-gray-500"
-          }`}
-        >
-          {page}
-        </Link>
+        return <PaginationItem key={i}>
+          <PaginationLink
+            href={{
+              pathname: "/blog",
+              query: { page }
+            }}
+            isActive={currentPage === page}
+          >
+            {page}
+          </PaginationLink>
+        </PaginationItem>
       })}
 
       {currentPage === totalPages ? (
-        <button
-          disabled
-          className="cursor-not-allowed"
-        >
-          Next
-        </button>
+        <PaginationItem>
+          <PaginationNext
+            className="cursor-not-allowed"
+            href="#"
+            isActive={false}
+            scroll={false}
+          />
+        </PaginationItem>
       ) : (
-        <Link
-          href={{
-            pathname: "/blog",
-            query: { page: currentPage + 1 }
-          }}
-        >
-          Next
-        </Link>
+        <PaginationItem>
+          <PaginationNext
+            href={{
+              pathname: "/blog",
+              query: { page: currentPage + 1 }
+            }}
+            isActive
+          />
+        </PaginationItem>
       )}
-    </div>
+      </PaginationContent>
+    </Pagination>
   )
 }
 
