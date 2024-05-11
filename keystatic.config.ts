@@ -1,20 +1,21 @@
 // keystatic.config.ts
-import { config, fields, collection, LocalConfig, CloudConfig } from '@keystatic/core';
+import { config, fields, collection, LocalConfig, GitHubConfig } from '@keystatic/core';
 import { isProd } from './config';
 
 const localMode: LocalConfig['storage'] = {
   kind: 'local'
 }
 
-const githubMode: CloudConfig['storage'] = {
-  kind: 'cloud'
+const githubMode: GitHubConfig['storage'] = {
+  kind: 'github',
+  repo: {
+    owner: 'yvza',
+    name: 'sudo.party'
+  }
 }
 
 export default config({
   storage: isProd ? githubMode : localMode,
-  cloud: {
-    project: 'yvza/sudo.party'
-  },
   collections: {
     posts: collection({
       label: 'Posts',
