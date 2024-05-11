@@ -1,5 +1,4 @@
 import { type ClassValue, clsx } from "clsx"
-import { Post } from "contentlayer/generated"
 import { twMerge } from "tailwind-merge"
 import { compareDesc, format, parseISO } from 'date-fns'
 import crypto from 'crypto';
@@ -18,31 +17,24 @@ export function shouldILogin(visibility: string) {
   }
 }
 
-export function displayPosts(post: Post[]) {
-  return removeDraft(shortingPostDesc(post))
+export interface postPhase2 {
+  slug: string,
+  entry: {
+    title: string,
+    date: string,
+    draft: boolean,
+    visibility: string,
+    membership?: string,
+    description?: string
+  }
 }
 
-export function displaySinglePost(post: Post[], slug: string) {
-  return post.find((post) => post._raw.flattenedPath === slug)
-}
-
-function shortingPostDesc(post: Post[]) {
-  return post.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)))
-}
-
-function removeDraft(post: Post[]) {
-  return post.filter(post => !post.draft)
+export function removeDraftPhase2(post: postPhase2[]) {
+  return post.filter(post => !post.entry.draft)
 }
 
 export function displayDateTime(date: any) {
   return format(parseISO(date), 'LLLL d, yyyy')
-}
-
-export function removeImgFromMarkdown(markdown: string) {
-  const pattern = /!\[.*?\]\(.*?\)/g;
-  const modifiedMarkdown = markdown.replace(pattern, '');
-
-  return modifiedMarkdown;
 }
 
 export function randomizeCharacter() {

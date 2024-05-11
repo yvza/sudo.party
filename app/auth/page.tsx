@@ -55,7 +55,7 @@ const ProfileForm = () => {
 
     try {
       const response = await axios.post('/api/auth', values);
-      if (!isProd) console.log(response);
+      // if (!isProd) console.log(response);
       if (response.data === 'Not found') {
         toast({
           variant: "destructive",
