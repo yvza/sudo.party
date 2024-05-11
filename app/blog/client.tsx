@@ -79,14 +79,15 @@ export default function BlogClient({ articles }: BlogClientProp) {
     return <>{skeletonElements}</>;
   }
 
-  const renderContents = () => <>
-    {renderPosts()}
-    {renderPagination()}
-  </>
+  const renderContents = () => {
+    if (posts.length === 0) return renderSkeleton(6)
+    return <>
+      {renderPosts()}
+      {renderPagination()}
+    </>
+  }
 
   const renderPosts = () => {
-    if (posts.length === 0) return renderSkeleton(6)
-
     return posts.map((post: postPhase2, index: number) => (
       <PostCard key={index} {...post} />
     ))

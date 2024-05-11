@@ -24,8 +24,8 @@ export default async function Post({
   )
 }
 
-// export async function generateStaticParams() {
-//   const reader = createReader(process.cwd(), keystaticConfig)
-//   const postSlug = await reader.collections.posts.list()
-//   return postSlug.map((postSlug) => ({ slug: postSlug }))
-// }
+export async function generateStaticParams() {
+  const reader = createReader(process.cwd(), keystaticConfig)
+  const postSlug = await reader.collections.posts.list()
+  return postSlug.map((postSlug) => ({ slug: postSlug }))
+}
