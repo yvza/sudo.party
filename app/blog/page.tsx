@@ -45,7 +45,7 @@ const renderSkeleton = (loop: number) => {
   </>;
 }
 
-export const getArticles = async () => {
+const getArticles = async () => {
   const res = await axios.get('/api/articles')
   return res.data
 }

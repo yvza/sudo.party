@@ -13,10 +13,14 @@ import { Skeleton } from '@/components/ui/skeleton'
 import HeheIDK from '@/components/HeheIDK'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { MDXContent } from '@content-collections/mdx/react'
-import { getArticles } from '../../page'
 
 interface PostProps {
   params: { slug: string },
+}
+
+const getArticles = async () => {
+  const res = await axios.get('/api/articles')
+  return res.data
 }
 
 export default function ClientComponent({
