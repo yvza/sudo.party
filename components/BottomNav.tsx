@@ -9,7 +9,7 @@ export default function BottomNav() {
   const currentYear = new Date().getFullYear()
   return <>
     <Separator className="mt-8 mb-4" />
-    <div className='flex flex-col items-center sm:flex-row sm:justify-between'>
+    <div className='flex flex-col items-center pb-4 sm:flex-row sm:justify-between'>
       &copy; SUDO.PARTY {currentYear}
       {svgPoweredByVercel()}
     </div>

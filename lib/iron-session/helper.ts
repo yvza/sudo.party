@@ -1,6 +1,5 @@
 import { SessionOptions } from "iron-session";
 import { isProd } from "@/config";
-import { postPhase2 } from "../utils";
 
 export const sessionApiRoute = "/api/auth";
 

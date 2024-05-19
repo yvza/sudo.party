@@ -37,9 +37,8 @@ export default function page() {
   }
 
   return (
-    <div className='mx-auto max-w-xl py-8'>
+    <div className='mx-auto max-w-xl py-0 sm:py-8'>
       <TopNav />
-      <HeaderBrand />
       {renderAbout()}
       <BottomNav />
     </div>
