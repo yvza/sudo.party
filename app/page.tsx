@@ -1,9 +1,11 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useGlitch, GlitchHandle } from 'react-powerglitch'
 
 const Page = () => {
-  const [currentDateTime, setCurrentDateTime] = useState(getFormattedDateTime())
+  const [currentDateTime, setCurrentDateTime] = useState(() => getFormattedDateTime())
+  const glitch: GlitchHandle = useGlitch()
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -44,26 +46,28 @@ const Page = () => {
   }
 
   function renderSocialLink() {
-    return <ul>
-      <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
-        <Link href="/blog">blog</Link>
-      </li>
-      <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
-        <Link href="/blog">project</Link>
-      </li>
-      <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
-        <Link href="https://twitter.com/sudoweth">x</Link>
-      </li>
-      <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
-        <Link href="https://warpcast.com/0day">farcaster</Link>
-      </li>
-    </ul>
+    return (
+      <ul>
+        <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
+          <Link href="/blog">blog</Link>
+        </li>
+        <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
+          <Link href="/blog">project</Link>
+        </li>
+        <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
+          <Link href="https://twitter.com/sudoweth">x</Link>
+        </li>
+        <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
+          <Link href="https://warpcast.com/0day">farcaster</Link>
+        </li>
+      </ul>
+    )
   }
 
   return (
     <section className='flex items-center justify-center flex-col h-screen bg-black text-white font-front-page text-xs'>
       <section>
-        <header>
+        <header ref={glitch.ref}>
           <h5>sudo.party</h5>
           <h6>{currentDateTime} IDN</h6>
         </header>

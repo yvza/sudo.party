@@ -116,11 +116,14 @@ dependencies:
   react-lottie:
     specifier: ^1.2.4
     version: 1.2.4(react@18.3.1)
+  react-powerglitch:
+    specifier: ^1.0.3
+    version: 1.0.3(react-dom@18.3.1)(react@18.3.1)
   shadcn-ui:
     specifier: ^0.4.1
     version: 0.4.1(typescript@5.4.5)
   swr:
-    specifier: ^2.2.4
+    specifier: ^2.2.5
     version: 2.2.5(react@18.3.1)
   tailwind-merge:
     specifier: ^2.1.0
@@ -8356,6 +8359,10 @@ packages:
       picocolors: 1.0.1
       source-map-js: 1.2.0
 
+  /powerglitch@2.3.2:
+    resolution: {integrity: sha512-nRKMttDRu0aOeu5/rUm0CFvwuaE3b7Klujjn0AIgoLUim0E2+4YpXZ76+2t9cJERQuFZ+7D36ywG7GLtRUSyMQ==}
+    dev: false
+
   /prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -8463,6 +8470,17 @@ packages:
       babel-runtime: 6.26.0
       lottie-web: 5.12.2
       react: 18.3.1
+    dev: false
+
+  /react-powerglitch@1.0.3(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-jYIcvZJQoRWKckOWfgc59Bju6tLiBl2sRkWIr8X8/8RYXd/e07H7k+jJXinlemM/IGGrcG0Iq0HmJbAP13FrVg==}
+    peerDependencies:
+      react: '>= 16.8.0'
+      react-dom: '>= 16.8.0'
+    dependencies:
+      powerglitch: 2.3.2
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
     dev: false
 
   /react-remove-scroll-bar@2.3.6(@types/react@18.3.2)(react@18.3.1):

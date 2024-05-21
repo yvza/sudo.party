@@ -105,6 +105,11 @@ export function decryptSubscriptionPass(encryptedPass: string): { randomString: 
   }
 }
 
+// Function to derive an IV from JSON data
+function deriveIv(jsonString: string) {
+  return crypto.createHash('md5').update(jsonString).digest();
+}
+
 // New Methods for JSON Encryption and Decryption
 export function encryptJson(json: string) {
   const jsonString = JSON.stringify(json);
@@ -113,7 +118,7 @@ export function encryptJson(json: string) {
   const key = deriveKey(passphrase);
 
   // Use an initialization vector (IV) for security
-  const iv = crypto.randomBytes(16);
+  const iv = deriveIv(jsonString);
 
   // Encrypt the JSON string
   const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
