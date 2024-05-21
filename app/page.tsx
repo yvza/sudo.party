@@ -52,7 +52,7 @@ const Page = () => {
           <Link href="/blog">blog</Link>
         </li>
         <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
-          <Link href="/blog">project</Link>
+          <Link href="http://old.sudo.party">old blog (archived)</Link>
         </li>
         <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
           <Link href="https://twitter.com/sudoweth">x</Link>
