@@ -35,6 +35,7 @@ export default function ClientComponent({
 
   useEffect(() => {
     router.prefetch('/blog')
+    router.prefetch('/auth')
   }, [router])
 
   const renderSkeleton = () => <>

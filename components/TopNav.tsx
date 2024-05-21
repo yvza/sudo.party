@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
@@ -10,8 +12,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useGlitch, GlitchHandle } from 'react-powerglitch'
 
 export default function TopNav() {
+  const glitch: GlitchHandle = useGlitch()
+
   return <>
       <div className='relative hidden sm:flex flex-col items-center sm:flex-row sm:justify-between'>
         <div className='hidden sm:block'>
@@ -38,7 +43,7 @@ export default function TopNav() {
       </div>
 
       <div className='relative flex justify-between items-center mx-5 pt-4 sm:hidden'>
-        <HeaderBrand sloganOn={false} fontSize='text-3xl' />
+        <HeaderBrand sloganOn={false} fontSize='text-3xl' ref={glitch.ref} />
         <DropdownMenu>
           <DropdownMenuTrigger><HamburgerMenuIcon /></DropdownMenuTrigger>
           <DropdownMenuContent>
