@@ -1,6 +1,6 @@
 ---
-title: Bypassing Farcaster Gas Fee Subscription
-date: 2024-04-27
+title: Bypassing Farcaster Onchain Gas Fee
+date: 2024-02-04
 draft: false
 visibility: private
 membership: sudopartypass
