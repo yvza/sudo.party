@@ -9,12 +9,13 @@ export default function HeheIDK() {
     letterSpacing: 'unset',
     transform: 'unset',
     overflowY: 'hidden',
-    color: 'black'
+    color: 'black',
+    overflow: 'hidden'
   }
 
   const fontSizeLargeScreen: React.CSSProperties = {
-    fontSize: '12px',
-    lineHeight: '12px',
+    fontSize: '10px',
+    lineHeight: '10px',
   }
 
   const fontSizeSmallScreen: React.CSSProperties = {

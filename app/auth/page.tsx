@@ -19,11 +19,9 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { lang } from "@/lib/constants"
 import { useState, useEffect } from "react"
-import { useUnicorn as doLogin } from "@/lib/hooks/dummy"
 import axios from "axios"
 import { ReloadIcon } from "@radix-ui/react-icons"
 import { useRouter } from "next/navigation"
-import { isProd } from "@/config"
 import localFont from 'next/font/local'
 import Link from "next/link"
 
@@ -55,7 +53,6 @@ const ProfileForm = () => {
 
     try {
       const response = await axios.post('/api/auth', values);
-      // if (!isProd) console.log(response);
       if (response.data === 'Not found') {
         toast({
           variant: "destructive",

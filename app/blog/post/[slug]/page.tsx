@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import HeheIDK from '@/components/HeheIDK'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { MDXContent } from '@content-collections/mdx/react'
+import { useEffect } from 'react'
 
 interface PostProps {
   params: { slug: string },
@@ -32,6 +33,10 @@ export default function ClientComponent({
   const decrypted = JSON.parse(decryptJson(data as string)) as articleProps[]
   const articleMetadata = searchBySlug(decrypted, params.slug)
 
+  useEffect(() => {
+    router.prefetch('/blog')
+  }, [router])
+
   const renderSkeleton = () => <>
     <div className='max-w-xl py-0 sm:py-8 text-justify sm:mx-auto'>
       <TopNav />
@@ -46,9 +51,9 @@ export default function ClientComponent({
     </div>
   </>
 
-  if (!articleMetadata) redirect('/oops')
-
   if (isLoading || isFetchingData) return renderSkeleton()
+
+  if (!articleMetadata) redirect('/oops')
 
   // if (!isProd) console.log(shouldILogin(post!.visibility), (!session.isLoggedIn && !isLoading))
   // if (!isProd) console.log(post)
@@ -60,7 +65,7 @@ export default function ClientComponent({
           show
           title='Require access pass'
           description='Lets authenticate first!'
-          onCancel={() => { router.back() }}
+          onCancel={() => { router.push('/blog') }}
           onAction={() => { router.push('/auth') } } />
 
         <TopNav />
@@ -84,7 +89,7 @@ export default function ClientComponent({
           show
           title='SGB Code can&apos;t access this article'
           description='You need to switch access key'
-          onCancel={() => { router.back() }}
+          onCancel={() => { router.push('/blog') }}
           onAction={async () => {
             // we need to clear session and redirect back to auth
             await axios.delete('/api/auth')

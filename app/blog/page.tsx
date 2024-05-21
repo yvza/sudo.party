@@ -67,6 +67,12 @@ export default function BlogClient() {
   const totalPages = Math.ceil(totalPost / postsPerPage)
 
   useEffect(() => {
+    router.prefetch('/disclaimer')
+    router.prefetch('/privacy_policy')
+    router.prefetch('/about')
+  }, [router])
+
+  useEffect(() => {
     if (!isPending && listArticle) {
       setPosts(listArticle.slice(0, postsPerPage))
     }

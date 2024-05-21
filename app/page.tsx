@@ -1,9 +1,11 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useGlitch, GlitchHandle } from 'react-powerglitch'
 
 const Page = () => {
   const [currentDateTime, setCurrentDateTime] = useState(() => getFormattedDateTime())
+  const glitch: GlitchHandle = useGlitch()
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -65,7 +67,7 @@ const Page = () => {
   return (
     <section className='flex items-center justify-center flex-col h-screen bg-black text-white font-front-page text-xs'>
       <section>
-        <header>
+        <header ref={glitch.ref}>
           <h5>sudo.party</h5>
           <h6>{currentDateTime} IDN</h6>
         </header>
