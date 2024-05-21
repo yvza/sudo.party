@@ -14,7 +14,7 @@ export const defaultSession: SessionData = {
   sk: '',
   identifier: '',
   type: '',
-  isLoggedIn: false,
+  isLoggedIn: false
 };
 
 export const sessionOptions: SessionOptions = {

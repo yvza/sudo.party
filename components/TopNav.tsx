@@ -1,12 +1,21 @@
 import React from 'react'
 import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
-import Image from 'next/image'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import HeaderBrand from './HeaderBrand'
+import { HamburgerMenuIcon } from '@radix-ui/react-icons'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function TopNav() {
   return <>
-      <div className='flex flex-col items-center sm:flex-row sm:justify-between'>
+      <div className='relative hidden sm:flex flex-col items-center sm:flex-row sm:justify-between'>
         <div className='hidden sm:block'>
           <Link href="/blog">
             <Avatar className='hover:rotate-[360deg] transition duration-300 ease-in'>
@@ -28,6 +37,31 @@ export default function TopNav() {
             <div>About</div>
           </Link>
         </div>
-      </div><Separator className="mb-8 mt-4" />
+      </div>
+
+      <div className='relative flex justify-between items-center mx-5 pt-4 sm:hidden'>
+        <HeaderBrand sloganOn={false} fontSize='text-3xl' />
+        <DropdownMenu>
+          <DropdownMenuTrigger><HamburgerMenuIcon /></DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>
+              <Link href='/disclaimer'>
+                <div>Disclaimer</div>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link href='/privacy_policy'>
+                <div>Privacy Policy</div>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link href='/about'>
+                <div>About</div>
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <Separator className="mb-8 mt-4" />
     </>
 }

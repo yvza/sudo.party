@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { generateSubscriptionPass, decryptSubscriptionPass } from '@/lib/utils';
-
+import { isProd } from '@/config';
 import { db, dynamoConfig } from '@/config';
 
 export default function Page() {
@@ -20,13 +20,13 @@ export default function Page() {
       const response = await db.get(params)
 
       if (!response) {
-        console.log('No data found for the given key.');
+        if (!isProd) console.log('No data found for the given key.');
         return
       }
 
-      console.log(response)
+      if (!isProd) console.log(response)
     } catch (error) {
-      console.error('error', error)
+      if (!isProd) console.error('error', error)
     }
   }
   useEffect(() => {

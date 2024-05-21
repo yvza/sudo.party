@@ -7,7 +7,7 @@ export default function page() {
   const renderAbout = () => {
     return (
       <div className="mx-5 sm:mx-auto max-w-2xl text-justify">
-        <h1 className="text-3xl font-bold mb-4">Welcome to Sudo.Party! ☕</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-left">Welcome to sudo.party! ☕</h1>
 
         <p className="mb-4">
           Hi everyone, welcome to <span className="font-bold">sudo.party</span>!
@@ -18,7 +18,7 @@ export default function page() {
         </p>
 
         <p className="mb-4">
-          While everything on <span className="font-bold">Sudo.Party</span> is freely accessible, certain articles are restricted based on your access pass, providing a personalized experience for our readers.
+          While everything on <span className="font-bold">sudo.party</span> is freely accessible, certain articles are restricted based on your access pass, providing a personalized experience for our readers.
         </p>
 
         <p className="mb-4">
@@ -29,7 +29,7 @@ export default function page() {
           Your contribution helps us keep the content flowing!
         </p>
 
-        <p>
+        <p className='text-xs sm:text-base'>
           ETH: 0x44596abF3541CF677906A1303a15146ccF17a7dB
         </p>
       </div>
@@ -37,9 +37,8 @@ export default function page() {
   }
 
   return (
-    <div className='mx-auto max-w-xl py-8'>
+    <div className='mx-auto max-w-xl py-0 sm:py-8'>
       <TopNav />
-      <HeaderBrand />
       {renderAbout()}
       <BottomNav />
     </div>

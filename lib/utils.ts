@@ -1,5 +1,4 @@
 import { type ClassValue, clsx } from "clsx"
-import { Post } from "contentlayer/generated"
 import { twMerge } from "tailwind-merge"
 import { compareDesc, format, parseISO } from 'date-fns'
 import crypto from 'crypto';
@@ -18,31 +17,12 @@ export function shouldILogin(visibility: string) {
   }
 }
 
-export function displayPosts(post: Post[]) {
-  return removeDraft(shortingPostDesc(post))
-}
-
-export function displaySinglePost(post: Post[], slug: string) {
-  return post.find((post) => post._raw.flattenedPath === slug)
-}
-
-function shortingPostDesc(post: Post[]) {
-  return post.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)))
-}
-
-function removeDraft(post: Post[]) {
+export function removeDraft(post: articleProps[]) {
   return post.filter(post => !post.draft)
 }
 
 export function displayDateTime(date: any) {
   return format(parseISO(date), 'LLLL d, yyyy')
-}
-
-export function removeImgFromMarkdown(markdown: string) {
-  const pattern = /!\[.*?\]\(.*?\)/g;
-  const modifiedMarkdown = markdown.replace(pattern, '');
-
-  return modifiedMarkdown;
 }
 
 export function randomizeCharacter() {
@@ -59,7 +39,7 @@ export function randomizeCharacter() {
 }
 
 const sp2: string = 'SP2';
-const passphrase: string = 'YourSecurePassphrase'; // Use a strong passphrase in production
+const passphrase: string = ')W-k7Ko,=M-nwJ}j^oyq'; // Use a strong passphrase in production
 
 function deriveKey(passphrase: string): Buffer {
   return crypto.createHash('sha256').update(passphrase).digest();
@@ -115,12 +95,81 @@ export function decryptSubscriptionPass(encryptedPass: string): { randomString: 
       const [, randomString, timestamp] = matchResult;
       return { randomString, timestamp: parseInt(timestamp, 10) };
     } else {
-      console.error('Invalid subscription pass format');
+      // console.error('Invalid subscription pass format');
       return null;
     }
 
   } catch (error) {
-    console.error('Error decrypting subscription pass:', error);
+    // console.error('Error decrypting subscription pass:', error);
     return null;
   }
+}
+
+// New Methods for JSON Encryption and Decryption
+export function encryptJson(json: string) {
+  const jsonString = JSON.stringify(json);
+
+  // Derive the key from the passphrase
+  const key = deriveKey(passphrase);
+
+  // Use an initialization vector (IV) for security
+  const iv = crypto.randomBytes(16);
+
+  // Encrypt the JSON string
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+  const encryptedData = Buffer.concat([cipher.update(jsonString, 'utf-8'), cipher.final()]).toString('base64');
+
+  return `${iv.toString('base64')}:${encryptedData}`;
+}
+
+export function decryptJson(encryptedJson: string) {
+  if (!encryptedJson) return null
+  // Derive the key from the passphrase
+  const key = deriveKey(passphrase);
+
+  try {
+    // Split IV and encrypted data
+    const [ivBase64, encryptedData] = encryptedJson.split(':');
+
+    // Decode IV from base64
+    const iv = Buffer.from(ivBase64, 'base64');
+
+    // Decrypt the data
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+    const decryptedData = Buffer.concat([decipher.update(Buffer.from(encryptedData, 'base64')), decipher.final()]).toString('utf-8');
+
+    // Parse the JSON string
+    return JSON.parse(decryptedData);
+
+  } catch (error) {
+    // console.error('Error decrypting JSON:', error);
+    return null;
+  }
+}
+
+export interface articleProps {
+  content: string,
+  title: string,
+  date: string,
+  draft: boolean,
+  visibility: string,
+  membership?: string | null,
+  description?: string | null,
+  _meta: {
+    filePath: string,
+    fileName: string,
+    directory: string,
+    extension: string,
+    path: string
+  },
+  mdx: string
+}
+
+export function searchBySlug(data: articleProps[], searchSlug: string) {
+  if (!data) return false
+  return data.find(item => item._meta.path === searchSlug)
+}
+
+export function sortingPostDesc(data: articleProps[]) {
+  return data.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)))
 }

@@ -1,50 +1,61 @@
 'use client'
 
 import { format, parseISO } from 'date-fns'
-import { allPosts } from 'contentlayer/generated'
 import BlogComments from '@/components/Comment'
-import { redirect } from 'next/navigation'
-import { shouldILogin, displaySinglePost, removeImgFromMarkdown } from '@/lib/utils'
+import { articleProps, decryptJson, searchBySlug, shouldILogin } from '@/lib/utils'
 import Dialog from '@/components/Dialog'
-import MockingFakeContent from '@/components/MockingFakeContent'
-import { useRouter } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 import useSession from '@/lib/iron-session/session'
-import Markdown from "markdown-to-jsx";
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
-import { isProd } from '@/config'
 import axios from 'axios'
 import { Skeleton } from '@/components/ui/skeleton'
+import HeheIDK from '@/components/HeheIDK'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { MDXContent } from '@content-collections/mdx/react'
 
-const DisplayPostLayout = ({ params }: { params: { slug: string } }) => {
-  const post = displaySinglePost(allPosts, params.slug)
+interface PostProps {
+  params: { slug: string },
+}
+
+const getArticles = async () => {
+  const res = await axios.get('/api/articles')
+  return res.data
+}
+
+export default function ClientComponent({
+  params,
+}: PostProps) {
   const router = useRouter()
   const { session, isLoading } = useSession()
+  const { data, isLoading: isFetchingData, isFetching, error } = useQuery({ queryKey: ['getArticles'], queryFn: getArticles })
+  const decrypted = JSON.parse(decryptJson(data as string)) as articleProps[]
+  const articleMetadata = searchBySlug(decrypted, params.slug)
 
-  const renderSkeleton = () => {
-    return <>
-      <div className='max-w-xl py-8 mx-5 text-justify sm:mx-auto'>
-        <TopNav />
+  const renderSkeleton = () => <>
+    <div className='max-w-xl py-0 sm:py-8 text-justify sm:mx-auto'>
+      <TopNav />
+      <div className='mx-5'>
         <div className='mb-8 flex flex-col items-center'>
-          <Skeleton className="h-[16px] w-[120px] mb-2"/>
+          <Skeleton className="h-[16px] w-[120px] mb-2" />
           <Skeleton className="h-[36px] w-[60px] mb-2" />
         </div>
-        <Skeleton className='h-[576px] w-full'/>
+        <Skeleton className='h-[576px] w-full' />
         <BottomNav />
       </div>
-    </>
-  }
+    </div>
+  </>
 
-  if (!post) redirect('/oops')
+  if (!articleMetadata) redirect('/oops')
 
-  if (isLoading) return renderSkeleton()
+  if (isLoading || isFetchingData) return renderSkeleton()
 
   // if (!isProd) console.log(shouldILogin(post!.visibility), (!session.isLoggedIn && !isLoading))
-  if (!isProd) console.log(post)
+  // if (!isProd) console.log(post)
 
-  if (shouldILogin(post!.visibility) && (!session.isLoggedIn && !isLoading)) {
+  if (shouldILogin(articleMetadata.visibility) && (!session.isLoggedIn && !isLoading)) {
     return (
-      <div className='max-w-xl py-8 mx-5 text-justify sm:mx-auto'>
+      <div className='max-w-xl py-0 sm:py-8 text-justify sm:mx-auto'>
         <Dialog
           show
           title='Require access pass'
@@ -54,21 +65,21 @@ const DisplayPostLayout = ({ params }: { params: { slug: string } }) => {
 
         <TopNav />
         <article className="mb-8 text-center">
-          <time dateTime={post!.date} className="mb-1 text-xs text-gray-600">
-            {format(parseISO(post!.date), 'LLLL d, yyyy')}
+          <time dateTime={articleMetadata.date} className="mb-1 text-xs text-gray-600">
+            {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
           </time>
-          <h1 className="text-3xl font-bold">{post!.title}</h1>
+          <h1 className="text-3xl font-bold">{articleMetadata.title}</h1>
         </article>
-        <MockingFakeContent content={removeImgFromMarkdown(post!.body.raw)} />
+        <HeheIDK />
         <BottomNav />
       </div>
     )
   }
 
   // make a another popup when isLoggedIn && membership
-  if (session.isLoggedIn && post.membership == 'sudopartypass' && session.type == 'sgbcode') {
+  if (session.isLoggedIn && articleMetadata.membership == 'sudopartypass' && session.type == 'sgbcode') {
     return (
-      <div className='max-w-xl py-8 mx-5 text-justify sm:mx-auto'>
+      <div className='max-w-xl py-0 sm:py-8 text-justify sm:mx-auto'>
         <Dialog
           show
           title='SGB Code can&apos;t access this article'
@@ -82,33 +93,33 @@ const DisplayPostLayout = ({ params }: { params: { slug: string } }) => {
 
         <TopNav />
         <article className="mb-8 text-center">
-          <time dateTime={post!.date} className="mb-1 text-xs text-gray-600">
-            {format(parseISO(post!.date), 'LLLL d, yyyy')}
+          <time dateTime={articleMetadata.date} className="mb-1 text-xs text-gray-600">
+            {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
           </time>
-          <h1 className="text-3xl font-bold">{post!.title}</h1>
+          <h1 className="text-3xl font-bold">{articleMetadata.title}</h1>
         </article>
-        <MockingFakeContent content={removeImgFromMarkdown(post!.body.raw)} />
+        <HeheIDK />
         <BottomNav />
       </div>
     )
   }
 
   return (
-    <div className="max-w-xl py-8 mx-5 text-justify sm:mx-auto">
+    <div className="max-w-xl py-0 sm:py-8 text-justify sm:mx-auto">
       <TopNav />
-      <div className="mb-8 text-center">
-        <time dateTime={post!.date} className="mb-1 text-xs text-gray-600">
-          {format(parseISO(post!.date), 'LLLL d, yyyy')}
-        </time>
-        <h1 className="text-3xl font-bold">{post!.title}</h1>
+      <div className='mx-5'>
+        <div className="mb-8 text-center">
+          <time dateTime={articleMetadata.date} className="mb-1 text-xs text-gray-600">
+            {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
+          </time>
+          <h1 className="text-3xl font-bold">{articleMetadata.title}</h1>
+        </div>
+        <article className='prose'>
+          <MDXContent code={articleMetadata.mdx}/>
+        </article>
+        <BlogComments />
       </div>
-      <div className='prose'>
-        <Markdown>{post.body.raw}</Markdown>
-      </div>
-      <BlogComments />
       <BottomNav />
     </div>
   )
 }
-
-export default DisplayPostLayout

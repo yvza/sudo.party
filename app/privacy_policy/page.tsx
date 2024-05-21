@@ -1,7 +1,6 @@
 import React from 'react'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
-import HeaderBrand from '@/components/HeaderBrand'
 
 export default function page() {
   const renderPrivacyPolicy = () => {
@@ -52,9 +51,8 @@ export default function page() {
     </div>
   }
   return (
-    <div className='mx-auto max-w-xl py-8'>
+    <div className='mx-auto max-w-xl py-0 sm:py-8'>
       <TopNav />
-      <HeaderBrand />
       {renderPrivacyPolicy()}
       <BottomNav />
     </div>

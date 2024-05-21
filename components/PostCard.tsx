@@ -1,24 +1,14 @@
 import React from 'react'
 import Link from 'next/link'
-import { Post } from 'contentlayer/generated'
-import { displayDateTime } from '@/lib/utils'
-import { isProd } from '@/config'
+import { articleProps, displayDateTime } from '@/lib/utils'
 
-export default function PostCard(post: Post) {
-	const urlPath = (url: string) => {
-			let parts = url.split('/');
-			parts[1] = 'post';
-			const rewrittenUrl = parts.join('/');
-			return `/blog${rewrittenUrl}`;
-	}
-
-	if (!isProd) console.log(post)
+export default function PostCard(post: articleProps) {
 	const noDescription = () => <em>No description provided.</em>
 
 	return (
 		<div className="mb-8 mx-5 sm:mx-auto">
 			<h2 className="text-lg md:text-xl font-medium mb-2 cursor-pointer">
-				<Link href={urlPath(post.url)}>
+				<Link href={`/blog/post/${post._meta.path}`}>
 						{post.title}
 				</Link>
 			</h2>
@@ -26,7 +16,7 @@ export default function PostCard(post: Post) {
 				{displayDateTime(post.date)}
 			</time>
 			<div className="text-sm [&>*]:mb-3 [&>*:last-child]:mb-0 text-justify">
-				{post.description ?? noDescription()}
+				{post.description ? post.description : noDescription()}
 			</div>
 		</div>
 	)
