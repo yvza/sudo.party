@@ -22,10 +22,8 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { ReloadIcon } from "@radix-ui/react-icons"
 import { useRouter } from "next/navigation"
-import localFont from 'next/font/local'
-import Link from "next/link"
-
-const honkFont = localFont({ src: '../fonts/Honk-Regular.ttf' })
+import HeaderBrand from "@/components/HeaderBrand"
+import { useGlitch, GlitchHandle } from 'react-powerglitch'
 
 const formSchema = z.object({
   key: z.string().min(35, {
@@ -39,7 +37,8 @@ const ProfileForm = () => {
   const [disablingForm, setDisableForm] = useState(false)
   const [buttonLoading, setButtonLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false);
-  const { push } = useRouter()
+  const router = useRouter()
+  const glitch: GlitchHandle = useGlitch()
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -47,6 +46,25 @@ const ProfileForm = () => {
       key: "",
     },
   })
+
+  useEffect(() => {
+    switch (chosenOption) {
+      case 'option-one':
+        setDisableForm(false)
+        break;
+      case 'option-two':
+        setDisableForm(true)
+        break;
+
+      default:
+        setDisableForm(false)
+        break;
+    }
+  }, [chosenOption]);
+
+  useEffect(() => {
+    router.prefetch('/blog')
+  }, [router])
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setButtonLoading(true);
@@ -75,21 +93,6 @@ const ProfileForm = () => {
     }
   }
 
-  useEffect(() => {
-    switch (chosenOption) {
-      case 'option-one':
-        setDisableForm(false)
-        break;
-      case 'option-two':
-        setDisableForm(true)
-        break;
-
-      default:
-        setDisableForm(false)
-        break;
-    }
-  }, [chosenOption]);
-
   const renderButtonContent = () => {
     if (buttonLoading) {
       return <>
@@ -104,7 +107,7 @@ const ProfileForm = () => {
   const renderButton = () => {
     if (isSuccess) {
       setTimeout(() => {
-        push('/blog')
+        router.push('/blog')
       }, 250)
       return <em className="text-green-500 text-sm">Success, redirecting...</em>
     }
@@ -124,9 +127,7 @@ const ProfileForm = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-8 w-80 p-5 rounded-md bg-white shadow-md"
         >
-          <Link href='/blog'>
-            <h1 className={`text-center text-5xl font-black ${honkFont.className}`}>{lang.siteUrl}</h1>
-          </Link>
+          <HeaderBrand sloganOn={false} ref={glitch.ref} />
           <RadioGroup
             defaultValue={chosenOption}
             onValueChange={setChosenOption}
