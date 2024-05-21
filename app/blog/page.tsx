@@ -11,6 +11,8 @@ import localFont from 'next/font/local'
 import { articleProps, decryptJson } from '@/lib/utils'
 import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
+import HeaderBrand from '@/components/HeaderBrand'
+import { useGlitch, GlitchHandle } from 'react-powerglitch'
 
 const interFont = localFont({ src: '../fonts/Inter-VariableFont.ttf' })
 
@@ -65,11 +67,13 @@ export default function BlogClient() {
   const postsPerPage = 6
   const totalPost = listArticle?.length
   const totalPages = Math.ceil(totalPost / postsPerPage)
+  const glitch: GlitchHandle = useGlitch()
 
   useEffect(() => {
     router.prefetch('/disclaimer')
     router.prefetch('/privacy_policy')
     router.prefetch('/about')
+    router.prefetch('/blog')
   }, [router])
 
   useEffect(() => {
@@ -87,7 +91,7 @@ export default function BlogClient() {
     }
 
     if (!parseInt(page!) || parseInt(page!) > totalPages) {
-      router.push('/posts')
+      router.push('/blog')
       return
     }
     const start = (parseInt(page!) - 1) * postsPerPage
@@ -132,6 +136,7 @@ export default function BlogClient() {
   return (
     <div className={`mx-auto max-w-xl py-0 sm:py-8 relative ${interFont.className}`}>
       <TopNav />
+      <HeaderBrand ref={glitch.ref} hideOnMobile={true} />
       {renderContents()}
       <BottomNav />
 
