@@ -178,3 +178,10 @@ export function searchBySlug(data: articleProps[], searchSlug: string) {
 export function sortingPostDesc(data: articleProps[]) {
   return data.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)))
 }
+
+export function getLight() {
+  if (typeof window == 'undefined') return
+
+  console.log('utils: ', localStorage.getItem('theme') ?? 'light')
+  return localStorage.getItem('theme') ?? 'light'
+}
