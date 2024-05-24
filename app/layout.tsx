@@ -6,6 +6,8 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
 import { lang } from '@/lib/constants';
 import Providers from './providers';
+import { ThemeProvider } from './theme';
+import { getLight } from '@/lib/utils';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,15 +22,22 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Providers>
-          {children}
-        </Providers>
-        <Toaster />
-        <SpeedInsights />
-        <Analytics />
-      </body>
-    </html>
+      <html lang="en" suppressHydrationWarning>
+        <body className={inter.className}>
+          <Providers>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme={getLight()}
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+          </Providers>
+          <Toaster />
+          <SpeedInsights />
+          <Analytics />
+        </body>
+      </html>
   )
 }
