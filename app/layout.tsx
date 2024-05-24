@@ -7,7 +7,6 @@ import { Analytics } from '@vercel/analytics/react';
 import { lang } from '@/lib/constants';
 import Providers from './providers';
 import { ThemeProvider } from './theme';
-import { getLight } from '@/lib/utils';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -27,7 +26,7 @@ export default function RootLayout({
           <Providers>
             <ThemeProvider
               attribute="class"
-              defaultTheme={getLight()}
+              defaultTheme='light'
               enableSystem
               disableTransitionOnChange
             >

@@ -182,6 +182,5 @@ export function sortingPostDesc(data: articleProps[]) {
 export function getLight() {
   if (typeof window == 'undefined') return
 
-  console.log('utils: ', localStorage.getItem('theme') ?? 'light')
   return localStorage.getItem('theme') ?? 'light'
 }
