@@ -9,7 +9,6 @@ export default function HeheIDK() {
     letterSpacing: 'unset',
     transform: 'unset',
     overflowY: 'hidden',
-    color: 'black',
     overflow: 'hidden'
   }
 
@@ -162,8 +161,8 @@ export default function HeheIDK() {
 
   return (
     <>
-      <pre style={{...defaultStyle, ...fontSizeLargeScreen}} className='hidden sm:block'>{imgLargeScreen}</pre>
-      <pre style={{...defaultStyle, ...fontSizeSmallScreen}} className='sm:hidden '>{imgSmallScreen}</pre>
+      <pre style={{...defaultStyle, ...fontSizeLargeScreen}} className='hidden sm:block text-black dark:text-white'>{imgLargeScreen}</pre>
+      <pre style={{...defaultStyle, ...fontSizeSmallScreen}} className='sm:hidden text-black dark:text-white'>{imgSmallScreen}</pre>
     </>
   )
 }
