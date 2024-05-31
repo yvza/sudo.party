@@ -121,11 +121,11 @@ const ProfileForm = () => {
   }
 
   return (
-    <div className="w-full h-screen flex items-center justify-center bg-slate-50">
+    <div className="w-full h-screen flex items-center justify-center bg-slate-50 dark:bg-black">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 w-80 p-5 rounded-md bg-white shadow-md"
+          className="space-y-8 w-80 p-5 rounded-md bg-white shadow-md dark:border dark:border-white dark:bg-black"
         >
           <HeaderBrand sloganOn={false} ref={glitch.ref} />
           <RadioGroup
