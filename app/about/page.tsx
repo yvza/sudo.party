@@ -1,7 +1,6 @@
 import React from 'react'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
-import HeaderBrand from '@/components/HeaderBrand'
 
 export default function page() {
   const renderAbout = () => {
@@ -22,7 +21,7 @@ export default function page() {
         </p>
 
         <p className="mb-4">
-          Everything on this platform is based on personal research.
+          100% bonafide human-written article and based on personal research. No AI was used in the writing of this piece, Hwhwhw :3
         </p>
 
         <p className="mb-4">
