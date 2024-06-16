@@ -14,6 +14,7 @@ import HeheIDK from '@/components/HeheIDK'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { MDXContent } from '@content-collections/mdx/react'
 import { useEffect } from 'react'
+import Link from 'next/link'
 
 interface PostProps {
   params: { slug: string },
@@ -39,12 +40,15 @@ export default function ClientComponent({
   }, [router])
 
   const renderSkeleton = () => <>
-    <div className='max-w-xl py-0 sm:py-8 text-justify sm:mx-auto'>
+    <div className='max-w-xl py-0 sm:py-8 sm:mx-auto'>
       <TopNav />
-      <div className='mx-5'>
-        <div className='mb-8 flex flex-col items-center'>
-          <Skeleton className="h-[16px] w-[120px] mb-2" />
-          <Skeleton className="h-[36px] w-[60px] mb-2" />
+      <div className='mx-5 sm:mx-auto'>
+        <div className='mb-8 flex flex-col'>
+          <Skeleton className="h-[26px] w-full mb-2" />
+          <div className="flex justify-between">
+          <Skeleton className="h-[18px] w-[60px] mb-2" />
+          <Skeleton className="h-[18px] w-[60px] mb-2" />
+          </div>
         </div>
         <Skeleton className='h-[576px] w-full' />
         <BottomNav />
@@ -61,7 +65,7 @@ export default function ClientComponent({
 
   if (shouldILogin(articleMetadata.visibility) && (!session.isLoggedIn && !isLoading)) {
     return (
-      <div className='max-w-xl py-0 sm:py-8 text-justify sm:mx-auto'>
+      <div className='max-w-xl py-0 sm:py-8 sm:mx-auto'>
         <Dialog
           show
           title='Require access pass'
@@ -70,12 +74,15 @@ export default function ClientComponent({
           onAction={() => { router.push('/auth') } } />
 
         <TopNav />
-        <article className="mb-8 text-center">
-          <time dateTime={articleMetadata.date} className="mb-1 text-xs text-gray-600">
-            {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
-          </time>
-          <h1 className="text-3xl font-bold">{articleMetadata.title}</h1>
-        </article>
+        <div className="mx-5 sm:mx-auto mb-8">
+          <h1 className="text-2xl font-bold">{articleMetadata.title}</h1>
+          <div className='flex justify-between mt-2'>
+            <time dateTime={articleMetadata.date} className="mb-1 text-xs dark:text-zinc-500">
+              {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
+            </time>
+            <Link href="/blog" className='text-xs border-b border-dotted border-black dark:border-white dark:text-zinc-500 dark:hover:text-zinc-200/80'>Back</Link>
+          </div>
+        </div>
         <HeheIDK />
         <BottomNav />
       </div>
@@ -85,7 +92,7 @@ export default function ClientComponent({
   // make a another popup when isLoggedIn && membership
   if (session.isLoggedIn && articleMetadata.membership == 'sudopartypass' && session.type == 'sgbcode') {
     return (
-      <div className='max-w-xl py-0 sm:py-8 text-justify sm:mx-auto'>
+      <div className='max-w-xl py-0 sm:py-8 sm:mx-auto'>
         <Dialog
           show
           title='SGB Code can&apos;t access this article'
@@ -98,12 +105,15 @@ export default function ClientComponent({
           } } />
 
         <TopNav />
-        <article className="mb-8 text-center">
-          <time dateTime={articleMetadata.date} className="mb-1 text-xs text-gray-600">
-            {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
-          </time>
-          <h1 className="text-3xl font-bold">{articleMetadata.title}</h1>
-        </article>
+        <div className="mx-5 sm:mx-auto mb-8">
+          <h1 className="text-2xl font-bold">{articleMetadata.title}</h1>
+          <div className='flex justify-between mt-2'>
+            <time dateTime={articleMetadata.date} className="mb-1 text-xs dark:text-zinc-500">
+              {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
+            </time>
+            <Link href="/blog" className='text-xs border-b border-dotted border-black dark:border-white dark:text-zinc-500 dark:hover:text-zinc-200/80'>Back</Link>
+          </div>
+        </div>
         <HeheIDK />
         <BottomNav />
       </div>
@@ -111,15 +121,18 @@ export default function ClientComponent({
   }
 
   return (
-    <div className="max-w-xl py-0 sm:py-8 text-justify sm:mx-auto">
+    <div className="max-w-xl py-0 sm:py-8 sm:mx-auto">
       <TopNav />
-      <div className='mx-5'>
-        <div className="mb-8 text-center">
-          <time dateTime={articleMetadata.date} className="mb-1 text-xs text-gray-600">
+      <div className="mx-5 sm:mx-auto mb-8">
+        <h1 className="text-2xl font-bold">{articleMetadata.title}</h1>
+        <div className='flex justify-between mt-2'>
+          <time dateTime={articleMetadata.date} className="mb-1 text-xs dark:text-zinc-500">
             {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
           </time>
-          <h1 className="text-3xl font-bold">{articleMetadata.title}</h1>
+          <Link href="/blog" className='text-xs border-b border-dotted border-black dark:border-white dark:text-zinc-500 dark:hover:text-zinc-200/80'>Back</Link>
         </div>
+      </div>
+      <div className='mx-5 sm:mx-auto'>
         <article className='prose'>
           <MDXContent code={articleMetadata.mdx}/>
         </article>

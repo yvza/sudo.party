@@ -15,11 +15,13 @@ import {
 import { useGlitch, GlitchHandle } from 'react-powerglitch'
 import { getLight } from '@/lib/utils'
 import { useTheme } from 'next-themes'
+import { usePathname } from 'next/navigation'
 
 export default function TopNav() {
   const glitch: GlitchHandle = useGlitch()
   const [lightMode, setLightMode] = useState('')
   const { setTheme } = useTheme()
+  const pathName = usePathname()
 
   useEffect(() => {
     setLightMode(getLight() as string)
@@ -59,15 +61,15 @@ export default function TopNav() {
         </div>
         <div className="flex h-5 items-center space-x-4 text-sm mt-2 sm:mt-0">
           <Link href='/disclaimer'>
-            <div>Disclaimer</div>
+            <div className={`border-black dark:border-white hover:text-black dark:text-zinc-500 dark:hover:text-zinc-200/80 ${pathName == '/disclaimer' && 'dark:text-zinc-200/80 text-black border-b border-dotted'}`}>Disclaimer</div>
           </Link>
           <Separator orientation="vertical" />
           <Link href='/privacy_policy'>
-            <div>Privacy Policy</div>
+            <div className={`border-black dark:border-white hover:text-black dark:text-zinc-500 dark:hover:text-zinc-200/80 ${pathName == '/privacy_policy' && 'dark:text-zinc-200/80 text-black border-b border-dotted'}`}>Privacy Policy</div>
           </Link>
           <Separator orientation="vertical" />
           <Link href='/about'>
-            <div>About</div>
+            <div className={`border-black dark:border-white hover:text-black dark:text-zinc-500 dark:hover:text-zinc-200/80 ${pathName == '/about' && 'dark:text-zinc-200/80 text-black border-b border-dotted'}`}>About</div>
           </Link>
           <Separator orientation="vertical" />
           {renderLight()}
@@ -83,17 +85,17 @@ export default function TopNav() {
             <DropdownMenuContent>
               <DropdownMenuItem>
                 <Link href='/disclaimer'>
-                  <div>Disclaimer</div>
+                  <div className={`dark:text-zinc-500 dark:hover:text-zinc-200/80 ${pathName == '/disclaimer' && 'dark:text-zinc-200/80'}`}>Disclaimer</div>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Link href='/privacy_policy'>
-                  <div>Privacy Policy</div>
+                  <div className={`dark:text-zinc-500 dark:hover:text-zinc-200/80 ${pathName == '/privacy_policy' && 'dark:text-zinc-200/80'}`}>Privacy Policy</div>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Link href='/about'>
-                  <div>About</div>
+                  <div className={`dark:text-zinc-500 dark:hover:text-zinc-200/80 ${pathName == '/about' && 'dark:text-zinc-200/80'}`}>About</div>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
