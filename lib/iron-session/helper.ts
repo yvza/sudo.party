@@ -4,14 +4,14 @@ import { isProd } from "@/config";
 export const sessionApiRoute = "/api/auth";
 
 export interface SessionData {
-  sk: string,
+  pk: string,
   identifier: string,
   type: string,
   isLoggedIn: boolean
 }
 
 export const defaultSession: SessionData = {
-  sk: '',
+  pk: '',
   identifier: '',
   type: '',
   isLoggedIn: false
