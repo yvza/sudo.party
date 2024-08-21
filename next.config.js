@@ -4,7 +4,14 @@ const { withContentCollections } = require("@content-collections/next");
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  images: {},
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'dummyimage.com'
+      },
+    ],
+  },
 }
 
 module.exports = withContentCollections(nextConfig)

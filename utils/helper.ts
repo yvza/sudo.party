@@ -184,3 +184,52 @@ export function getLight() {
 
   return localStorage.getItem('theme') ?? 'light'
 }
+
+export function localFormatPrice(price: number, currency: boolean): string {
+  const idr = new Intl.NumberFormat('en-ID')
+  if (!currency) return idr.format(price)
+  return `Rp. ${idr.format(price)}`
+}
+
+function base64UrlEncode(buffer: Buffer) {
+  return buffer.toString('base64')
+    .replace(/\+/g, '-') // Replace + with -
+    .replace(/\//g, '_') // Replace / with _
+    .replace(/=+$/, ''); // Remove trailing =
+}
+
+function base64UrlDecode(base64Url: string) {
+  base64Url = base64Url
+    .replace(/-/g, '+') // Replace - with +
+    .replace(/_/g, '/'); // Replace _ with /
+
+  // Pad with '='
+  while (base64Url.length % 4) {
+    base64Url += '=';
+  }
+
+  return Buffer.from(base64Url, 'base64');
+}
+
+export function encryptProductId(productId: string) {
+  const IV = Buffer.alloc(16, 0); // 16-byte zero-filled buffer
+  const key = crypto.createHash('sha256').update(passphrase).digest();
+  // Encrypt the product ID
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, IV);
+  const encryptedData = Buffer.concat([cipher.update(productId, 'utf-8'), cipher.final()]);
+
+  return base64UrlEncode(encryptedData);
+}
+
+export function decryptProductId(encryptedProductId: string): number {
+  const IV = Buffer.alloc(16, 0); // 16-byte zero-filled buffer
+  const key = crypto.createHash('sha256').update(passphrase).digest();
+  // Decrypt the product ID
+  const encryptedBuffer = base64UrlDecode(encryptedProductId);
+  const decipher = crypto.createDecipheriv('aes-256-cbc', key, IV);
+  const decryptedData = Buffer.concat([decipher.update(encryptedBuffer), decipher.final()]).toString('utf-8');
+
+  return Number(decryptedData);
+}
+
+export const fetcher = (url: string) => fetch(url).then((res) => res.json())

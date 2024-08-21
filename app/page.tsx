@@ -2,10 +2,18 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useGlitch, GlitchHandle } from 'react-powerglitch'
+import { lang, rootAppSocialLink } from '@/lib/constants'
+import { useRouter } from 'next/navigation'
 
 const Page = () => {
   const [currentDateTime, setCurrentDateTime] = useState(() => getFormattedDateTime())
   const glitch: GlitchHandle = useGlitch()
+  const router = useRouter()
+
+  useEffect(() => {
+    router.prefetch('/shop')
+    router.prefetch('/blog')
+  }, [])
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -46,34 +54,25 @@ const Page = () => {
   }
 
   function renderSocialLink() {
-    return (
-      <ul>
-        <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
-          <Link href="/blog">blog</Link>
-        </li>
-        <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
-          <Link href="http://old.sudo.party">old blog (archived)</Link>
-        </li>
-        <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
-          <Link href="https://twitter.com/sudoweth">x</Link>
-        </li>
-        <li className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
-          <Link href="https://warpcast.com/0day">farcaster</Link>
-        </li>
-      </ul>
-    )
+    return rootAppSocialLink.map((data, index) => (
+      <li key={index} className='mb-4 w-fit hover:bg-red-500 hover:text-black'>
+        <Link href={data.link}>{data.name}</Link>
+      </li>
+    ))
   }
 
   return (
     <section className='flex items-center justify-center flex-col h-screen bg-black text-white font-front-page text-xs'>
       <section>
         <header ref={glitch.ref}>
-          <h5>sudo.party</h5>
-          <h6>{currentDateTime} IDN</h6>
+          <h5>{lang.siteUrl}</h5>
+          <h6>{currentDateTime} {lang.idn}</h6>
         </header>
 
         <main className='mt-16 ml-4'>
-          {renderSocialLink()}
+          <ul>
+            {renderSocialLink()}
+          </ul>
         </main>
       </section>
     </section>

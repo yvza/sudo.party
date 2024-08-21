@@ -4,7 +4,7 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { kv } from '@vercel/kv';
 import { cookies } from 'next/headers'
 import { getIronSession } from 'iron-session'
-import { SessionData, sessionOptions } from './lib/iron-session/helper';
+import { SessionData, sessionOptions } from './lib/iron-session/config';
 import { isProd } from './config';
 
 const ratelimit = new Ratelimit({

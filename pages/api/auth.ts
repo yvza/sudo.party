@@ -1,12 +1,11 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { getIronSession } from "iron-session";
+import { NextApiRequest, NextApiResponse } from "next"
+import { getIronSession } from "iron-session"
 import {
   defaultSession,
   sessionOptions,
-  sleep,
   SessionData,
-} from "@/lib/iron-session/helper";
-import { db } from "@/config";
+} from "@/lib/iron-session/config"
+import { db } from "@/config"
 
 export default async function handler(
   request: NextApiRequest,
@@ -16,7 +15,7 @@ export default async function handler(
     request,
     response,
     sessionOptions,
-  );
+  )
 
   if (request.method === "POST") {
     const { key } = request.body
@@ -35,11 +34,11 @@ export default async function handler(
         return response.status(200).json('Not found')
       }
 
-      session.sk = query.Item.sk,
+      session.pk = query.Item.pk,
       session.identifier = query.Item.identifier,
       session.type = query.Item.type,
-      session.isLoggedIn = true;
-      await session.save();
+      session.isLoggedIn = true
+      await session.save()
 
       return response.status(200).json(query)
     } catch (error: any) {
@@ -47,15 +46,15 @@ export default async function handler(
     }
   } else if (request.method === "GET") {
     if (session.isLoggedIn !== true) {
-      return response.json(defaultSession);
+      return response.json(defaultSession)
     }
 
-    return response.json(session);
+    return response.json(session)
   } else if (request.method === "DELETE") {
-    session.destroy();
+    session.destroy()
 
-    return response.json(defaultSession);
+    return response.json(defaultSession)
   }
 
-  return response.status(500).end();
+  return response.status(500).end()
 }

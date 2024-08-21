@@ -1,8 +1,9 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { generateSubscriptionPass, decryptSubscriptionPass } from '@/lib/utils';
+import { generateSubscriptionPass, decryptSubscriptionPass } from '@/utils/helper';
 import { isProd } from '@/config';
 import { db, dynamoConfig } from '@/config';
+import { encryptProductId, decryptProductId } from '@/utils/helper';
 
 export default function Page() {
   const [id, setId] = useState<string>('');
@@ -30,6 +31,12 @@ export default function Page() {
     }
   }
   useEffect(() => {
+    const string = '1'
+    const encTes = encryptProductId(string)
+    // console.log('ori: ', string)
+    // console.log('enc: ', encTes)
+    // console.log('dec: ', decryptProductId(encTes))
+    // console.log('dec: ', typeof decryptProductId(encTes))
     // const generated = generateSubscriptionPass();
     // setId(generated);
     // const decrypted = decryptSubscriptionPass('msmtde8SwSDYGn5y+kWIaw==:pv0ods9SENw5NI8WcGcjmnFBeu9UEUrxElvMudZZdWs=');

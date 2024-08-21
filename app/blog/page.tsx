@@ -6,9 +6,8 @@ import Pagination from '@/components/Pagination'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
 import { Skeleton } from '@/components/ui/skeleton'
-import { RiArrowUpCircleFill } from '@remixicon/react'
 import localFont from 'next/font/local'
-import { articleProps, decryptJson } from '@/lib/utils'
+import { articleProps, decryptJson } from '@/utils/helper'
 import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
 import HeaderBrand from '@/components/HeaderBrand'
@@ -61,13 +60,12 @@ export default function BlogClient() {
   const searchParams = useSearchParams()
   const page = searchParams?.get("page")
   const router = useRouter()
-  const [backToTop, setBackToTop] = useState()
   const [posts, setPosts] = useState([])
   const listArticle = JSON.parse(decryptJson(data))
   const postsPerPage = 6
   const totalPost = listArticle?.length
   const totalPages = Math.ceil(totalPost / postsPerPage)
-  const glitch: GlitchHandle = useGlitch()
+  const glitch: GlitchHandle = useGlitch({ playMode: 'hover' })
 
   useEffect(() => {
     router.prefetch('/disclaimer')
@@ -139,13 +137,6 @@ export default function BlogClient() {
       <HeaderBrand ref={glitch.ref} hideOnMobile={true} />
       {renderContents()}
       <BottomNav />
-
-      {/* {backToTop && (
-        <RiArrowUpCircleFill
-          size={36}
-          className='hover:cursor-pointer fixed mb-8 mr-5 bottom-0 right-0'
-        />
-      )} */}
     </div>
   )
 }

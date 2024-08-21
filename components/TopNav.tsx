@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useGlitch, GlitchHandle } from 'react-powerglitch'
-import { getLight } from '@/lib/utils'
+import { getLight } from '@/utils/helper'
 import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
 

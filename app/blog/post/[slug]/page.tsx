@@ -2,7 +2,7 @@
 
 import { format, parseISO } from 'date-fns'
 import BlogComments from '@/components/Comment'
-import { articleProps, decryptJson, searchBySlug, shouldILogin } from '@/lib/utils'
+import { articleProps, decryptJson, searchBySlug, shouldILogin } from '@/utils/helper'
 import Dialog from '@/components/Dialog'
 import { redirect, useRouter } from 'next/navigation'
 import useSession from '@/lib/iron-session/session'
@@ -70,7 +70,7 @@ export default function ClientComponent({
           show
           title='Require access pass'
           description='Lets authenticate first!'
-          onCancel={() => { router.push('/blog') }}
+          onCancel={() => { router.back() }}
           onAction={() => { router.push('/auth') } } />
 
         <TopNav />
@@ -97,7 +97,7 @@ export default function ClientComponent({
           show
           title='SGB Code can&apos;t access this article'
           description='You need to switch access key'
-          onCancel={() => { router.push('/blog') }}
+          onCancel={() => { router.back() }}
           onAction={async () => {
             // we need to clear session and redirect back to auth
             await axios.delete('/api/auth')
