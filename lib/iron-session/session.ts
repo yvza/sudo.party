@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { SessionData, defaultSession, sessionApiRoute } from "./helper";
+import { SessionData, defaultSession, sessionApiRoute } from "./config";
 
 async function fetchJson<JSON = unknown>(
   input: RequestInfo,

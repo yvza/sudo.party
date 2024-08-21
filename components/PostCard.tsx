@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { articleProps, displayDateTime } from '@/lib/utils'
+import { articleProps, displayDateTime } from '@/utils/helper'
 
 export default function PostCard(post: articleProps) {
 	const noDescription = () => <em>No description provided.</em>
@@ -12,7 +12,7 @@ export default function PostCard(post: articleProps) {
 						{post.title}
 				</Link>
 			</h2>
-			<time dateTime={post.date} className="mb-2 block text-xs text-gray-600">
+			<time dateTime={post.date} className="mb-2 block text-xs text-gray-600 dark:text-zinc-500">
 				{displayDateTime(post.date)}
 			</time>
 			<div className="text-sm [&>*]:mb-3 [&>*:last-child]:mb-0 text-justify">

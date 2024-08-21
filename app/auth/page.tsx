@@ -24,6 +24,13 @@ import { ReloadIcon } from "@radix-ui/react-icons"
 import { useRouter } from "next/navigation"
 import HeaderBrand from "@/components/HeaderBrand"
 import { useGlitch, GlitchHandle } from 'react-powerglitch'
+import { Web3 } from 'web3'
+import { useSelector, useDispatch } from "react-redux"
+import { DefaultState } from "@/lib/features/user/info"
+import { todoAdded } from "@/lib/features/user/info"
+import { addTasks } from "@/lib/features/user/mocktest"
+
+declare var window: any
 
 const formSchema = z.object({
   key: z.string().min(35, {
@@ -39,7 +46,10 @@ const ProfileForm = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter()
   const glitch: GlitchHandle = useGlitch()
-
+  const [connectedAccount, setConnectedAccount] = useState('')
+  // const test = useSelector(state => state.todos)
+  // const tasks = useSelector(state => state.tasks)
+  const dispatch = useDispatch()
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -120,9 +130,45 @@ const ProfileForm = () => {
     </Button>
   }
 
+  const triggerWeb3 = async () => {
+    dispatch({ type: 'TEST_TRIGGER_SAGA' })
+    return
+    if (!window.ethereum) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "U must have evm wallet."
+      })
+      return
+    }
+
+    // instantiate Web3 with the injected provider
+    const web3 = new Web3(window.ethereum);
+
+    //request user to connect accounts (Metamask will prompt)
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+    //get the connected accounts
+    const accounts = await web3.eth.getAccounts();
+
+    //show the first connected account in the react page
+    setConnectedAccount(accounts[0]);
+
+    console.log('Connected account: ', accounts[0])
+    console.log('Connected : ', accounts)
+
+    // send the address to api
+    // fetch first on db its exist or no
+    // if not exist, create one, and return the data
+    // if exist return the data
+  }
+
   return (
     <div className="w-full h-screen flex items-center justify-center bg-slate-50 dark:bg-black">
       <Form {...form}>
+        {/* <>{JSON.stringify(test)}</>
+        <h1>&nbsp;</h1>
+        <>{JSON.stringify(tasks)}</> */}
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-8 w-80 p-5 rounded-md bg-white shadow-md dark:border dark:border-white dark:bg-black"
@@ -141,6 +187,8 @@ const ProfileForm = () => {
                 <Label htmlFor="option-two">{lang.sgbCode}</Label>
               </div>
           </RadioGroup>
+
+          {/* <Button variant="outline" onClick={() => triggerWeb3()}>Connect Wallet</Button> */}
 
           <FormField
             disabled={disablingForm}
