@@ -1,6 +1,6 @@
 'use client'
 import PostCard from '@/components/PostCard'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Pagination from '@/components/Pagination'
 import TopNav from '@/components/TopNav'
@@ -19,6 +19,15 @@ const renderSkeleton = (loop: number) => {
   const skeletonElements = [];
 
   for (let index = 0; index < loop; index++) {
+    if (index === 0) {
+      skeletonElements.push(
+        <div key={index} className='flex justify-center'>
+          <Skeleton className="h-[66px] w-[255px]"/>
+        </div>
+      )
+      continue
+    }
+
     skeletonElements.push(
       <div key={index} className="mb-8 mx-5 sm:mx-auto">
         <Skeleton className="h-[28px] w-[60px] mb-2" />
@@ -61,9 +70,9 @@ export default function BlogClient() {
   const page = searchParams?.get("page")
   const router = useRouter()
   const [posts, setPosts] = useState([])
-  const listArticle = JSON.parse(decryptJson(data))
+  const listArticle = useRef([])
   const postsPerPage = 6
-  const totalPost = listArticle?.length
+  const totalPost = listArticle.current ? listArticle.current.length : 0
   const totalPages = Math.ceil(totalPost / postsPerPage)
   const glitch: GlitchHandle = useGlitch({ playMode: 'hover' })
 
@@ -75,8 +84,10 @@ export default function BlogClient() {
   }, [router])
 
   useEffect(() => {
-    if (!isPending && listArticle) {
-      setPosts(listArticle.slice(0, postsPerPage))
+    listArticle.current = JSON.parse(decryptJson(data))
+
+    if (!isPending && listArticle.current) {
+      setPosts(listArticle.current.slice(0, postsPerPage))
     }
   }, [data])
 
@@ -84,7 +95,7 @@ export default function BlogClient() {
     if (isPending) return
 
     if (!page) {
-      setPosts(listArticle.slice(0, postsPerPage))
+      setPosts(listArticle.current.slice(0, postsPerPage))
       return
     }
 
@@ -94,22 +105,10 @@ export default function BlogClient() {
     }
     const start = (parseInt(page!) - 1) * postsPerPage
     const end = start + postsPerPage
-    setPosts(listArticle.slice(start, end))
+    setPosts(listArticle.current.slice(start, end))
   }, [page])
 
-  if (isPending && !listArticle) return renderSkeleton(6)
-
-  // useEffect(() => {
-  //   window.onscroll = function () {
-  //     var body = document.body; //IE 'quirks'
-  //     var document: any = document.documentElement; //IE with doctype
-  //     document = (document.clientHeight) ? document : body;
-
-  //     if (document.scrollTop == 0) {
-  //         alert("top");
-  //     }
-  //   }
-  // }, [])
+  if (isPending) return renderSkeleton(6)
 
   const renderContents = () => <>
     {renderPosts()}
@@ -117,11 +116,7 @@ export default function BlogClient() {
   </>
 
   const renderPosts = () => {
-    return posts.map((post: articleProps, index: number) => {
-      return (
-        <PostCard key={index} {...post} />
-      )
-    })
+    return posts.map((post: articleProps, index: number) => <PostCard key={index} {...post} />)
   }
 
   const renderPagination = () => {
