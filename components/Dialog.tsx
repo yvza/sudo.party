@@ -9,14 +9,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-
-interface DialogProps {
-  show: boolean;
-  title: string;
-  description: string;
-  onCancel?: () => void;
-  onAction: () => void;
-}
+import { DialogProps } from '@/types/global'
 
 const Dialog: React.FC<DialogProps> = ({show, title, description, onCancel, onAction}) => {
   const [isOpen, setIsOpen] = useState(show);

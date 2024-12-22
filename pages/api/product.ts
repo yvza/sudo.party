@@ -1,27 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { encryptProductId } from "@/utils/helper"
-
-interface Release {
-  // name: string, // need to change this to id for individual release, change 'name' to 'idRelease'. need hashing algorithm
-  idRelease: string,
-  version: string,
-  date: string,
-  releasePurchaseStatus: number
-}
-
-export interface ProductType {
-  product: {
-    banner: string,
-    // id: number, // need to encode this for safety reason. maybe turning named 'id' to 'idProduct'. need hashing algorithm
-    idProduct: string,
-    category: number,
-    name: string,
-    price: number,
-    status: number,
-    release?: Release[]
-  }
-  productPurchaseStatus: number
-}
+import { ProductType } from "@/types/global"
 
 export default async function handler(
   request: NextApiRequest,

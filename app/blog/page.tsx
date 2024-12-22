@@ -5,67 +5,15 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Pagination from '@/components/Pagination'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
-import { Skeleton } from '@/components/ui/skeleton'
-import localFont from 'next/font/local'
 import { articleProps, decryptJson } from '@/utils/helper'
-import axios from 'axios'
-import { useQuery } from '@tanstack/react-query'
 import HeaderBrand from '@/components/HeaderBrand'
 import { useGlitch, GlitchHandle } from 'react-powerglitch'
-
-const interFont = localFont({ src: '../fonts/Inter-VariableFont.ttf' })
-
-const renderSkeleton = (loop: number) => {
-  const skeletonElements = [];
-
-  for (let index = 0; index < loop; index++) {
-    if (index === 0) {
-      skeletonElements.push(
-        <div key={index} className='flex justify-center'>
-          <Skeleton className="h-[66px] w-[255px]"/>
-        </div>
-      )
-      continue
-    }
-
-    skeletonElements.push(
-      <div key={index} className="mb-8 mx-5 sm:mx-auto">
-        <Skeleton className="h-[28px] w-[60px] mb-2" />
-        <Skeleton className="h-[16px] w-[120px] mb-2"/>
-        <Skeleton className="h-[60px] w-full"/>
-      </div>
-    );
-
-    // Check if it's the last iteration
-    if (index === loop - 1) {
-      skeletonElements.push(
-        <div key={`last-${index}`} className='flex justify-center'>
-          <Skeleton className="h-[36px] w-[305px]"/>
-        </div>
-      );
-    }
-  }
-
-  return <>
-    <div className={`mx-auto max-w-xl py-0 sm:py-8 relative ${interFont.className}`}>
-      <TopNav />
-      {skeletonElements}
-      <BottomNav />
-    </div>
-  </>;
-}
-
-const getArticles = async () => {
-  const res = await axios.get('/api/articles')
-  return res.data
-}
+import { useArticles } from '@/services/articles'
+import { skeletonBlog } from '@/components/Skeleton'
+import { interFont } from '@/utils/fonts'
 
 export default function BlogClient() {
-  const { isPending, error, data, isFetching } = useQuery({
-    queryKey: ['getArticles'],
-    queryFn: getArticles
-  })
-
+  const { isPending, error, data } = useArticles()
   const searchParams = useSearchParams()
   const page = searchParams?.get("page")
   const router = useRouter()
@@ -84,7 +32,7 @@ export default function BlogClient() {
   }, [router])
 
   useEffect(() => {
-    listArticle.current = JSON.parse(decryptJson(data))
+    if (data) listArticle.current = JSON.parse(decryptJson(Buffer.from(data.data).toString()))
 
     if (!isPending && listArticle.current) {
       setPosts(listArticle.current.slice(0, postsPerPage))
@@ -108,14 +56,15 @@ export default function BlogClient() {
     setPosts(listArticle.current.slice(start, end))
   }, [page])
 
-  if (isPending) return renderSkeleton(6)
+  if (isPending) return skeletonBlog(6)
 
   const renderContents = () => <>
     {renderPosts()}
-    {renderPagination()}
+    {!error && renderPagination()}
   </>
 
   const renderPosts = () => {
+    if (error) return <div>Error fetching data, try again later.</div>
     return posts.map((post: articleProps, index: number) => <PostCard key={index} {...post} />)
   }
 

@@ -1,5 +1,4 @@
 'use client'
-
 import { format, parseISO } from 'date-fns'
 import BlogComments from '@/components/Comment'
 import { articleProps, decryptJson, searchBySlug, shouldILogin } from '@/utils/helper'
@@ -9,56 +8,41 @@ import useSession from '@/lib/iron-session/session'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 import axios from 'axios'
-import { Skeleton } from '@/components/ui/skeleton'
 import HeheIDK from '@/components/HeheIDK'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { MDXContent } from '@content-collections/mdx/react'
 import { useEffect } from 'react'
 import Link from 'next/link'
-
-interface PostProps {
-  params: { slug: string },
-}
-
-const getArticles = async () => {
-  const res = await axios.get('/api/articles')
-  return res.data
-}
+import { skeletonBlogPost } from '@/components/Skeleton'
+import { PostProps } from '@/types/global'
+import { ArticlesProps } from '@/types/global'
 
 export default function ClientComponent({
   params,
 }: PostProps) {
   const router = useRouter()
   const { session, isLoading } = useSession()
-  const { data, isLoading: isFetchingData, isFetching, error } = useQuery({ queryKey: ['getArticles'], queryFn: getArticles })
-  const decrypted = JSON.parse(decryptJson(data as string)) as articleProps[]
-  const articleMetadata = searchBySlug(decrypted, params.slug)
+  const { data, isLoading: isFetchingData, error } = useQuery({
+    queryKey: ['getArticles'],
+    staleTime: 1000 * 60 * 60
+  }) as ArticlesProps
 
   useEffect(() => {
     router.prefetch('/blog')
     router.prefetch('/auth')
   }, [router])
 
-  const renderSkeleton = () => <>
-    <div className='max-w-xl py-0 sm:py-8 sm:mx-auto'>
-      <TopNav />
-      <div className='mx-5 sm:mx-auto'>
-        <div className='mb-8 flex flex-col'>
-          <Skeleton className="h-[26px] w-full mb-2" />
-          <div className="flex justify-between">
-          <Skeleton className="h-[18px] w-[60px] mb-2" />
-          <Skeleton className="h-[18px] w-[60px] mb-2" />
-          </div>
-        </div>
-        <Skeleton className='h-[576px] w-full' />
-        <BottomNav />
-      </div>
-    </div>
-  </>
+  const handleCancel = () => {
+    const isDirect = !document.referrer.includes('/blog');
+    isDirect ? router.push('/blog') : router.back();
+  }
 
-  if (isLoading || isFetchingData) return renderSkeleton()
+  if (isLoading || isFetchingData) return skeletonBlogPost()
 
-  if (!articleMetadata) redirect('/oops')
+  const decrypted = JSON.parse(decryptJson(Buffer.from(data.data).toString())) as articleProps[]
+  const articleMetadata = searchBySlug(decrypted, params.slug)
+
+  if (!articleMetadata || error) redirect('/oops')
 
   // if (!isProd) console.log(shouldILogin(post!.visibility), (!session.isLoggedIn && !isLoading))
   // if (!isProd) console.log(post)
@@ -70,7 +54,7 @@ export default function ClientComponent({
           show
           title='Require access pass'
           description='Lets authenticate first!'
-          onCancel={() => { router.back() }}
+          onCancel={handleCancel}
           onAction={() => { router.push('/auth') } } />
 
         <TopNav />
@@ -95,7 +79,7 @@ export default function ClientComponent({
       <div className='max-w-xl py-0 sm:py-8 sm:mx-auto'>
         <Dialog
           show
-          title='SGB Code can&apos;t access this article'
+          title='SGB Code cant access this article'
           description='You need to switch access key'
           onCancel={() => { router.back() }}
           onAction={async () => {

@@ -8,5 +8,7 @@ export default async function handler(
 ) {
   if (request.method !== 'GET') return response.status(500).end()
 
-  return response.status(200).json(encryptJson(JSON.stringify(sortingPostDesc(removeDraft(allPosts)))))
+  return response.status(200).json({
+    data: Buffer.from(encryptJson(JSON.stringify(sortingPostDesc(removeDraft(allPosts)))))
+  })
 }

@@ -1,19 +1,7 @@
 import React, { useEffect, useState, forwardRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-
-export interface PayloadFilter {
-  searchQuery: string,
-  checkbox: {
-    method: boolean,
-    bot: boolean
-  }
-}
-
-interface FilterProps {
-  onFilterCallback: (query: PayloadFilter) => void
-  searchedQuery: PayloadFilter
-}
+import { PayloadFilter, FilterProps } from '@/types/global'
 
 const Filter = forwardRef<HTMLInputElement, FilterProps>(({
   onFilterCallback, searchedQuery

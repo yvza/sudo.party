@@ -1,10 +1,10 @@
 // Inspired by react-hot-toast library
 import * as React from "react"
-
 import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
+import { UseToastProps } from "@/types/global"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -50,10 +50,6 @@ type Action =
       toastId?: ToasterToast["id"]
     }
 
-interface State {
-  toasts: ToasterToast[]
-}
-
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
 const addToRemoveQueue = (toastId: string) => {
@@ -72,7 +68,7 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout)
 }
 
-export const reducer = (state: State, action: Action): State => {
+export const reducer = (state: UseToastProps, action: Action): UseToastProps => {
   switch (action.type) {
     case "ADD_TOAST":
       return {
@@ -127,9 +123,9 @@ export const reducer = (state: State, action: Action): State => {
   }
 }
 
-const listeners: Array<(state: State) => void> = []
+const listeners: Array<(state: UseToastProps) => void> = []
 
-let memoryState: State = { toasts: [] }
+let memoryState: UseToastProps = { toasts: [] }
 
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action)
@@ -170,7 +166,7 @@ function toast({ ...props }: Toast) {
 }
 
 function useToast() {
-  const [state, setState] = React.useState<State>(memoryState)
+  const [state, setState] = React.useState<UseToastProps>(memoryState)
 
   React.useEffect(() => {
     listeners.push(setState)

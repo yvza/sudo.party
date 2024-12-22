@@ -8,13 +8,13 @@ import {
 import { localFormatPrice } from '@/utils/helper'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
-import { ProductType } from '@/pages/api/product'
 import { CartProps } from '@/lib/features/shop/cart'
 import { decryptProductId } from '@/utils/helper'
 import { useDispatch } from 'react-redux'
 import { addToCart } from '@/lib/features/shop/cart'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/lib/store'
+import { ProductType } from '@/types/global'
 
 export default function Product({ listProduct }: { listProduct: ProductType[] }) {
   const dispatch = useDispatch()

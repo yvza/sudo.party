@@ -6,13 +6,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { PaginationProps } from "@/types/global"
 
-interface Props {
-  totalPages: number
-  currentPage?: number
-}
-
-const Pager = ({ totalPages, currentPage = 1 }: Props) => {
+const Pager = ({ totalPages, currentPage = 1 }: PaginationProps) => {
   const pagesToShow = 3;
   const startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2));
   const endPage = Math.min(startPage + pagesToShow - 1, totalPages);
