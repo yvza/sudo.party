@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
 
-const getArticles = async () => {
+export const getArticles = async () => {
   const response = await axios.get('/api/articles')
   return response.data
 }

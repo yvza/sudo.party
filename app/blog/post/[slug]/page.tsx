@@ -16,6 +16,7 @@ import Link from 'next/link'
 import { skeletonBlogPost } from '@/components/Skeleton'
 import { PostProps } from '@/types/global'
 import { ArticlesProps } from '@/types/global'
+import { getArticles } from '@/services/articles'
 
 export default function ClientComponent({
   params,
@@ -24,6 +25,7 @@ export default function ClientComponent({
   const { session, isLoading } = useSession()
   const { data, isLoading: isFetchingData, error } = useQuery({
     queryKey: ['getArticles'],
+    queryFn: getArticles,
     staleTime: 1000 * 60 * 60
   }) as ArticlesProps
 
