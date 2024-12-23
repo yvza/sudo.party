@@ -45,6 +45,8 @@ function deriveKey(passphrase: string): Buffer {
   return crypto.createHash('sha256').update(passphrase).digest();
 }
 
+const cachedKey = deriveKey(passphrase)
+
 function generateRandomString(length: number): string {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
@@ -114,23 +116,22 @@ function deriveIv(jsonString: string) {
 export function encryptJson(json: string) {
   const jsonString = JSON.stringify(json);
 
-  // Derive the key from the passphrase
-  const key = deriveKey(passphrase);
-
   // Use an initialization vector (IV) for security
   const iv = deriveIv(jsonString);
 
   // Encrypt the JSON string
-  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-  const encryptedData = Buffer.concat([cipher.update(jsonString, 'utf-8'), cipher.final()]).toString('base64');
+  const cipher = crypto.createCipheriv('aes-256-cbc', cachedKey, iv);
+  const encryptedBuffer = Buffer.allocUnsafe(jsonString.length + 16)
+  const encrypted = Buffer.concat([
+    cipher.update(jsonString, 'utf-8'),
+    cipher.final()
+  ])
 
-  return `${iv.toString('base64')}:${encryptedData}`;
+  return `${iv.toString('base64')}:${encrypted.toString('base64')}`
 }
 
 export function decryptJson(encryptedJson: string) {
   if (!encryptedJson) return null
-  // Derive the key from the passphrase
-  const key = deriveKey(passphrase);
 
   try {
     // Split IV and encrypted data
@@ -140,11 +141,14 @@ export function decryptJson(encryptedJson: string) {
     const iv = Buffer.from(ivBase64, 'base64');
 
     // Decrypt the data
-    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-    const decryptedData = Buffer.concat([decipher.update(Buffer.from(encryptedData, 'base64')), decipher.final()]).toString('utf-8');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', cachedKey, iv);
+    const decrypted = Buffer.concat([
+      decipher.update(Buffer.from(encryptedData, 'base64')),
+      decipher.final()
+    ])
 
     // Parse the JSON string
-    return JSON.parse(decryptedData);
+    return JSON.parse(decrypted.toString('utf-8'));
 
   } catch (error) {
     // console.error('Error decrypting JSON:', error);
