@@ -29,10 +29,12 @@ export default function page() {
     )
   }
   return (
-    <div className='mx-auto max-w-xl py-0 sm:py-8'>
+    <>
       <TopNav />
-      {renderDisclaimer()}
+      <div className='mx-auto max-w-xl py-0 sm:py-8'>
+        {renderDisclaimer()}
+      </div>
       <BottomNav />
-    </div>
+    </>
   )
 }

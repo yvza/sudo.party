@@ -51,10 +51,12 @@ export default function page() {
     </div>
   }
   return (
-    <div className='mx-auto max-w-xl py-0 sm:py-8'>
+    <>
       <TopNav />
-      {renderPrivacyPolicy()}
+      <div className='mx-auto max-w-xl py-0 sm:py-8'>
+        {renderPrivacyPolicy()}
+      </div>
       <BottomNav />
-    </div>
+    </>
   )
 }

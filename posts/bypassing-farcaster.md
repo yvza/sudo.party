@@ -5,5 +5,6 @@ draft: false
 visibility: private
 membership: sudopartypass
 description:
+label: how to
 ---
 Its very easy to bypass using this open sourced tool.

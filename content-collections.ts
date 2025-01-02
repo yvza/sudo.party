@@ -10,8 +10,9 @@ const posts = defineCollection({
     date: z.string(),
     draft: z.boolean(),
     visibility: z.string(),
-    membership: z.any().optional(), // sudopartypass || sgbcode || can be empty
-    description: z.any().optional(), // can be empty
+    membership: z.any().optional(), // sudopartypass | sgbcode | can be empty
+    description: z.any().optional(),
+    label: z.string() // exploit | how to | news | cyber security
   }),
   transform: async (document, context) => {
     const mdx = await compileMDX(context, document)

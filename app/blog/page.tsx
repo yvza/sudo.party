@@ -6,7 +6,6 @@ import Pagination from '@/components/Pagination'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
 import { articleProps, decryptJson } from '@/utils/helper'
-import HeaderBrand from '@/components/HeaderBrand'
 import { useGlitch, GlitchHandle } from 'react-powerglitch'
 import { useArticles } from '@/services/articles'
 import { skeletonBlog } from '@/components/Skeleton'
@@ -59,8 +58,10 @@ export default function BlogClient() {
   if (isPending) return skeletonBlog(6)
 
   const renderContents = () => <>
-    {renderPosts()}
-    {!error && renderPagination()}
+    <div className={`mx-auto max-w-xl py-0 py-8 relative ${interFont.className}`}>
+      {renderPosts()}
+      {!error && renderPagination()}
+    </div>
   </>
 
   const renderPosts = () => {
@@ -76,11 +77,10 @@ export default function BlogClient() {
   }
 
   return (
-    <div className={`mx-auto max-w-xl py-0 sm:py-8 relative ${interFont.className}`}>
+    <>
       <TopNav />
-      <HeaderBrand ref={glitch.ref} hideOnMobile={true} />
       {renderContents()}
       <BottomNav />
-    </div>
+    </>
   )
 }

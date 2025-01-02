@@ -51,34 +51,36 @@ export default function ClientComponent({
 
   if (shouldILogin(articleMetadata.visibility) && (!session.isLoggedIn && !isLoading)) {
     return (
-      <div className='max-w-xl py-0 sm:py-8 sm:mx-auto'>
+      <>
+        <TopNav />
         <Dialog
           show
           title='Require access pass'
-          description='Lets authenticate first!'
+          description='Lets authenticate first! (EVM Wallet required for this action)'
           onCancel={handleCancel}
           onAction={() => { router.push('/auth') } } />
-
-        <TopNav />
-        <div className="mx-5 sm:mx-auto mb-8">
-          <h1 className="text-2xl font-bold">{articleMetadata.title}</h1>
-          <div className='flex justify-between mt-2'>
-            <time dateTime={articleMetadata.date} className="mb-1 text-xs dark:text-zinc-500">
-              {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
-            </time>
-            <Link href="/blog" className='text-xs border-b border-dotted border-black dark:border-white dark:text-zinc-500 dark:hover:text-zinc-200/80'>Back</Link>
+        <div className='max-w-xl py-0 sm:py-8 sm:mx-auto'>
+          <div className="mx-5 sm:mx-auto mb-8">
+            <h1 className="text-2xl font-bold">{articleMetadata.title}</h1>
+            <div className='flex justify-between mt-2'>
+              <time dateTime={articleMetadata.date} className="mb-1 text-xs dark:text-zinc-500">
+                {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
+              </time>
+              <Link href="/blog" className='text-xs border-b border-dotted border-black dark:border-white dark:text-zinc-500 dark:hover:text-zinc-200/80'>Back</Link>
+            </div>
           </div>
+          <HeheIDK />
         </div>
-        <HeheIDK />
         <BottomNav />
-      </div>
+      </>
     )
   }
 
   // make a another popup when isLoggedIn && membership
   if (session.isLoggedIn && articleMetadata.membership == 'sudopartypass' && session.type == 'sgbcode') {
     return (
-      <div className='max-w-xl py-0 sm:py-8 sm:mx-auto'>
+      <>
+        <TopNav />
         <Dialog
           show
           title='SGB Code cant access this article'
@@ -89,42 +91,44 @@ export default function ClientComponent({
             await axios.delete('/api/auth')
             router.push('/auth')
           } } />
-
-        <TopNav />
-        <div className="mx-5 sm:mx-auto mb-8">
-          <h1 className="text-2xl font-bold">{articleMetadata.title}</h1>
-          <div className='flex justify-between mt-2'>
-            <time dateTime={articleMetadata.date} className="mb-1 text-xs dark:text-zinc-500">
-              {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
-            </time>
-            <Link href="/blog" className='text-xs border-b border-dotted border-black dark:border-white dark:text-zinc-500 dark:hover:text-zinc-200/80'>Back</Link>
+        <div className='max-w-xl py-0 sm:py-8 sm:mx-auto'>
+          <div className="mx-5 sm:mx-auto mb-8">
+            <h1 className="text-2xl font-bold">{articleMetadata.title}</h1>
+            <div className='flex justify-between mt-2'>
+              <time dateTime={articleMetadata.date} className="mb-1 text-xs dark:text-zinc-500">
+                {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
+              </time>
+              <Link href="/blog" className='text-xs border-b border-dotted border-black dark:border-white dark:text-zinc-500 dark:hover:text-zinc-200/80'>Back</Link>
+            </div>
           </div>
+          <HeheIDK />
         </div>
-        <HeheIDK />
         <BottomNav />
-      </div>
+      </>
     )
   }
 
   return (
-    <div className="max-w-xl py-0 sm:py-8 sm:mx-auto">
+    <>
       <TopNav />
-      <div className="mx-5 sm:mx-auto mb-8">
-        <h1 className="text-2xl font-bold">{articleMetadata.title}</h1>
-        <div className='flex justify-between mt-2'>
-          <time dateTime={articleMetadata.date} className="mb-1 text-xs dark:text-zinc-500">
-            {format(parseISO(articleMetadata.date), 'LLLL d, yyyy')}
-          </time>
-          <Link href="/blog" className='text-xs border-b border-dotted border-black dark:border-white dark:text-zinc-500 dark:hover:text-zinc-200/80'>Back</Link>
+      <div className="max-w-xl py-0 sm:py-8 sm:mx-auto">
+        <div className="mx-5 sm:mx-auto mb-8">
+          <h1 className="text-2xl font-bold">{articleMetadata.title}</h1>
+          <div className='flex justify-between mt-2'>
+            <time dateTime={articleMetadata.date} className="mb-1 text-xs dark:text-zinc-500">
+              {format(parseISO(articleMetadata.date), 'd LLLL, yyyy')}
+            </time>
+            <Link href="/blog" className='text-xs border-b border-dotted border-black dark:border-white dark:text-zinc-500 dark:hover:text-zinc-200/80'>Back</Link>
+          </div>
+        </div>
+        <div className='mx-5 sm:mx-auto'>
+          <article className='prose'>
+            <MDXContent code={articleMetadata.mdx}/>
+          </article>
+          <BlogComments />
         </div>
       </div>
-      <div className='mx-5 sm:mx-auto'>
-        <article className='prose'>
-          <MDXContent code={articleMetadata.mdx}/>
-        </article>
-        <BlogComments />
-      </div>
       <BottomNav />
-    </div>
+    </>
   )
 }

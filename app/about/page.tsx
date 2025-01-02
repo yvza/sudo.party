@@ -21,7 +21,7 @@ export default function page() {
         </p>
 
         <p className="mb-4">
-          100% bonafide human-written article and based on personal research. No AI was used in the writing of this piece, Hwhwhw :3
+          100% bonafide human-written article and based on personal research.
         </p>
 
         <p className="mb-4">
@@ -36,10 +36,12 @@ export default function page() {
   }
 
   return (
-    <div className='mx-auto max-w-xl py-0 sm:py-8'>
+    <>
       <TopNav />
-      {renderAbout()}
+      <div className='mx-auto max-w-xl py-0 sm:py-8'>
+        {renderAbout()}
+      </div>
       <BottomNav />
-    </div>
+    </>
   )
 }

@@ -22,7 +22,7 @@ export function removeDraft(post: articleProps[]) {
 }
 
 export function displayDateTime(date: any) {
-  return format(parseISO(date), 'LLLL d, yyyy')
+  return format(parseISO(date), 'd LLLL, yyyy')
 }
 
 export function randomizeCharacter() {
@@ -171,7 +171,8 @@ export interface articleProps {
     extension: string,
     path: string
   },
-  mdx: string
+  mdx: string,
+  label: string
 }
 
 export function searchBySlug(data: articleProps[], searchSlug: string) {
