@@ -1,7 +1,7 @@
 import type { VariantProps } from "class-variance-authority";
 
 export interface PostProps {
-  params: { slug: string }
+  params: Prmoise<{ slug: string }>
 }
 
 export interface DialogProps {
@@ -71,6 +71,19 @@ export interface ArticlesProps {
     data: Array<number>,
     type: string
   },
-  isLoading: boolean,
-  error: unknown
+  error: unknown,
+  isFetched: boolean
+}
+
+export interface articleMetadata {
+  visibility: string,
+  title: string,
+  date: string,
+  membership: string | undefined,
+  mdx: string,
+}
+
+export interface siweSession {
+  address: string,
+  isAuthenticated: boolean
 }

@@ -5,6 +5,7 @@ import rootSaga from './sagas'
 import todoReducer from './features/user/info'
 import tasksReducer from './features/user/mocktest'
 import cartReducer from './features/shop/cart'
+import alertDialogReducer from './features/alertDialog/toggle'
 
 const sagaMiddleware = createSagaMiddleware()
 
@@ -12,10 +13,14 @@ export const store = configureStore({
   reducer: {
     todos: todoReducer,
     tasks: tasksReducer,
-    cart: cartReducer
+    cart: cartReducer,
+    alertDialog: alertDialogReducer
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware)
+    getDefaultMiddleware({
+      thunk: false,
+      serializableCheck: false,
+    }).concat(sagaMiddleware)
 })
 
 sagaMiddleware.run(rootSaga)

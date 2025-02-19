@@ -6,7 +6,6 @@ import Pagination from '@/components/Pagination'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
 import { articleProps, decryptJson } from '@/utils/helper'
-import { useGlitch, GlitchHandle } from 'react-powerglitch'
 import { useArticles } from '@/services/articles'
 import { skeletonBlog } from '@/components/Skeleton'
 import { interFont } from '@/utils/fonts'
@@ -21,7 +20,6 @@ export default function BlogClient() {
   const postsPerPage = 6
   const totalPost = listArticle.current ? listArticle.current.length : 0
   const totalPages = Math.ceil(totalPost / postsPerPage)
-  const glitch: GlitchHandle = useGlitch({ playMode: 'hover' })
 
   useEffect(() => {
     router.prefetch('/disclaimer')

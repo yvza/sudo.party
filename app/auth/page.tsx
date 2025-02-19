@@ -4,31 +4,22 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { lang } from "@/lib/constants"
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { ReloadIcon } from "@radix-ui/react-icons"
 import { useRouter } from "next/navigation"
 import HeaderBrand from "@/components/HeaderBrand"
-import { useGlitch, GlitchHandle } from 'react-powerglitch'
-import { Web3 } from 'web3'
 import { useSelector, useDispatch } from "react-redux"
 import { DefaultState } from "@/lib/features/user/info"
 import { todoAdded } from "@/lib/features/user/info"
 import { addTasks } from "@/lib/features/user/mocktest"
+import { Connector, useConnect, useAccount, useDisconnect, useEnsAvatar, useEnsName } from 'wagmi'
+import Image from "next/image"
+import WalletOptions from "@/components/blog/walletConnect/WalletOptions"
+import Account from "@/components/blog/walletConnect/Account"
+import SignInWithEthereum from "@/components/blog/siwe/SignInWithEthereum"
 
 declare var window: any
 
@@ -39,13 +30,13 @@ const formSchema = z.object({
 })
 
 const ProfileForm = () => {
+  const { connectors, connect } = useConnect()
   const { toast } = useToast()
   const [chosenOption, setChosenOption] = useState('option-one')
   const [disablingForm, setDisableForm] = useState(false)
   const [buttonLoading, setButtonLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter()
-  const glitch: GlitchHandle = useGlitch()
   const [connectedAccount, setConnectedAccount] = useState('')
   // const test = useSelector(state => state.todos)
   // const tasks = useSelector(state => state.tasks)
@@ -56,6 +47,11 @@ const ProfileForm = () => {
       key: "",
     },
   })
+  const { address } = useAccount()
+  const { disconnect } = useDisconnect()
+  const { data: ensName } = useEnsName({ address })
+  const { data: ensAvatar } = useEnsAvatar({ name: ensName! })
+  const { isConnected } = useAccount()
 
   useEffect(() => {
     switch (chosenOption) {
@@ -131,31 +127,40 @@ const ProfileForm = () => {
   }
 
   const triggerWeb3 = async () => {
-    dispatch({ type: 'TEST_TRIGGER_SAGA' })
-    return
+    // dispatch({ type: 'TEST_TRIGGER_SAGA' })
+    // return
     if (!window.ethereum) {
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
-        description: "U must have evm wallet."
+        description: "U must have installed evm wallet."
       })
       return
     }
 
     // instantiate Web3 with the injected provider
-    const web3 = new Web3(window.ethereum);
+    // const web3 = new Web3(window.ethereum);
 
-    //request user to connect accounts (Metamask will prompt)
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    try {
+      //request user to connect accounts (Metamask will prompt)
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+    } catch (error) {
+      const err = error as { code?: number; message?: string };
+      return toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: err.message
+      })
+    }
 
     //get the connected accounts
-    const accounts = await web3.eth.getAccounts();
+    // const accounts = await web3.eth.getAccounts();
 
     //show the first connected account in the react page
-    setConnectedAccount(accounts[0]);
+    // setConnectedAccount(accounts[0]);
 
-    console.log('Connected account: ', accounts[0])
-    console.log('Connected : ', accounts)
+    // console.log('Connected account: ', accounts[0])
+    // console.log('Connected : ', accounts)
 
     // send the address to api
     // fetch first on db its exist or no
@@ -163,54 +168,73 @@ const ProfileForm = () => {
     // if exist return the data
   }
 
+  const connectWallet = () => {
+    if (isConnected) return <Account />
+    return connectors.map((connector) => (
+      <WalletOptions
+        key={connector.uid}
+        connector={connector}
+        onClick={() => connect({ connector })}
+      />
+    ))
+  }
+
   return (
+    // <div className="w-full h-screen flex items-center justify-center bg-slate-50 dark:bg-black">
+    //   <Form {...form}>
+    //     {/* <>{JSON.stringify(test)}</>
+    //     <h1>&nbsp;</h1>
+    //     <>{JSON.stringify(tasks)}</> */}
+    //     <form
+    //       onSubmit={form.handleSubmit(onSubmit)}
+    //       className="space-y-8 w-80 p-5 rounded-md bg-white shadow-md dark:border dark:border-white dark:bg-black"
+    //     >
+    //       <HeaderBrand sloganOn={false} ref={glitch.ref} />
+    //       <RadioGroup
+    //         defaultValue={chosenOption}
+    //         onValueChange={setChosenOption}
+    //         name="option">
+    //           <div className="flex items-center space-x-2">
+    //             <RadioGroupItem value="option-one" id="option-one" />
+    //             <Label htmlFor="option-one">{lang.sudoPartyPass}</Label>
+    //           </div>
+    //           <div className="flex items-center space-x-2">
+    //             <RadioGroupItem value="option-two" id="option-two" />
+    //             <Label htmlFor="option-two">{lang.sgbCode}</Label>
+    //           </div>
+    //       </RadioGroup>
+
+    //       <Button variant="outline" onClick={() => triggerWeb3()}>Connect Wallet</Button>
+
+    //       <FormField
+    //         disabled={disablingForm}
+    //         control={form.control}
+    //         name="key"
+    //         render={({ field }) => (
+    //           <FormItem>
+    //             <FormLabel>Access Key</FormLabel>
+    //             <FormControl>
+    //               <Input placeholder="Secret code" {...field} />
+    //             </FormControl>
+    //             <FormDescription>
+    //               {chosenOption === 'option-two' && <em className="text-red-600">{lang.currentlyNotAvailable}</em>}
+    //             </FormDescription>
+    //             <FormMessage />
+    //           </FormItem>
+    //         )}
+    //       />
+
+    //       {renderButton()}
+    //     </form>
+    //   </Form>
+    // </div>
     <div className="w-full h-screen flex items-center justify-center bg-slate-50 dark:bg-black">
-      <Form {...form}>
-        {/* <>{JSON.stringify(test)}</>
-        <h1>&nbsp;</h1>
-        <>{JSON.stringify(tasks)}</> */}
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 w-80 p-5 rounded-md bg-white shadow-md dark:border dark:border-white dark:bg-black"
-        >
-          <HeaderBrand sloganOn={false} ref={glitch.ref} />
-          <RadioGroup
-            defaultValue={chosenOption}
-            onValueChange={setChosenOption}
-            name="option">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="option-one" id="option-one" />
-                <Label htmlFor="option-one">{lang.sudoPartyPass}</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="option-two" id="option-two" />
-                <Label htmlFor="option-two">{lang.sgbCode}</Label>
-              </div>
-          </RadioGroup>
-
-          {/* <Button variant="outline" onClick={() => triggerWeb3()}>Connect Wallet</Button> */}
-
-          <FormField
-            disabled={disablingForm}
-            control={form.control}
-            name="key"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Access Key</FormLabel>
-                <FormControl>
-                  <Input placeholder="Secret code" {...field} />
-                </FormControl>
-                <FormDescription>
-                  {chosenOption === 'option-two' && <em className="text-red-600">{lang.currentlyNotAvailable}</em>}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {renderButton()}
-        </form>
-      </Form>
+      <div className="flex flex-col space-y-8 w-80 p-5 rounded-md bg-white shadow-md dark:border dark:border-white dark:bg-black">
+        <HeaderBrand sloganOn={false} />
+        {/* <Button className="self-center" variant="outline" onClick={() => triggerWeb3()}>Connect Wallet</Button> */}
+        {connectWallet()}
+        <SignInWithEthereum />
+      </div>
     </div>
   )
 }

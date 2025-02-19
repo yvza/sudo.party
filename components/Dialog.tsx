@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React from 'react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -9,13 +9,17 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { DialogProps } from '@/types/global'
+import { RootState } from '@/lib/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { hideAlertDialog } from '@/lib/features/alertDialog/toggle';
 
-const Dialog: React.FC<DialogProps> = ({show, title, description, onCancel, onAction}) => {
-  const [isOpen, setIsOpen] = useState(show);
+const Dialog: React.FC = () => {
+  const { show, title, description, onCancel, onAction } = useSelector((state: RootState) => state.alertDialog)
+  const dispatch = useDispatch()
 
   const onClose = () => {
-    setIsOpen(!isOpen);
+    dispatch(hideAlertDialog())
+    dispatch
     if (onCancel) {
       onCancel();
     }
@@ -33,7 +37,7 @@ const Dialog: React.FC<DialogProps> = ({show, title, description, onCancel, onAc
   }
 
   return (
-    <AlertDialog open={isOpen}>
+    <AlertDialog open={show}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>

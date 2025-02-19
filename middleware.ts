@@ -19,14 +19,14 @@ export const config = {
 };
 
 export default async function middleware(request: NextRequest) {
-  const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+  const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
 
   if (request.nextUrl.pathname.startsWith('/auth') && session.isLoggedIn) {
     return NextResponse.redirect(new URL('/blog', request.url))
   }
 
   // You could alternatively limit based on user ID or similar
-  const ip = request.ip ?? '127.0.0.1';
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
   const { success, pending, limit, reset, remaining } = await ratelimit.limit(
     ip
   );

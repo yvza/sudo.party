@@ -4,6 +4,7 @@ import { todoAdded } from './features/user/info'
 import { addTasks } from './features/user/mocktest'
 import { addToCart, removeProduct, resetCart } from './features/shop/cart'
 import { CartProps } from './features/shop/cart'
+import { hideAlertDialog, showAlertDialog } from './features/alertDialog/toggle'
 
 // Worker saga: will be fired on todoAdded actions
 function* handleTodoAdded(action: PayloadAction<{ id:number, text:string }>) {
@@ -68,6 +69,17 @@ function* handleResetCart() {
   // console.log('Reset Cart')
 }
 
+function* watchAlertDialog() {
+  yield all([
+    takeEvery(hideAlertDialog.type, toggleGlobalAlertDialog),
+    takeEvery(showAlertDialog.type, toggleGlobalAlertDialog)
+  ])
+}
+
+function* toggleGlobalAlertDialog() {
+  console.log('Toggle Global Alert Dialog')
+}
+
 // Combine all sagas into a root saga
 export default function* rootSaga() {
   yield all([
@@ -75,6 +87,7 @@ export default function* rootSaga() {
     // add more sagas here if needed
     watchTasks(),
     watchTest(),
-    watchCart()
+    watchCart(),
+    watchAlertDialog()
   ])
 }

@@ -1,4 +1,6 @@
 const lang = {
+  siteNameUpper: 'SUDOPARTY',
+  siteFullUrl: 'https://sudo.party',
   siteUrl: 'sudo.party',
   slogan: 'straightforward content',
   invalid: 'Invalid',
@@ -58,11 +60,16 @@ const productCategory = {
   BOT: 'Bot'
 }
 
+const secureCookieAlias = {
+  SIWE_SESSION: 'VXCLKJIOQDX',
+}
+
 export {
   lang,
   rootAppSocialLink,
   productPurchaseStatus,
   releasePurchaseStatus,
   productStatus,
-  productCategory
+  productCategory,
+  secureCookieAlias
 }

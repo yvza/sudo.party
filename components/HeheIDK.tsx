@@ -162,7 +162,9 @@ export default function HeheIDK() {
   return (
     <>
       <pre style={{...defaultStyle, ...fontSizeLargeScreen}} className='hidden sm:block text-black dark:text-white'>{imgLargeScreen}</pre>
-      <pre style={{...defaultStyle, ...fontSizeSmallScreen}} className='sm:hidden text-black dark:text-white'>{imgSmallScreen}</pre>
+      <div className='sm:hidden text-center'>
+        <pre style={{...defaultStyle, ...fontSizeSmallScreen}} className='text-black dark:text-white'>{imgSmallScreen}</pre>
+      </div>
     </>
   )
 }

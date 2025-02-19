@@ -176,7 +176,7 @@ export interface articleProps {
 }
 
 export function searchBySlug(data: articleProps[], searchSlug: string) {
-  if (!data) return false
+  if (!data) return undefined
   return data.find(item => item._meta.path === searchSlug)
 }
 

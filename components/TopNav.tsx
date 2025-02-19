@@ -12,13 +12,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useGlitch, GlitchHandle } from 'react-powerglitch'
 import { getLight } from '@/utils/helper'
 import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
+import { Button } from './ui/button'
 
 export default function TopNav() {
-  const glitch: GlitchHandle = useGlitch()
   const [lightMode, setLightMode] = useState('')
   const { setTheme } = useTheme()
   const pathName = usePathname()
@@ -49,6 +48,12 @@ export default function TopNav() {
     </>
   }
 
+  const renderSiweButton = () => {
+    return (
+      <Button>Connect</Button>
+    )
+  }
+
   return <>
       <div className='p-5 relative hidden sm:flex flex-col items-center sm:flex-row sm:justify-between'>
         <div className='hidden sm:block'>
@@ -67,6 +72,7 @@ export default function TopNav() {
             <div className={`border-black dark:border-white hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-200/80 ${pathName == '/about' && 'dark:text-zinc-200/80 text-black border-b border-dotted'}`}>About</div>
           </Link>
           {renderLight()}
+          {renderSiweButton()}
         </div>
       </div>
 
@@ -75,6 +81,7 @@ export default function TopNav() {
           <div><span className='font-black'>SUDOPARTY</span> <span className='font-light text-slate-400'>Blog</span></div>
         </Link>
         <div className='flex flex-row gap-8'>
+          {renderSiweButton()}
           {renderLight()}
           <DropdownMenu>
             <DropdownMenuTrigger><HamburgerMenuIcon /></DropdownMenuTrigger>

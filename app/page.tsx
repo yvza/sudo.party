@@ -1,13 +1,11 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useGlitch, GlitchHandle } from 'react-powerglitch'
 import { lang, rootAppSocialLink } from '@/lib/constants'
 import { useRouter } from 'next/navigation'
 
 const Page = () => {
   const [currentDateTime, setCurrentDateTime] = useState(() => getFormattedDateTime())
-  const glitch: GlitchHandle = useGlitch()
   const router = useRouter()
 
   useEffect(() => {
@@ -64,7 +62,7 @@ const Page = () => {
   return (
     <section className='flex items-center justify-center flex-col h-screen bg-black text-white font-front-page text-xs'>
       <section>
-        <header ref={glitch.ref}>
+        <header>
           <h5>{lang.siteUrl}</h5>
           <h6>{currentDateTime} {lang.idn}</h6>
         </header>
