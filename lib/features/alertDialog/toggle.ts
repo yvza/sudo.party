@@ -3,17 +3,17 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export interface toggleAlertDialog {
   show: boolean,
   title: string,
-  description: string,
-  onCancel?: () => void | Function |  undefined,
-  onAction: () => void
+  description: () => React.ReactNode,
+  onCancel?: () => void | undefined,
+  onAction?: () => void
 }
 
 const initialState: toggleAlertDialog = {
   show: false,
   title: '',
-  description: '',
+  description: () => null,
   onCancel: undefined,
-  onAction: () => {}
+  onAction: undefined
 }
 
 const alertDialog = createSlice({

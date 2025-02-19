@@ -4,7 +4,6 @@ import {
     AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
-    AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
@@ -26,6 +25,10 @@ const Dialog: React.FC = () => {
   }
 
   const RenderDialogAction = () => {
+    if (onCancel) {
+      return <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+    }
+
     if (!onCancel) {
       return <AlertDialogAction onClick={onAction}>Continue</AlertDialogAction>
     }
@@ -41,9 +44,7 @@ const Dialog: React.FC = () => {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {description}
-          </AlertDialogDescription>
+          {description()}
         </AlertDialogHeader>
         <AlertDialogFooter>
           <RenderDialogAction />

@@ -1,58 +1,20 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
-import { Separator } from '@/components/ui/separator'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import HeaderBrand from './HeaderBrand'
-import { HamburgerMenuIcon, MoonIcon, SunIcon } from '@radix-ui/react-icons'
+import { HamburgerMenuIcon } from '@radix-ui/react-icons'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { getLight } from '@/utils/helper'
-import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
-import { Button } from './ui/button'
+import SiweConnectButton from './blog/siwe/connect-button'
+import Light from './blog/light'
 
 export default function TopNav() {
-  const [lightMode, setLightMode] = useState('')
-  const { setTheme } = useTheme()
   const pathName = usePathname()
-
-  useEffect(() => {
-    setLightMode(getLight() as string)
-  }, [])
-
-  const renderLight = () => {
-    if (!lightMode) return <></>
-
-    return <>
-      <div
-        className='hover:cursor-pointer'
-        onClick={() => {
-          const storedLight = getLight() as string
-          if (storedLight == 'light') {
-            setLightMode('dark')
-            setTheme('dark')
-            return
-          }
-          setLightMode('light')
-          setTheme('light')
-        }}
-      >
-        {lightMode == 'light' ? <MoonIcon /> : <SunIcon />}
-      </div>
-    </>
-  }
-
-  const renderSiweButton = () => {
-    return (
-      <Button>Connect</Button>
-    )
-  }
 
   return <>
       <div className='p-5 relative hidden sm:flex flex-col items-center sm:flex-row sm:justify-between'>
@@ -71,8 +33,8 @@ export default function TopNav() {
           <Link href='/about'>
             <div className={`border-black dark:border-white hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-200/80 ${pathName == '/about' && 'dark:text-zinc-200/80 text-black border-b border-dotted'}`}>About</div>
           </Link>
-          {renderLight()}
-          {renderSiweButton()}
+          <Light />
+          <SiweConnectButton />
         </div>
       </div>
 
@@ -80,11 +42,11 @@ export default function TopNav() {
         <Link href="/blog">
           <div><span className='font-black'>SUDOPARTY</span> <span className='font-light text-slate-400'>Blog</span></div>
         </Link>
-        <div className='flex flex-row gap-8'>
-          {renderSiweButton()}
-          {renderLight()}
+        <div className='flex flex-row gap-8 items-center'>
+          <SiweConnectButton />
+          <Light />
           <DropdownMenu>
-            <DropdownMenuTrigger><HamburgerMenuIcon /></DropdownMenuTrigger>
+            <DropdownMenuTrigger className='hover:cursor-pointer'><HamburgerMenuIcon /></DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem>
                 <Link href='/disclaimer'>

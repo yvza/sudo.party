@@ -1,16 +1,19 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Connector } from 'wagmi'
+import { Button } from '@/components/ui/button'
+
+interface WalletOptions {
+  connector: Connector
+  onClick: () => void
+}
 
 export default function WalletOptions({
   connector,
   onClick,
-}: {
-  connector: Connector
-  onClick: () => void
-}) {
-  const [ready, setReady] = React.useState(false)
+}: WalletOptions) {
+  const [ready, setReady] = useState(false)
 
-  React.useEffect(() => {
+  useEffect(() => {
     ;(async () => {
       const provider = await connector.getProvider()
       setReady(!!provider)
@@ -18,8 +21,8 @@ export default function WalletOptions({
   }, [connector])
 
   return (
-    <button disabled={!ready} onClick={onClick}>
+    <Button disabled={!ready} onClick={onClick}>
       {connector.name}
-    </button>
+    </Button>
   )
 }
