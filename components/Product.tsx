@@ -91,7 +91,7 @@ export default function Product({ listProduct }: { listProduct: ProductType[] })
 
   const renderProducts = (listProduct: ProductType[]) => {
     return listProduct.map((data, index) =>
-      <div key={index} className='w-72 h-auto shadow rounded'>
+      <div key={index} className='w-72 h-auto shadow-sm rounded'>
         <div
           id='banner'
           className='w-72 h-48 rounded-tl rounded-tr'

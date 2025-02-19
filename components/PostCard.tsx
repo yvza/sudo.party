@@ -27,7 +27,7 @@ export default function PostCard(post: articleProps) {
 					{post.title}
 				</Link>
 			</h2>
-			<div className="text-sm [&>*]:mb-3 [&>*:last-child]:mb-0 text-justify mb-2 text-slate-600 dark:text-slate-400">
+			<div className="text-sm *:mb-3 [&>*:last-child]:mb-0 text-justify mb-2 text-slate-600 dark:text-slate-400">
 				{post.description ? post.description : noDescription()}
 			</div>
 			<time dateTime={post.date} className="block font-medium text-xs text-slate-900 dark:text-white">
