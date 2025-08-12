@@ -7,10 +7,12 @@ export default function BottomNav() {
   }
   const currentYear = new Date().getFullYear()
 
-  return <>
-    <div className='flex flex-col items-center p-5 sm:flex-row sm:justify-between'>
-      <span className='font-light text-xs'>&copy; {lang.siteUrl} {currentYear}</span>
+  return (
+    <footer className="mx-auto px-5 py-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-between text-center sm:text-left text-xs text-gray-500 dark:text-gray-400">
+      <span aria-label={`Copyright ${currentYear}`}>
+        &copy; {currentYear} {lang.siteUrl}
+      </span>
       {svgPoweredByVercel()}
-    </div>
-  </>
+    </footer>
+  )
 }

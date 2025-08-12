@@ -25,7 +25,7 @@ const db = DynamoDBDocument.from(new DynamoDB(dynamoConfig), {
   },
 })
 
-const isProd = process.env.NEXT_PUBLIC_NODE_ENV === 'production'
+const isProd = process.env.NODE_ENV === 'production'
 const appUrl = !isProd
   ? 'http://localhost:3000'
   : 'https://sudo.party'

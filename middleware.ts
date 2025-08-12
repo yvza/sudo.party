@@ -1,36 +1,43 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { Ratelimit } from '@upstash/ratelimit';
-import { kv } from '@vercel/kv';
+import { Ratelimit } from '@upstash/ratelimit'
+import { kv } from '@vercel/kv'
 import { cookies } from 'next/headers'
 import { getIronSession } from 'iron-session'
-import { SessionData, sessionOptions } from './lib/iron-session/config';
-import { isProd } from './config';
+import { SessionData, sessionOptions } from './lib/iron-session/config'
+
+export const config = {
+  matcher: ['/', '/auth', '/blog/:path*', '/api/articles/:path*'],
+}
 
 const ratelimit = new Ratelimit({
   redis: kv,
-  // 5 requests from the same IP in 10 seconds
   limiter: Ratelimit.slidingWindow(5, '10 s'),
-});
+})
 
-// Define which routes you want to rate limit
-export const config = {
-  matcher: ['/', '/auth', '/blog', '/api/articles'],
-};
-
-export default async function middleware(request: NextRequest) {
+export default async function middleware(req: NextRequest) {
+  // Auth redirect still applies
   const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
-
-  if (request.nextUrl.pathname.startsWith('/auth') && session.isLoggedIn) {
-    return NextResponse.redirect(new URL('/blog', request.url))
+  if (req.nextUrl.pathname.startsWith('/auth') && session.isLoggedIn) {
+    return NextResponse.redirect(new URL('/blog', req.url))
   }
 
-  // You could alternatively limit based on user ID or similar
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
-  const { success, pending, limit, reset, remaining } = await ratelimit.limit(
-    ip
-  );
+  // 🚫 Skip rate limiting in dev or when ALLOW_ALL_POSTS
+  const isDevBypass =
+    process.env.NODE_ENV !== 'production' &&
+    process.env.ALLOW_ALL_POSTS === '1';
+  if (isDevBypass) {
+    return NextResponse.next()
+  }
+
+  // ✅ Only rate-limit in production
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0] ??
+    req.headers.get('x-real-ip') ??
+    '127.0.0.1'
+
+  const { success } = await ratelimit.limit(ip)
   return success
     ? NextResponse.next()
-    : NextResponse.redirect(new URL('/blocked', request.url));
+    : NextResponse.redirect(new URL('/blocked', req.url))
 }

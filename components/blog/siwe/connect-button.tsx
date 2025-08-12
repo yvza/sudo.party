@@ -18,7 +18,10 @@ export default function SiweConnectButton() {
   const [triggerSiwe, setTriggerSiwe] = useState(false)
 
   useEffect(() => {
-    if (triggerSiwe) doSiwe()
+    if (triggerSiwe) {
+      console.log('asdasdas') // track this
+      doSiwe()
+    }
   }, [triggerSiwe])
 
   const onSignIn = () => {
@@ -26,12 +29,13 @@ export default function SiweConnectButton() {
       show: true,
       title: 'Connect Wallet',
       description: () => {
-        return <div className='flex gap-3 flex-row justify-center flex-wrap'>
+        return <div className='flex gap-3 flex-row justify-center flex-wrap mt-2'>
           {connectors.map((connector) => (
             <WalletOptions
               key={connector.uid}
               connector={connector}
               onClick={() => connect({ connector}, { onSuccess: (res) => {
+                console.log('onSuccess', res, authenticated)
                 if (res.accounts.length !== 0 && !authenticated) setTriggerSiwe(true)
               }})}
             />

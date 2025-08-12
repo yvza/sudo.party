@@ -169,7 +169,8 @@ export interface articleProps {
     fileName: string,
     directory: string,
     extension: string,
-    path: string
+    path: string,
+    slug: string
   },
   mdx: string,
   label: string
@@ -177,7 +178,7 @@ export interface articleProps {
 
 export function searchBySlug(data: articleProps[], searchSlug: string) {
   if (!data) return undefined
-  return data.find(item => item._meta.path === searchSlug)
+  return data.find(item => item._meta.slug === searchSlug)
 }
 
 export function sortingPostDesc(data: articleProps[]) {
@@ -238,3 +239,13 @@ export function decryptProductId(encryptedProductId: string): number {
 }
 
 export const fetcher = (url: string) => fetch(url).then((res) => res.json())
+
+export function safeFormatDate(input?: string | Date) {
+  if (!input) return ""
+  const d = input instanceof Date ? input : parseISO(input)
+  return isNaN(d.getTime()) ? "" : format(d, 'd LLLL, yyyy')
+}
+
+export const isDevBypass =
+  process.env.NODE_ENV !== 'production' &&
+  process.env.ALLOW_ALL_POSTS === '1';

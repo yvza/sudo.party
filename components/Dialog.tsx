@@ -7,6 +7,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogDescription
 } from "@/components/ui/alert-dialog"
 import { RootState } from '@/lib/store';
 import { useDispatch, useSelector } from 'react-redux';
@@ -45,6 +46,7 @@ const Dialog: React.FC = () => {
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           {description()}
+          <AlertDialogDescription></AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <RenderDialogAction />

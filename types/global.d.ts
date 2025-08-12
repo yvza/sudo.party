@@ -1,7 +1,19 @@
 import type { VariantProps } from "class-variance-authority";
 
+export interface MdxFrontmatter {
+  title?: string
+  date?: string
+  draft?: boolean
+  visibility?: string
+  membership?: string | null
+  description?: string | null
+  label?: string
+}
+
 export interface PostProps {
-  params: Prmoise<{ slug: string }>
+  code: string
+  frontmatter: MdxFrontmatter
+  slug: string
 }
 
 export interface DialogProps {
@@ -13,8 +25,8 @@ export interface DialogProps {
 }
 
 export interface HeaderBrandProps {
-  fontSize?: string,
-  sloganOn?: boolean,
+  fontSize?: string
+  sloganOn?: boolean
   hideOnMobile?: boolean
 }
 
@@ -24,9 +36,9 @@ export interface PaginationProps {
 }
 
 export interface PayloadFilter {
-  searchQuery: string,
+  searchQuery: string
   checkbox: {
-    method: boolean,
+    method: boolean
     bot: boolean
   }
 }
@@ -46,21 +58,21 @@ export interface UseToastProps {
 
 interface ProductRelease {
   // name: string, // need to change this to id for individual release, change 'name' to 'idRelease'. need hashing algorithm
-  idRelease: string,
-  version: string,
-  date: string,
+  idRelease: string
+  version: string
+  date: string
   releasePurchaseStatus: number
 }
 
 export interface ProductType {
   product: {
-    banner: string,
+    banner: string
     // id: number, // need to encode this for safety reason. maybe turning named 'id' to 'idProduct'. need hashing algorithm
-    idProduct: string,
-    category: number,
-    name: string,
-    price: number,
-    status: number,
+    idProduct: string
+    category: number
+    name: string
+    price: number
+    status: number
     release?: ProductRelease[]
   }
   productPurchaseStatus: number
@@ -68,7 +80,7 @@ export interface ProductType {
 
 export interface ArticlesProps {
   data: {
-    data: Array<number>,
+    data: Array<number>
     type: string
   },
   error: unknown,
@@ -76,14 +88,14 @@ export interface ArticlesProps {
 }
 
 export interface articleMetadata {
-  visibility: string,
-  title: string,
-  date: string,
-  membership: string | undefined,
-  mdx: string,
+  visibility: string
+  title: string
+  date: string
+  membership: string | undefined
+  mdx: string
 }
 
 export interface siweSession {
-  address: string,
+  address: string
   isAuthenticated: boolean
 }

@@ -1,83 +1,57 @@
 'use client'
+
 import PostCard from '@/components/PostCard'
-import { useEffect, useRef, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Pagination from '@/components/Pagination'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
-import { articleProps, decryptJson } from '@/utils/helper'
 import { useArticles } from '@/services/articles'
 import { skeletonBlog } from '@/components/Skeleton'
 import { interFont } from '@/utils/fonts'
 
 export default function BlogClient() {
-  const { isPending, error, data } = useArticles()
   const searchParams = useSearchParams()
-  const page = searchParams?.get("page")
-  const router = useRouter()
-  const [posts, setPosts] = useState([])
-  const listArticle = useRef([])
-  const postsPerPage = 6
-  const totalPost = listArticle.current ? listArticle.current.length : 0
-  const totalPages = Math.ceil(totalPost / postsPerPage)
 
-  useEffect(() => {
-    router.prefetch('/disclaimer')
-    router.prefetch('/privacy_policy')
-    router.prefetch('/about')
-    router.prefetch('/blog')
-  }, [router])
+  // read page from URL and clamp to >= 1
+  const pageParam = Number(searchParams?.get('page') ?? 1)
+  const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1
 
-  useEffect(() => {
-    if (data) listArticle.current = JSON.parse(decryptJson(Buffer.from(data.data).toString()))
+  // keep this in sync with API default/expectations
+  const limit = 6
 
-    if (!isPending && listArticle.current) {
-      setPosts(listArticle.current.slice(0, postsPerPage))
-    }
-  }, [data])
+  const { isPending, error, data } = useArticles({ page, limit })
 
-  useEffect(() => {
-    if (isPending) return
+  const posts = data?.data ?? []
+  const total = data?.total ?? 0
+  const totalPages = Math.max(1, Math.ceil(total / limit))
 
-    if (!page) {
-      setPosts(listArticle.current.slice(0, postsPerPage))
-      return
-    }
+  const renderPosts = () =>
+    posts.map((article: any, index: number) => (
+      <PostCard key={article.slug ?? article._meta?.slug ?? index} {...article} />
+    ))
 
-    if (!parseInt(page!) || parseInt(page!) > totalPages) {
-      router.push('/blog')
-      return
-    }
-    const start = (parseInt(page!) - 1) * postsPerPage
-    const end = start + postsPerPage
-    setPosts(listArticle.current.slice(start, end))
-  }, [page])
-
-  if (isPending) return skeletonBlog(6)
-
-  const renderContents = () => <>
-    <div className={`mx-auto max-w-xl py-0 py-8 relative ${interFont.className}`}>
-      {renderPosts()}
-      {!error && renderPagination()}
-    </div>
-  </>
-
-  const renderPosts = () => {
-    if (error) return <div>Error fetching data, try again later.</div>
-    return posts.map((post: articleProps, index: number) => <PostCard key={index} {...post} />)
-  }
-
-  const renderPagination = () => {
-    return <Pagination
-      totalPages={totalPages}
-      currentPage={page ? parseInt(page) : 1}
-    />
-  }
+  if (isPending) return skeletonBlog(limit)
 
   return (
     <>
       <TopNav />
-      {renderContents()}
+      <div className={`mx-auto max-w-xl py-8 relative ${interFont.className}`}>
+        {error ? (
+          <div className="p-4 text-sm text-red-500">Failed to load articles</div>
+        ) : (
+          <>
+            {posts.length === 0 ? (
+              <div className="p-4 text-sm text-zinc-500">No posts found.</div>
+            ) : (
+              renderPosts()
+            )}
+
+            <div className="my-8">
+              <Pagination totalPages={totalPages} currentPage={page} />
+            </div>
+          </>
+        )}
+      </div>
       <BottomNav />
     </>
   )

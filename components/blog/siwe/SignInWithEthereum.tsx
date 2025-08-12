@@ -11,12 +11,12 @@ export default function SignInWithEthereum() {
   const { signMessageAsync } = useSignMessage();
   const [authenticated, setAuthenticated] = useState(false);
 
-  useEffect(() => {
-    console.log("SIWE isConnected: ", isConnected);
-    if (isConnected) {
-      axios.get<{ authenticated: boolean, address: string }>("/api/siwe").then(({ data }) => setAuthenticated(data.authenticated));
-    }
-  }, [isConnected]);
+  // useEffect(() => {
+  //   console.log("SIWE isConnected: ", isConnected);
+  //   if (isConnected) {
+  //     axios.get<{ authenticated: boolean, address: string }>("/api/siwe").then(({ data }) => setAuthenticated(data.authenticated));
+  //   }
+  // }, [isConnected]);
 
   const handleSignIn = async () => {
     try {
