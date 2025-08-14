@@ -13,7 +13,7 @@ export default function page() {
         </p>
 
         <p className="mb-4">
-          Discover insightful content on <span className="font-bold">Cryptocurrency</span>, <span className="font-bold">Blockchain</span>, <span className="font-bold">Web3</span>, <span className="font-bold">Programming</span>, <span className="font-bold">Engineering</span>, <span className="font-bold">Exploit</span>, <span className="font-bold">Cyber Security</span>, and uncover some <span className="font-bold">Tips and Tricks</span> on our platform. To access exclusive articles, you&apos;ll need an access key. It&apos;s completely free, and you can request it directly from us on <a href="https://fb.me/sudo.party" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Facebook</a>. Just chat with us, and we&apos;ll guide you through a few quick questions. We&apos;ll reply as soon as possible, ensuring you get seamless access to our restricted content.
+          Discover insightful content on <span className="font-bold">Cryptocurrency</span>, <span className="font-bold">Blockchain</span>, <span className="font-bold">Web3</span>, <span className="font-bold">Programming</span>, <span className="font-bold">Engineering</span>, <span className="font-bold">Exploit</span>, <span className="font-bold">Cyber Security</span>, and uncover some <span className="font-bold">Tips and Tricks</span> on our platform. Just chat us on <a href="https://fb.me/sudo.party" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Facebook</a>, and we&apos;ll guide you through a few quick questions. We&apos;ll reply as soon as possible, ensuring you get seamless access to our restricted content.
         </p>
 
         <p className="mb-4">

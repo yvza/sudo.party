@@ -1,4 +1,3 @@
-import localFont from "next/font/local";
+import { Inter } from 'next/font/google'
 
-export const interFont = localFont({ src: '../app/fonts/Inter-VariableFont.ttf' })
-export const honkFont = localFont({ src: '../app/fonts/Honk-Regular.ttf' })
+export const interFont = Inter({ subsets: ['latin'], preload: true, display: 'swap' })

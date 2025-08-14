@@ -33,6 +33,7 @@ export interface HeaderBrandProps {
 export interface PaginationProps {
   totalPages: number
   currentPage?: number
+  isNoPostFound: boolean
 }
 
 export interface PayloadFilter {

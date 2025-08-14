@@ -21,10 +21,6 @@ export function removeDraft(post: articleProps[]) {
   return post.filter(post => !post.draft)
 }
 
-export function displayDateTime(date: any) {
-  return format(parseISO(date), 'd LLLL, yyyy')
-}
-
 export function randomizeCharacter() {
   // Generate a random number between 0 and 25 (inclusive)
   var randomNumber = Math.floor(Math.random() * 26);

@@ -21,7 +21,7 @@ export default function WalletOptions({
   }, [connector])
 
   return (
-    <Button disabled={!ready} onClick={onClick}>
+    <Button className='cursor-pointer' disabled={!ready} onClick={onClick}>
       {connector.name}
     </Button>
   )

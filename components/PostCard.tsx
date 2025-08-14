@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { displayDateTime } from '@/utils/helper'
+import { safeFormatDate } from '@/utils/helper'
 import { Badge } from './ui/badge'
 
 type LegacyMeta = { slug: string }
@@ -63,7 +63,7 @@ export default function PostCard(post: PostCardProps) {
 
       {post.date && (
         <time dateTime={post.date} className="block text-sm text-gray-500 dark:text-zinc-400">
-          {displayDateTime(post.date as any)}
+					{safeFormatDate(post.date as any)}
         </time>
       )}
     </div>

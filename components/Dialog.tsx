@@ -27,16 +27,16 @@ const Dialog: React.FC = () => {
 
   const RenderDialogAction = () => {
     if (onCancel) {
-      return <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+      return <AlertDialogCancel className='cursor-pointer' onClick={onClose}>Cancel</AlertDialogCancel>
     }
 
     if (!onCancel) {
-      return <AlertDialogAction onClick={onAction}>Continue</AlertDialogAction>
+      return <AlertDialogAction className='cursor-pointer' onClick={onAction}>Continue</AlertDialogAction>
     }
 
     return <>
-      <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
-      <AlertDialogAction onClick={onAction}>Continue</AlertDialogAction>
+      <AlertDialogCancel className='cursor-pointer' onClick={onClose}>Cancel</AlertDialogCancel>
+      <AlertDialogAction className='cursor-pointer' onClick={onAction}>Continue</AlertDialogAction>
     </>
   }
 

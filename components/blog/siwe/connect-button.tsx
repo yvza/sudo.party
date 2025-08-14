@@ -16,10 +16,17 @@ export default function SiweConnectButton() {
   const { connectors, connect } = useConnect()
   const { disconnect } = useDisconnect()
   const [triggerSiwe, setTriggerSiwe] = useState(false)
+  // group: pick ONE injected, ONE walletconnect
+  const injectedList = connectors.filter((c) => c.type === 'injected')
+  const walletConnectConn = connectors.find((c) => c.type === 'walletConnect')
+  // Prefer MetaMask if present, else first injected
+  const injectedPreferred =
+    injectedList.find((c) => /metamask/i.test(c.name)) ??
+    injectedList[0] ??
+    null
 
   useEffect(() => {
     if (triggerSiwe) {
-      console.log('asdasdas') // track this
       doSiwe()
     }
   }, [triggerSiwe])
@@ -28,20 +35,45 @@ export default function SiweConnectButton() {
     dispatch(showAlertDialog({
       show: true,
       title: 'Connect Wallet',
-      description: () => {
-        return <div className='flex gap-3 flex-row justify-center flex-wrap mt-2'>
-          {connectors.map((connector) => (
+      description: () => (
+        <div className="flex gap-3 flex-col lg:flex-row justify-center flex-wrap mt-2">
+          {/* Browser wallet (all extensions) */}
+          <WalletOptions
+            key={injectedPreferred?.uid ?? 'injected'}
+            connector={{
+              // pass through the selected connector object
+              ...injectedPreferred!,
+              // but normalize the label shown in your WalletOptions
+              name: 'Browser wallet', // ✅ single button label
+            }}
+            onClick={() => injectedPreferred && connect(
+              { connector: injectedPreferred },
+              {
+                onSuccess: (res) => {
+                  console.log('onSuccess', res, authenticated)
+                  if (res.accounts.length !== 0 && !authenticated) setTriggerSiwe(true)
+                }
+              }
+            )}
+          />
+          {/* Mobile wallet (WalletConnect) */}
+          {walletConnectConn && (
             <WalletOptions
-              key={connector.uid}
-              connector={connector}
-              onClick={() => connect({ connector}, { onSuccess: (res) => {
-                console.log('onSuccess', res, authenticated)
-                if (res.accounts.length !== 0 && !authenticated) setTriggerSiwe(true)
-              }})}
+              key={walletConnectConn.uid}
+              connector={{ ...walletConnectConn, name: 'Mobile wallet' }} // ✅ normalize label
+              onClick={() => connect(
+                { connector: walletConnectConn },
+                {
+                  onSuccess: (res) => {
+                    console.log('onSuccess', res, authenticated)
+                    if (res.accounts.length !== 0 && !authenticated) setTriggerSiwe(true)
+                  }
+                }
+              )}
             />
-          ))}
+          )}
         </div>
-      },
+      ),
       onCancel: () => {
         console.log('exit')
       }
@@ -82,10 +114,10 @@ export default function SiweConnectButton() {
 
   const renderButton = () => {
     if (authenticated) {
-      return <Button onClick={() => onLogout()}>Disconnect</Button>
+      return <Button className='cursor-pointer' onClick={() => onLogout()}>Disconnect</Button>
     }
 
-    return <Button onClick={() => onSignIn()}>Connect</Button>
+    return <Button className='cursor-pointer' onClick={() => onSignIn()}>Connect</Button>
   }
 
   return (
