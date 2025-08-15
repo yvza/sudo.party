@@ -5,56 +5,62 @@ import {
   sessionOptions,
   SessionData,
 } from "@/lib/iron-session/config"
-import { db } from "@/config"
+import { turso } from "@/lib/turso"
 
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  const session = await getIronSession<SessionData>(
-    request,
-    response,
-    sessionOptions,
-  )
+  const session = await getIronSession<SessionData>(request, response, sessionOptions)
 
   if (request.method === "POST") {
-    const { key } = request.body
-
-    try {
-      const params = {
-        TableName: 'sudopartypass',
-        Key: {
-          pk: key,
-          sk: key
-        }
-      }
-      const query = await db.get(params)
-
-      if (!query.Item) {
-        return response.status(200).json('Not found')
-      }
-
-      session.pk = query.Item.pk,
-      session.identifier = query.Item.identifier,
-      session.type = query.Item.type,
-      session.isLoggedIn = true
-      await session.save()
-
-      return response.status(200).json(query)
-    } catch (error: any) {
-      return response.status(500).json(error.message)
+    // Expect body like: { pk: string, identifier: string, type?: string }
+    // pk can be your wallet address lowercased
+    const { pk, identifier, type = "wallet" } = request.body || {}
+    if (!pk || !identifier) {
+      return response.status(400).json({ error: "pk and identifier are required" })
     }
-  } else if (request.method === "GET") {
+
+    // Upsert into Turso
+    await turso.execute({
+      sql: `
+        INSERT INTO accounts (pk, identifier, type)
+        VALUES (?, ?, ?)
+        ON CONFLICT(pk) DO UPDATE SET
+          identifier = excluded.identifier,
+          type = excluded.type,
+          updated_at = CURRENT_TIMESTAMP
+      `,
+      args: [pk, identifier, type],
+    })
+
+    // Optionally read back (or trust inputs)
+    const { rows } = await turso.execute({
+      sql: `SELECT pk, identifier, type FROM accounts WHERE pk = ? LIMIT 1`,
+      args: [pk],
+    })
+    const row = rows[0]
+    if (!row) return response.status(500).json({ error: "Upsert failed" })
+
+    session.pk = String(row.pk)
+    session.identifier = String(row.identifier)
+    session.type = String(row.type)
+    session.isLoggedIn = true
+    await session.save()
+    return response.json(session)
+  }
+
+  if (request.method === "GET") {
     if (session.isLoggedIn !== true) {
       return response.json(defaultSession)
     }
-
     return response.json(session)
-  } else if (request.method === "DELETE") {
-    session.destroy()
+  }
 
+  if (request.method === "DELETE") {
+    session.destroy()
     return response.json(defaultSession)
   }
 
-  return response.status(500).end()
+  return response.status(405).json({ error: "Method not allowed" })
 }

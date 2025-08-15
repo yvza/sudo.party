@@ -1,10 +1,11 @@
-import { call, put, takeEvery, takeLatest, all } from 'redux-saga/effects'
+import { call, put, takeEvery, takeLatest, all, fork } from 'redux-saga/effects'
 import { PayloadAction } from '@reduxjs/toolkit'
 import { todoAdded } from './features/user/info'
 import { addTasks } from './features/user/mocktest'
 import { addToCart, removeProduct, resetCart } from './features/shop/cart'
 import { CartProps } from './features/shop/cart'
 import { hideAlertDialog, showAlertDialog } from './features/alertDialog/toggle'
+import { authSaga } from './features/auth/saga'
 
 // Worker saga: will be fired on todoAdded actions
 function* handleTodoAdded(action: PayloadAction<{ id:number, text:string }>) {
@@ -83,6 +84,7 @@ function* toggleGlobalAlertDialog() {
 // Combine all sagas into a root saga
 export default function* rootSaga() {
   yield all([
+    fork(authSaga),
     watchTodoAdded(),
     // add more sagas here if needed
     watchTasks(),

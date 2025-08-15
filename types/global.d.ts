@@ -4,7 +4,6 @@ export interface MdxFrontmatter {
   title?: string
   date?: string
   draft?: boolean
-  visibility?: string
   membership?: string | null
   description?: string | null
   label?: string
@@ -89,7 +88,6 @@ export interface ArticlesProps {
 }
 
 export interface articleMetadata {
-  visibility: string
   title: string
   date: string
   membership: string | undefined

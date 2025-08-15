@@ -1,6 +1,66 @@
 import React from 'react'
 
-export default function HeheIDK() {
+type Membership = 'public' | 'sgbcode' | 'sudopartypass'
+type Reason = 'LOGIN_REQUIRED' | 'INSUFFICIENT_MEMBERSHIP' | 'NOT_FOUND' | 'UNKNOWN'
+
+type Props = {
+  /** HTTP status from the API (e.g., 401, 403, 404) */
+  status?: number
+  /** Optional machine-friendly reason from API JSON */
+  reason?: Reason
+  /** Optional server-provided message override */
+  message?: string
+  /** Required tier for this content (when 403) */
+  required?: Membership
+  /** Viewer’s tier (when 403) */
+  userMembership?: Membership
+  /** Callbacks to wire buttons */
+  onLogin?: () => void
+  onUpgrade?: () => void
+  className?: string
+}
+
+const label: Record<Membership, string> = {
+  public: 'Public',
+  sgbcode: 'SGB Code',
+  sudopartypass: 'Sudo Party Pass',
+}
+
+function humanizeError(p: Props) {
+  const reason: Reason =
+    p.reason ??
+    (p.status === 401 ? 'LOGIN_REQUIRED'
+      : p.status === 403 ? 'INSUFFICIENT_MEMBERSHIP'
+      : p.status === 404 ? 'NOT_FOUND'
+      : 'UNKNOWN')
+
+  if (reason === 'LOGIN_REQUIRED') {
+    return {
+      title: 'Sign in required',
+      desc: p.message ?? 'Please sign in with your wallet to access this content.',
+      action: { kind: 'login' as const, label: 'Sign In' },
+    }
+  }
+  if (reason === 'INSUFFICIENT_MEMBERSHIP') {
+    const req = p.required ?? 'sgbcode'
+    const you = p.userMembership ?? 'public'
+    return {
+      title: 'Membership required',
+      desc:
+        p.message ??
+        `This post requires ${label[req]} membership (you have ${label[you]}).`,
+      action: { kind: 'upgrade' as const, label: 'View membership options' },
+    }
+  }
+  if (reason === 'NOT_FOUND') {
+    return { title: 'Post not found', desc: p.message ?? 'This post may have been moved or deleted.' }
+  }
+  return { title: 'Something went wrong', desc: p.message ?? 'Please try again later.' }
+}
+
+export default function HeheIDK(props: Props) {
+  const copy = humanizeError(props)
+
   const defaultStyle: React.CSSProperties = {
     whiteSpace: 'pre',
     fontFamily: 'monospace',
@@ -9,18 +69,12 @@ export default function HeheIDK() {
     letterSpacing: 'unset',
     transform: 'unset',
     overflowY: 'hidden',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    textAlign: 'center'
   }
+  const fontSizeLargeScreen: React.CSSProperties = { fontSize: '10px', lineHeight: '10px' }
+  const fontSizeSmallScreen: React.CSSProperties = { fontSize: '7px', lineHeight: '7px' }
 
-  const fontSizeLargeScreen: React.CSSProperties = {
-    fontSize: '10px',
-    lineHeight: '10px',
-  }
-
-  const fontSizeSmallScreen: React.CSSProperties = {
-    fontSize: '7px',
-    lineHeight: '7px',
-  }
   const imgLargeScreen = `░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -94,7 +148,6 @@ export default function HeheIDK() {
 ░░░░░░░░░░░░░░░░░░▒░░░░     ░░░░▒░░░▒░▓░░         ░░▓░░▒▒░▒░░░ ░░▒░▒░░░  ░░     ░░░        ░░░▒   ░░
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░`
-
   const imgSmallScreen = `███▓█▓▓█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█▓█▓▓▓▓▓▓▓▓█▓▓▓▓▓▓█▓▓█▓█▓▓▓▓▓▓▓▓█▓████████████████████████████████████████
 █████▓█▓█▓▓█▓▓█████▓▓▓▓▓▓████▓▓▓▓▓████▓▓▓▓▓▓█▓▓█▓█▓▓▓▓▓▓▓███████████████████████████████████████████
 ████████████████████████████████████████████████████████████████████████████████████████████████████
@@ -160,11 +213,26 @@ export default function HeheIDK() {
 ███████████████████████████████████████████████████████████████████████████████████████▓▓▓▓▒▒▓▒▓▓▓▒█`
 
   return (
-    <>
-      <pre style={{...defaultStyle, ...fontSizeLargeScreen}} className='hidden sm:block text-black dark:text-white'>{imgLargeScreen}</pre>
-      <div className='sm:hidden text-center'>
-        <pre style={{...defaultStyle, ...fontSizeSmallScreen}} className='text-black dark:text-white'>{imgSmallScreen}</pre>
+    <div className={props.className}>
+      {/* ASCII art */}
+      <pre
+        style={{ ...defaultStyle, ...fontSizeLargeScreen }}
+        className="hidden sm:block text-black dark:text-white"
+        aria-hidden
+      >
+        {imgLargeScreen}
+      </pre>
+      <div className="sm:hidden text-center" aria-hidden>
+        <pre style={{ ...defaultStyle, ...fontSizeSmallScreen }} className="text-black dark:text-white">
+          {imgSmallScreen}
+        </pre>
       </div>
-    </>
+
+      {/* Human-readable message + actions */}
+      <div className="mx-auto max-w-xl text-center space-y-4 py-8">
+        <h2 className="text-2xl font-semibold">{copy.title}</h2>
+        <p className="text-muted-foreground">{copy.desc}</p>
+      </div>
+    </div>
   )
 }

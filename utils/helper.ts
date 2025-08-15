@@ -7,16 +7,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function shouldILogin(visibility: string) {
-  switch (visibility) {
-    case 'private':
-      return true
-
-    case 'public':
-      return false
-  }
-}
-
 export function removeDraft(post: articleProps[]) {
   return post.filter(post => !post.draft)
 }
@@ -157,7 +147,6 @@ export interface articleProps {
   title: string,
   date: string,
   draft: boolean,
-  visibility: string,
   membership?: string | null,
   description?: string | null,
   _meta: {

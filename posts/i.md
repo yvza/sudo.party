@@ -2,8 +2,7 @@
 title: Iiii iii iii
 date: 2024-02-04
 draft: true
-visibility: private
-membership: sudopartypass
+membership: sgbcode
 description:
 label: how to
 ---

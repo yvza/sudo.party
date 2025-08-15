@@ -22,12 +22,23 @@ export default function Client({
   frontTitle,
   frontDate
 }: { slug: string; frontTitle?: string; frontDate?: string }) {
-
-  // show title/date immediately for better LCP
   const earlyDate = safeFormatDate(frontDate as any)
 
   const { data, error, isPending } = useArticle(slug)
-  const isUnauthorized = axios.isAxiosError(error) && error.response?.status === 401
+
+  // Map Axios error -> HeheIDK props (dynamic)
+  const errProps = useMemo(() => {
+    if (!axios.isAxiosError(error)) return null
+    const status = error.response?.status ?? 0
+    const body = (error.response?.data ?? {}) as any
+    return {
+      status,
+      reason: body.reason as any,             // e.g. 'LOGIN_REQUIRED' | 'INSUFFICIENT_MEMBERSHIP'
+      message: body.message as string | undefined,
+      required: body.required as any,         // 'public' | 'sgbcode' | 'sudopartypass'
+      userMembership: body.userMembership as any,
+    }
+  }, [error])
 
   const payload = useMemo(() => {
     if (!data?.data) return null
@@ -40,8 +51,26 @@ export default function Client({
     [payload?.code]
   )
 
-  if (isUnauthorized) return <HeheIDK />
-  // keep your existing pending/error fallbacks below, after showing H1/date
+  // Early error UI (401/403/etc.) with human-readable copy
+  if (errProps) {
+    return (
+      <>
+        <TopNav />
+        <div className="mx-auto max-w-2xl py-8">
+          <div className="mx-5 sm:mx-auto">
+            <HeheIDK
+              status={errProps.status}
+              reason={errProps.reason}
+              message={errProps.message}
+              required={errProps.required}
+              userMembership={errProps.userMembership}
+            />
+          </div>
+        </div>
+        <BottomNav />
+      </>
+    )
+  }
 
   return (
     <>
@@ -50,7 +79,7 @@ export default function Client({
         <div className="mx-5 sm:mx-auto mb-6">
           <h1 className="text-2xl font-semibold">{payload?.frontmatter?.title ?? frontTitle}</h1>
           <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400 mt-2">
-            <time dateTime={(payload?.frontmatter?.date || frontDate) ? new Date(payload?.frontmatter?.date ?? frontDate as any).toISOString() : undefined}>
+            <time dateTime={(payload?.frontmatter?.date || frontDate) ? new Date(payload?.frontmatter?.date ?? (frontDate as any)).toISOString() : undefined}>
               {safeFormatDate(payload?.frontmatter?.date as any) || earlyDate}
             </time>
             <span>•</span>
@@ -59,13 +88,18 @@ export default function Client({
         </div>
 
         <div className="mx-5 sm:mx-auto">
-          {isPending && <div className="p-4 text-sm text-zinc-500">Loading…</div>}
-          {!isPending && !payload && <div className="p-4 text-sm text-red-500">Failed to load post.</div>}
+          {isPending && <div className="py-4 text-sm text-zinc-500">Loading…</div>}
+
+          {!isPending && !payload && !error && (
+            <HeheIDK status={404} reason="NOT_FOUND" />
+          )}
+
           {!isPending && payload && (
             <article className="prose dark:prose-invert max-w-none">
               {Mdx ? <Mdx /> : null}
             </article>
           )}
+
           <CommentSection />
         </div>
       </div>

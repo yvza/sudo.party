@@ -2,8 +2,7 @@
 title: Gggg ggg ggg
 date: 2024-02-04
 draft: true
-visibility: private
-membership: sudopartypass
+membership: public
 description:
 label: how to
 ---

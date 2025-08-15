@@ -9,9 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.577.0",
-    "@aws-sdk/lib-dynamodb": "^3.577.0",
     "@hookform/resolvers": "^3.4.0",
+    "@libsql/client": "^0.15.11",
     "@radix-ui/react-alert-dialog": "1.1.7-rc.6",
     "@radix-ui/react-avatar": "1.1.4-rc.5",
     "@radix-ui/react-checkbox": "1.1.5-rc.6",
@@ -35,6 +34,7 @@
     "@vercel/analytics": "^1.2.2",
     "@vercel/kv": "^1.0.1",
     "@vercel/speed-insights": "^1.0.10",
+    "@wagmi/core": "^2.19.0",
     "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
