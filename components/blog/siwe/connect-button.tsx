@@ -37,27 +37,62 @@ export default function SiweConnectButton() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const onSignIn = () => {
-    dispatch(showAlertDialog({
-      show: true,
-      title: 'Connect Wallet',
-      description: () => (
-        <div className="flex gap-3 flex-col lg:flex-row justify-center flex-wrap mt-2">
-          {/* Browser wallet (all extensions) */}
+  // Dialog content owns its own "connecting" state so it re-renders while loading
+  const ConnectDialogContent = () => {
+    const [connecting, setConnecting] = useState<null | 'browser' | 'mobile'>(null)
+
+    return (
+      <div className="flex gap-3 flex-col lg:flex-row justify-center flex-wrap mt-2">
+        {/* Browser wallet (all extensions) */}
+        <WalletOptions
+          key={injectedPreferred?.uid ?? 'injected'}
+          connector={{ ...(injectedPreferred ?? ({} as any)), name: 'Browser wallet' }}
+          isLoading={connecting === 'browser'}
+          isDisabled={connecting != null}
+          onClick={async () => {
+            if (!injectedPreferred) return
+            setConnecting('browser')
+            try {
+              if (isConnected && activeConnector?.id === injectedPreferred.id) {
+                await doSiwe()
+                return
+              }
+              if (isConnected && activeConnector?.id && activeConnector.id !== injectedPreferred.id) {
+                await disconnectAsync()
+              }
+              const res = await connectAsync({ connector: injectedPreferred })
+              const first = (res as any)?.accounts?.[0] as string | undefined
+              await doSiwe(first)
+            } catch (e: any) {
+              if (e?.name === 'ConnectorAlreadyConnectedError') {
+                await doSiwe()
+                return
+              }
+              console.error('connect failed', e)
+            } finally {
+              setConnecting(null)
+            }
+          }}
+        />
+
+        {/* Mobile wallet (WalletConnect) */}
+        {walletConnectConn && (
           <WalletOptions
-            key={injectedPreferred?.uid ?? 'injected'}
-            connector={{ ...(injectedPreferred ?? ({} as any)), name: 'Browser wallet' }}
+            key={walletConnectConn.uid}
+            connector={{ ...walletConnectConn, name: 'Mobile wallet' }}
+            isLoading={connecting === 'mobile'}
+            isDisabled={connecting != null}
             onClick={async () => {
-              if (!injectedPreferred) return
+              setConnecting('mobile')
               try {
-                if (isConnected && activeConnector?.id === injectedPreferred.id) {
+                if (isConnected && activeConnector?.id === walletConnectConn.id) {
                   await doSiwe()
                   return
                 }
-                if (isConnected && activeConnector?.id && activeConnector.id !== injectedPreferred.id) {
+                if (isConnected && activeConnector?.id && activeConnector.id !== walletConnectConn.id) {
                   await disconnectAsync()
                 }
-                const res = await connectAsync({ connector: injectedPreferred })
+                const res = await connectAsync({ connector: walletConnectConn })
                 const first = (res as any)?.accounts?.[0] as string | undefined
                 await doSiwe(first)
               } catch (e: any) {
@@ -66,38 +101,21 @@ export default function SiweConnectButton() {
                   return
                 }
                 console.error('connect failed', e)
+              } finally {
+                setConnecting(null)
               }
             }}
           />
-          {/* Mobile wallet (WalletConnect) */}
-          {walletConnectConn && (
-            <WalletOptions
-              key={walletConnectConn.uid}
-              connector={{ ...walletConnectConn, name: 'Mobile wallet' }}
-              onClick={async () => {
-                try {
-                  if (isConnected && activeConnector?.id === walletConnectConn.id) {
-                    await doSiwe()
-                    return
-                  }
-                  if (isConnected && activeConnector?.id && activeConnector.id !== walletConnectConn.id) {
-                    await disconnectAsync()
-                  }
-                  const res = await connectAsync({ connector: walletConnectConn })
-                  const first = (res as any)?.accounts?.[0] as string | undefined
-                  await doSiwe(first)
-                } catch (e: any) {
-                  if (e?.name === 'ConnectorAlreadyConnectedError') {
-                    await doSiwe()
-                    return
-                  }
-                  console.error('connect failed', e)
-                }
-              }}
-            />
-          )}
-        </div>
-      ),
+        )}
+      </div>
+    )
+  }
+
+  const onSignIn = () => {
+    dispatch(showAlertDialog({
+      show: true,
+      title: 'Connect Wallet',
+      description: () => <ConnectDialogContent />,
       onCancel: () => {},
     }))
   }
