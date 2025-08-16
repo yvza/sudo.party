@@ -95,12 +95,17 @@ export default function Client({
           )}
 
           {!isPending && payload && (
-            <article className="prose dark:prose-invert max-w-none">
-              {Mdx ? <Mdx /> : null}
-            </article>
-          )}
+            <>
+              <article className="prose dark:prose-invert max-w-none">
+                {Mdx ? <Mdx /> : null}
+              </article>
 
-          <CommentSection />
+              <CommentSection
+                slug={slug}
+                requiredSlug={payload.frontmatter?.membership ?? "public"}
+              />
+            </>
+          )}
         </div>
       </div>
       <BottomNav />
