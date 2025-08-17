@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { showAlertDialog } from '@/lib/features/alertDialog/toggle'
 import axios from 'axios'
 axios.defaults.withCredentials = true
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useId, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { SiweMessage } from 'siwe'
 import { useAccount, useConnect, useDisconnect, useSignMessage, useChainId, useConfig } from 'wagmi'
@@ -12,6 +12,8 @@ import { getAccount, getWalletClient } from '@wagmi/core'
 import { siweVerifyRequested, logoutRequested, sessionHydrateRequested } from '@/lib/features/auth/slice'
 import WalletOptions from '../walletConnect/WalletOptions'
 import { RootState } from '@/lib/store'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 
 export default function SiweConnectButton() {
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
@@ -40,25 +42,50 @@ export default function SiweConnectButton() {
 
   // Dialog content owns its own "connecting" state so it re-renders while loading
   const ConnectDialogContent = ({
-    remember,
-    setRemember,
+    defaultRemember,
+    onRememberChange,
   }: {
-    remember: boolean;
-    setRemember: (v: boolean) => void;
+    defaultRemember: boolean;
+    onRememberChange: (v: boolean) => void;
   }) => {
     const [connecting, setConnecting] = useState<null | 'browser' | 'mobile'>(null)
+    const [rememberLocal, setRememberLocal] = useState<boolean>(defaultRemember)
+    const rememberId = useId()
+
+    // keep local toggle in sync if parent default changes
+    useEffect(() => {
+      setRememberLocal(defaultRemember)
+    }, [defaultRemember])
 
     return (
       <div className="flex gap-3 flex-col lg:flex-row justify-center flex-wrap mt-2">
         {/* Remember me toggle */}
-        <label className="flex items-center gap-2 text-sm w-full justify-center mb-1">
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
+        <div className="w-full flex items-center justify-center mb-1 gap-2 text-sm">
+          <Checkbox
+            id={rememberId}
+            checked={rememberLocal}
+            // onCheckedChange gives boolean | "indeterminate" — coerce to boolean
+            onCheckedChange={(v) => {
+              const val = v === true
+              setRememberLocal(val)
+              onRememberChange(val)   // sync parent used by doSiwe()
+            }}
           />
-          Remember me (keep me signed in longer)
-        </label>
+          <Label
+            htmlFor={rememberId}
+            className="cursor-pointer select-none"
+            // Radix Checkbox isn't a native input, so toggle manually on label click
+            onClick={(e) => {
+              e.preventDefault()
+              const val = !rememberLocal
+              setRememberLocal(val)
+              onRememberChange(val)
+            }}
+          >
+            Remember me (keep me signed in longer)
+          </Label>
+        </div>
+
         {/* Browser wallet (all extensions) */}
         <WalletOptions
           key={injectedPreferred?.uid ?? 'injected'}
@@ -131,7 +158,12 @@ export default function SiweConnectButton() {
     dispatch(showAlertDialog({
       show: true,
       title: 'Connect Wallet',
-      description: () => <ConnectDialogContent remember={remember} setRemember={setRemember} />,
+      description: () => (
+        <ConnectDialogContent
+          defaultRemember={remember}
+          onRememberChange={setRemember}
+        />
+      ),
       onCancel: () => {},
     }))
   }
@@ -199,7 +231,7 @@ export default function SiweConnectButton() {
       // 3) sign with the wallet
       const signature = await signMessageAsync({ message })
 
-      // 4) saga: verify + store update
+      // 4) saga: verify + store update (include remember + signedAt)
       dispatch(siweVerifyRequested({ message, signature, remember, signedAt: Date.now() }))
     } catch (error) {
       console.error('Sign-in failed', error)

@@ -7,16 +7,6 @@ import {
 } from "@/lib/iron-session/config"
 import { turso } from "@/lib/turso"
 
-// Only set session.pk when pk is a positive decimal integer
-function toSafeInt(val: unknown): number | null {
-  if (typeof val === "number" && Number.isSafeInteger(val) && val > 0) return val
-  if (typeof val === "string" && /^\d+$/.test(val)) {
-    const n = Number(val)
-    return Number.isSafeInteger(n) && n > 0 ? n : null
-  }
-  return null
-}
-
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
@@ -24,52 +14,83 @@ export default async function handler(
   const session = await getIronSession<SessionData>(request, response, sessionOptions)
 
   if (request.method === "POST") {
-    // Expect: { pk, identifier, type?, remember?, signedAt? }
-    const { pk, identifier, type = "wallet", remember = false, signedAt } = request.body || {}
-    if (!pk || !identifier) {
-      return response.status(400).json({ error: "pk and identifier are required" })
+    // Expect body: { identifier: string, type?: string, remember?: boolean, signedAt?: number }
+    const { identifier, type = "wallet", remember = false, signedAt } = request.body || {}
+    const addr = String(identifier ?? "").trim().toLowerCase()
+    if (!addr) {
+      return response.status(400).json({ error: "identifier (wallet address) is required" })
     }
 
-    const pkVal = String(pk).trim()
-    const idVal = String(identifier).trim().toLowerCase()
-
-    // Upsert
-    await turso.execute({
-      sql: `
-        INSERT INTO accounts (pk, identifier, type)
-        VALUES (?, ?, ?)
-        ON CONFLICT(pk) DO UPDATE SET
-          identifier = excluded.identifier,
-          type = excluded.type,
-          updated_at = CURRENT_TIMESTAMP
-      `,
-      args: [pkVal, idVal, String(type)],
+    // Ensure wallet row exists, with default membership if new
+    // 1) try find existing
+    let rs = await turso.execute({
+      sql: `SELECT w.id AS walletId, w.address, mt.slug, mt.name, mt.rank
+            FROM wallets w
+            LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
+            WHERE w.address = ?`,
+      args: [addr],
     })
 
-    const { rows } = await turso.execute({
-      sql: `SELECT pk, identifier, type FROM accounts WHERE pk = ? LIMIT 1`,
-      args: [pkVal],
-    })
-    const row = rows[0]
-    if (!row) return response.status(500).json({ error: "Upsert failed" })
+    let walletId: number | null = null
+    let membership = { slug: "public", name: "Public", rank: 1 as number }
 
-    // numeric pk only if truly an integer
-    const pkNum = toSafeInt(row.pk)
-    session.pk = pkNum !== null ? pkNum : null
+    if (!rs.rows.length) {
+      // 2) get default membership
+      const def = await turso.execute({
+        sql: `SELECT id, slug, name, rank FROM membership_types WHERE is_default = 1 LIMIT 1`,
+      })
+      if (!def.rows.length) {
+        return response.status(500).json({ error: "No default membership configured" })
+      }
+      const defId = Number(def.rows[0].id)
 
-    // REQUIRED: set security metadata
+      // 3) insert wallet (race-safe)
+      await turso.execute({
+        sql: `INSERT INTO wallets (address, membership_type_id)
+              VALUES (?, ?)
+              ON CONFLICT(address) DO NOTHING`,
+        args: [addr, defId],
+      })
+
+      // 4) re-select after upsert
+      rs = await turso.execute({
+        sql: `SELECT w.id AS walletId, w.address, mt.slug, mt.name, mt.rank
+              FROM wallets w
+              LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
+              WHERE w.address = ?`,
+        args: [addr],
+      })
+    }
+
+    // final row
+    const row: any = rs.rows[0]
+    walletId = Number(row.walletId)
+    if (row.slug) {
+      membership = { slug: row.slug, name: row.name, rank: row.rank ?? 1 }
+    }
+
+    // write session
     const now = Date.now()
-    session.createdAt   = now
-    session.lastActivity= now
-    session.remember    = Boolean(remember)
-    session.lastSignedAt= typeof signedAt === "number" ? signedAt : now // if you have SIWE verify, pass its timestamp
-
-    // identity fields
-    session.identifier = String(row.identifier ?? idVal)
-    session.type = String(row.type ?? type)
     session.isLoggedIn = true
+    session.identifier = addr
+    session.type = String(type)
+    session.pk = Number.isFinite(walletId) ? walletId : null
+    session.membership = membership.slug as any
+    session.rank = membership.rank as any
+    session.createdAt = now
+    session.lastActivity = now
+    session.remember = Boolean(remember)
+    session.lastSignedAt = typeof signedAt === "number" ? signedAt : now
     await session.save()
-    return response.json(session)
+
+    // return a concise payload (you can also return session if you prefer)
+    return response.json({
+      isLoggedIn: true,
+      address: addr,
+      membership: membership.slug,
+      rank: membership.rank,
+      pk: session.pk,
+    })
   }
 
   if (request.method === "GET") {
