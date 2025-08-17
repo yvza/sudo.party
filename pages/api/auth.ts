@@ -24,10 +24,11 @@ export default async function handler(
     // Ensure wallet row exists, with default membership if new
     // 1) try find existing
     let rs = await turso.execute({
-      sql: `SELECT w.id AS walletId, w.address, mt.slug, mt.name, mt.rank
-            FROM wallets w
-            LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
-            WHERE w.address = ?`,
+      sql: `SELECT w.id AS walletId, w.address, COALESCE(mt.slug,'public') AS slug,
+        COALESCE(mt.rank,1) AS rank, COALESCE(w.session_epoch,0) AS session_epoch
+        FROM wallets w
+        LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
+        WHERE w.address = ? LIMIT 1`,
       args: [addr],
     })
 
@@ -64,6 +65,7 @@ export default async function handler(
 
     // final row
     const row: any = rs.rows[0]
+    const epoch = Number(row?.session_epoch ?? 0)
     walletId = Number(row.walletId)
     if (row.slug) {
       membership = { slug: row.slug, name: row.name, rank: row.rank ?? 1 }
@@ -81,6 +83,7 @@ export default async function handler(
     session.lastActivity = now
     session.remember = Boolean(remember)
     session.lastSignedAt = typeof signedAt === "number" ? signedAt : now
+    session.sessionEpoch = epoch
     await session.save()
 
     // return a concise payload (you can also return session if you prefer)
@@ -101,8 +104,16 @@ export default async function handler(
   }
 
   if (request.method === "DELETE") {
-    await session.destroy()
-    return response.json(defaultSession)
+    // if we know the wallet, bump epoch to revoke old cookies
+    if (session?.identifier) {
+      const addressLower = String(session.identifier).toLowerCase();
+      await turso.execute({
+        sql: `UPDATE wallets SET session_epoch = COALESCE(session_epoch,0) + 1 WHERE address = ?`,
+        args: [addressLower],
+      });
+    }
+    await session.destroy();
+    return response.json(defaultSession);
   }
 
   return response.status(405).json({ error: "Method not allowed" })

@@ -18,6 +18,8 @@ export type SessionData = {
   lastActivity?: number     // epoch ms of last use
   remember?: boolean        // remember-me checkbox
   lastSignedAt?: number     // epoch ms when the user last SIWE-signed
+
+  sessionEpoch?: number  // mirrors wallets.session_epoch; used to revoke old cookies
 }
 
 export const defaultSession: SessionData = {

@@ -80,9 +80,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Read back wallet id + membership + rank
   const { rows } = await turso.execute({
     sql: `
-      SELECT w.id, w.address,
-             COALESCE(mt.slug,'public') AS slug,
-             COALESCE(mt.rank,1) AS rank
+      SELECT w.id,
+            COALESCE(mt.slug,'public') AS slug,
+            COALESCE(mt.rank,1) AS rank,
+            COALESCE(w.session_epoch,0) AS session_epoch
       FROM wallets w
       LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
       WHERE w.address = ? LIMIT 1
@@ -94,6 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const walletId = Number(row?.id) || null
   const membership = (row?.slug ?? 'public') as SessionData['membership']
   const rank = Number(row?.rank ?? 1)
+  const epoch = Number(row?.session_epoch ?? 0)
 
   // Persist login in iron-session (HTTP-only cookie) + security metadata
   const now = Date.now()
@@ -104,7 +106,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   session.membership   = membership
   session.rank         = rank
   session.nonce        = undefined        // clear one-time nonce
-
+  session.sessionEpoch = epoch
   // NEW: set TTL & freshness metadata here too
   session.createdAt    = session.createdAt || now
   session.lastActivity = now

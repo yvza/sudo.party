@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/iron-session/config";
+import { turso } from "@/lib/turso";
 
 // policy (tweak as you like)
 export const ABS_DEFAULT_MS  = 24 * 60 * 60 * 1000;     // 24h
@@ -14,6 +15,19 @@ export async function requireActiveSession(req: NextApiRequest, res: NextApiResp
 
   if (!session.isLoggedIn || !session.identifier) {
     return { ok: false as const, session, reason: "unauthenticated" as const };
+  }
+
+  // NEW: server-side revocation via epoch
+  const addressLower = String(session.identifier).toLowerCase();
+  const rs = await turso.execute({
+    sql: `SELECT COALESCE(session_epoch,0) AS epoch FROM wallets WHERE address = ? LIMIT 1`,
+    args: [addressLower],
+  });
+  const currentEpoch = Number(rs.rows[0]?.epoch ?? 0);
+  const cookieEpoch = Number(session.sessionEpoch ?? 0);
+  if (cookieEpoch !== currentEpoch) {
+    await session.destroy();
+    return { ok: false as const, session, reason: "epoch_mismatch" as const };
   }
 
   const now = Date.now();
