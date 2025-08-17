@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 import { useAccount, useDisconnect, useEnsAvatar, useEnsName } from 'wagmi'
 
 export default function Account() {
@@ -9,7 +10,7 @@ export default function Account() {
 
   return (
     <div>
-      {ensAvatar && <img alt="ENS Avatar" src={ensAvatar} />}
+      {ensAvatar && <Image src={ensAvatar} alt="ENS Avatar" width={32} height={32} />}
       {address && <div>{ensName ? `${ensName} (${address})` : address}</div>}
       <button onClick={() => disconnect()}>Disconnect</button>
     </div>

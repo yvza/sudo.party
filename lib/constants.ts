@@ -21,10 +21,11 @@ const lang = {
 }
 
 const rootAppSocialLink = [
-  {
-    name: 'Shop',
-    link: '/shop'
-  },
+  // Disable in current release
+  // {
+  //   name: 'Shop',
+  //   link: '/shop'
+  // },
   {
     name: 'Blog',
     link: '/blog'

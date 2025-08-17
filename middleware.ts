@@ -16,6 +16,10 @@ const ratelimit = new Ratelimit({
 })
 
 export default async function middleware(req: NextRequest) {
+  if (req.nextUrl.pathname.startsWith('/shop')) {
+    return NextResponse.redirect(new URL('/', req.url))
+  }
+
   // Auth redirect still applies
   const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
   if (req.nextUrl.pathname.startsWith('/auth') && session.isLoggedIn) {
