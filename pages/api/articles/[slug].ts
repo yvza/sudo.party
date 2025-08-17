@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { requireActiveSession } from "@/lib/auth/require-session";
+import { requiredRankForPost, userRankForAddress } from "@/lib/auth/membership";
 import { getIronSession } from "iron-session";
 import { SessionData, sessionOptions } from "@/lib/iron-session/config";
 import { bundleMDX } from "mdx-bundler";
@@ -20,6 +22,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { slug } = req.query as { slug?: string };
   if (!slug) return res.status(400).json({ error: "Missing slug" });
 
+  // 🔒 Guard GET (and HEAD) — prevent cURL scraping of gated content
+  if (req.method === "GET" || req.method === "HEAD") {
+    const { ok, session } = await requireActiveSession(req, res);
+    if (!ok || !session?.identifier) {
+      return res.status(401).json({ error: "Not authenticated", reason: "LOGIN_REQUIRED" });
+    }
+
+    const [need, have] = await Promise.all([
+      requiredRankForPost(slug),
+      userRankForAddress(String(session.identifier).toLowerCase()),
+    ]);
+
+    if (have < need) {
+      return res.status(403).json({
+        error: "Membership not eligible",
+        reason: "INSUFFICIENT_MEMBERSHIP",
+        requiredRank: need,
+        userRank: have,
+      });
+    }
+  }
+  
   const filePath = path.join("./posts", `${slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
 

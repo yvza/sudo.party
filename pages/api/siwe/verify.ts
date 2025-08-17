@@ -5,13 +5,30 @@ import { SiweMessage } from 'siwe'
 import { turso } from '@/lib/turso'
 import { getExpectedSiweDomain } from '@/lib/siwe/domain'
 
+function isSameOrigin(req: NextApiRequest) {
+  const origin = req.headers.origin;
+  if (!origin) return false;
+  const host = req.headers.host;
+  try {
+    const u = new URL(origin);
+    return u.host === host;
+  } catch {
+    return false;
+  }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST')
     return res.status(405).end()
   }
 
-  const { message, signature } = req.body || {}
+  // CSRF guard for state-changing auth
+  if (!isSameOrigin(req)) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
+  const { message, signature, remember, signedAt } = req.body || {}
   if (typeof message !== 'string' || typeof signature !== 'string') {
     return res.status(400).json({ error: 'Missing message or signature' })
   }
@@ -21,13 +38,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Missing nonce in session' })
   }
 
-  // Determine the domain the browser sees (localhost:3000 in dev, your host in prod)
+  // Enforce domain binding
   const expectedDomain = getExpectedSiweDomain(req)
   if (!expectedDomain) {
     return res.status(400).json({ error: 'Unable to determine request host' })
   }
 
-  // Parse the SIWE message and verify
+  // Verify SIWE
   const siwe = new SiweMessage(message)
   try {
     const result = await siwe.verify({
@@ -75,17 +92,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const row = rows[0] as any
   const walletId = Number(row?.id) || null
-  const membership = row?.slug ?? 'public'
+  const membership = (row?.slug ?? 'public') as SessionData['membership']
   const rank = Number(row?.rank ?? 1)
 
-  // Persist login in iron-session (HTTP-only cookie)
-  session.isLoggedIn = true
-  session.identifier = address          // wallet address
-  session.pk = walletId                 // numeric wallets.id
-  session.type = 'wallet'
-  session.membership = membership
-  session.rank = rank
-  session.nonce = undefined             // clear one-time nonce
+  // Persist login in iron-session (HTTP-only cookie) + security metadata
+  const now = Date.now()
+  session.isLoggedIn   = true
+  session.identifier   = address          // wallet address
+  session.pk           = walletId         // numeric wallets.id
+  session.type         = 'wallet'
+  session.membership   = membership
+  session.rank         = rank
+  session.nonce        = undefined        // clear one-time nonce
+
+  // NEW: set TTL & freshness metadata here too
+  session.createdAt    = session.createdAt || now
+  session.lastActivity = now
+  session.remember     = Boolean(remember)          // from client checkbox
+  session.lastSignedAt = typeof signedAt === 'number' ? signedAt : now
+
   await session.save()
 
   res.setHeader('Cache-Control', 'no-store')

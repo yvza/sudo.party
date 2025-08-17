@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { type SessionData } from "@/lib/iron-session/config";
 import { turso } from "@/lib/turso";
 import { getRequiredMembershipForSlug } from "@/lib/posts-meta";
-import { requireActiveSession, isSignatureFresh } from "@/lib/auth/require-session";
+import { requireActiveSession } from "@/lib/auth/require-session";
 
 const MAX_COMMENT_CHARS = 500;
 
@@ -11,7 +10,6 @@ function countGraphemes(input: string): number {
   let n = 0;
   for (let i = 0; i < input.length; i++, n++) {
     const c = input.charCodeAt(i);
-    // if high surrogate followed by low surrogate, skip the next unit
     if (c >= 0xd800 && c <= 0xdbff && i + 1 < input.length) {
       const d = input.charCodeAt(i + 1);
       if (d >= 0xdc00 && d <= 0xdfff) i++;
@@ -26,39 +24,51 @@ function toUnix(ts: unknown) {
   return Math.floor(d.getTime() / 1000);
 }
 
-async function ensureWallet(addressLower: string, session: SessionData) {
-  // If session.pk exists, verify it matches this address
-  if (session?.pk) {
-    const rs = await turso.execute({
-      sql: `SELECT w.id AS id, w.address AS address, mt.rank AS rank
-            FROM wallets w LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
-            WHERE w.id = ?`,
-      args: [Number(session.pk)],
-    });
-    if (rs.rows.length && String(rs.rows[0].address).toLowerCase() === addressLower) {
-      return { walletId: Number(rs.rows[0].id), userRank: (rs.rows[0].rank as number) ?? 1 };
-    }
-  }
+async function requiredRankForPost(slug: string) {
+  const membershipSlug = getRequiredMembershipForSlug(slug) ?? "public";
+  const rs = await turso.execute({
+    sql: `SELECT rank FROM membership_types WHERE slug = ?`,
+    args: [membershipSlug],
+  });
+  return (rs.rows[0]?.rank as number) ?? 1;
+}
 
-  // Lookup by address
-  let rs2 = await turso.execute({
+// Read the user's rank WITHOUT creating a wallet row
+async function userRankForAddress(addressLower: string) {
+  const rs = await turso.execute({
+    sql: `SELECT mt.rank AS rank
+          FROM wallets w
+          LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
+          WHERE w.address = ?`,
+    args: [addressLower],
+  });
+  if (rs.rows.length) return (rs.rows[0].rank as number) ?? 1;
+
+  // fallback to default membership rank
+  const def = await turso.execute({
+    sql: `SELECT rank FROM membership_types WHERE is_default = 1 LIMIT 1`,
+  });
+  return (def.rows[0]?.rank as number) ?? 1;
+}
+
+// Create or find wallet row (used only for POST)
+async function ensureWallet(addressLower: string) {
+  // Try to find first
+  let rs = await turso.execute({
     sql: `SELECT w.id AS id, mt.rank AS rank
           FROM wallets w
           LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
           WHERE w.address = ?`,
     args: [addressLower],
   });
-  if (rs2.rows.length) {
-    const walletId = Number(rs2.rows[0].id);
-    const userRank = (rs2.rows[0].rank as number) ?? 1;
-    if (!session.pk) {
-      session.pk = walletId;
-      await (session as any).save?.();
-    }
-    return { walletId, userRank };
+  if (rs.rows.length) {
+    return {
+      walletId: Number(rs.rows[0].id),
+      userRank: (rs.rows[0].rank as number) ?? 1,
+    };
   }
 
-  // Insert with default membership — race-safe via ON CONFLICT
+  // Insert with default membership (race-safe)
   const def = await turso.execute({
     sql: `SELECT id, rank FROM membership_types WHERE is_default = 1 LIMIT 1`,
   });
@@ -72,28 +82,19 @@ async function ensureWallet(addressLower: string, session: SessionData) {
     args: [addressLower, defaultId],
   });
 
-  // Re-select after potential upsert
-  const after = await turso.execute({
+  // Re-select
+  rs = await turso.execute({
     sql: `SELECT w.id AS id, mt.rank AS rank
-          FROM wallets w LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
+          FROM wallets w
+          LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
           WHERE w.address = ?`,
     args: [addressLower],
   });
 
-  const walletId = Number(after.rows[0].id);
-  const userRank = (after.rows[0].rank as number) ?? defaultRank;
-  session.pk = walletId;
-  await (session as any).save?.();
-  return { walletId, userRank };
-}
-
-async function requiredRankForPost(slug: string) {
-  const membershipSlug = getRequiredMembershipForSlug(slug) ?? "public";
-  const rs = await turso.execute({
-    sql: `SELECT rank FROM membership_types WHERE slug = ?`,
-    args: [membershipSlug],
-  });
-  return (rs.rows[0]?.rank as number) ?? 1;
+  return {
+    walletId: Number(rs.rows[0].id),
+    userRank: (rs.rows[0].rank as number) ?? defaultRank,
+  };
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -102,6 +103,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!slug) return res.status(400).json({ error: "Missing slug" });
 
   if (req.method === "GET") {
+    // NEW: require active session (idle/absolute TTL enforced)
+    const { ok, session, reason } = await requireActiveSession(req, res);
+    if (!ok) {
+      return res.status(401).json({ error: "Not authenticated", reason: "LOGIN_REQUIRED" });
+    }
+
+    const addressLower = String(session.identifier).toLowerCase();
+    const [userRank, requiredRank] = await Promise.all([
+      userRankForAddress(addressLower),
+      requiredRankForPost(slug),
+    ]);
+
+    if (userRank < requiredRank) {
+      return res.status(403).json({
+        error: "Membership not eligible",
+        reason: "INSUFFICIENT_MEMBERSHIP",
+        requiredRank,
+        userRank,
+      });
+    }
+
     const rs = await turso.execute({
       sql: `SELECT c.id AS id,
                    c.post_slug AS slug,
@@ -124,6 +146,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       parentId: r.parentId,
       createdAt: toUnix(r.createdAt),
     }));
+
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).json({ comments });
   }
@@ -131,17 +154,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === "POST") {
     const { ok, session, reason } = await requireActiveSession(req, res);
     if (!ok) {
-      // 401 on unauthenticated/expired
       return res.status(401).json({ error: "Not authenticated", reason });
     }
 
-    // OPTIONAL: require a fresh signature for this action (usually for high-risk ops)
-    if (!isSignatureFresh(session)) {
-      return res.status(401).json({ error: "Re-auth required", reason: "stale_signature" });
-    }
-
     const addressLower = String(session.identifier).toLowerCase();
-    const { walletId, userRank } = await ensureWallet(addressLower, session);
+    const { walletId, userRank } = await ensureWallet(addressLower);
     const requiredRank = await requiredRankForPost(slug);
     if (userRank < requiredRank) {
       return res.status(403).json({ error: "Membership not eligible" });
@@ -152,7 +169,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       parentId?: number | null;
     };
 
-    // Validate parentId (must be positive int and belong to the same post; not deleted)
+    // Validate parentId to be positive integer & same post if provided
     let parent: number | null = null;
     if (parentId != null) {
       const pid = Number(parentId);
@@ -185,7 +202,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       args: [slug, walletId, trimmed, parent],
     });
 
-    await (session as any).save?.();
     return res.status(201).json({ ok: true });
   }
 
