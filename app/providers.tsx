@@ -13,7 +13,7 @@ export default function Providers({ children } : { children: React.ReactNode }) 
       <WagmiProvider config={configX}>
         <PersistQueryClientProviderClient>
           {children}
-          <ReactQueryDevtools initialIsOpen={false} />
+          {process.env.NODE_ENV === 'development' ? <ReactQueryDevtools initialIsOpen={false} /> : null}
         </PersistQueryClientProviderClient>
       </WagmiProvider>
     </Provider>

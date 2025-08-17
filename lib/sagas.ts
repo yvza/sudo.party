@@ -78,7 +78,7 @@ function* watchAlertDialog() {
 }
 
 function* toggleGlobalAlertDialog() {
-  console.log('Toggle Global Alert Dialog')
+  // console.log('Toggle Global Alert Dialog')
 }
 
 // Combine all sagas into a root saga

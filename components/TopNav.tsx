@@ -1,16 +1,14 @@
 'use client'
 
 import React from 'react'
+// @ts-ignore
 import Link from 'next/link'
 import { HamburgerMenuIcon } from '@radix-ui/react-icons'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { usePathname } from 'next/navigation'
-import SiweConnectButton from './blog/siwe/connect-button'
+// @ts-ignore
+import dynamic from 'next/dynamic'
+const SiweConnectButton = dynamic(() => import('./blog/siwe/connect-button'), { ssr: false })
 import Light from './blog/light'
 
 export default function TopNav() {

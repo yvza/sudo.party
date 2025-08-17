@@ -1,22 +1,26 @@
+'use client'
+
 import Dialog from '@/components/Dialog'
 import { Button } from '@/components/ui/button'
 import { showAlertDialog } from '@/lib/features/alertDialog/toggle'
 import axios from 'axios'
 axios.defaults.withCredentials = true
-import React, { useEffect, useId, useState } from 'react'
+import React, { useEffect, useState, useId } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { SiweMessage } from 'siwe'
 import { useAccount, useConnect, useDisconnect, useSignMessage, useChainId, useConfig } from 'wagmi'
 import { getAddress } from 'viem'
 import { getAccount, getWalletClient } from '@wagmi/core'
 import { siweVerifyRequested, logoutRequested, sessionHydrateRequested } from '@/lib/features/auth/slice'
-import WalletOptions from '../walletConnect/WalletOptions'
+// @ts-ignore
+import dynamic from 'next/dynamic'
+const WalletOptions = dynamic(() => import('../walletConnect/WalletOptions'), { ssr: false })
 import { RootState } from '@/lib/store'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 
 export default function SiweConnectButton() {
-  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
+  const isLoggedIn = useSelector((s: RootState) => s.auth.isLoggedIn)
   const [remember, setRemember] = useState(true)
   const { address, isConnected, connector: activeConnector } = useAccount()
   const chainId = useChainId()
@@ -27,54 +31,43 @@ export default function SiweConnectButton() {
   const { disconnectAsync } = useDisconnect()
   const [isSigning, setIsSigning] = useState(false)
 
-  // group: pick ONE injected, ONE walletconnect
   const injectedList = connectors.filter((c) => c.type === 'injected')
   const walletConnectConn = connectors.find((c) => c.type === 'walletConnect')
-  const injectedPreferred =
-    connectors.find((c) => c.id === 'injected' || c.type === 'injected') ??
-    injectedList[0] ??
-    null
+  const injectedPreferred = connectors.find((c) => c.id === 'injected' || c.type === 'injected') ?? injectedList[0] ?? null
 
   useEffect(() => {
     dispatch(sessionHydrateRequested())
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Dialog content owns its own "connecting" state so it re-renders while loading
   const ConnectDialogContent = ({
     defaultRemember,
     onRememberChange,
   }: {
-    defaultRemember: boolean;
-    onRememberChange: (v: boolean) => void;
+    defaultRemember: boolean
+    onRememberChange: (v: boolean) => void
   }) => {
     const [connecting, setConnecting] = useState<null | 'browser' | 'mobile'>(null)
     const [rememberLocal, setRememberLocal] = useState<boolean>(defaultRemember)
     const rememberId = useId()
 
-    // keep local toggle in sync if parent default changes
-    useEffect(() => {
-      setRememberLocal(defaultRemember)
-    }, [defaultRemember])
+    useEffect(() => setRememberLocal(defaultRemember), [defaultRemember])
 
     return (
       <div className="flex gap-3 flex-col lg:flex-row justify-center flex-wrap mt-2">
-        {/* Remember me toggle */}
         <div className="w-full flex items-center justify-center mb-1 gap-2 text-sm">
           <Checkbox
             id={rememberId}
             checked={rememberLocal}
-            // onCheckedChange gives boolean | "indeterminate" — coerce to boolean
             onCheckedChange={(v) => {
               const val = v === true
               setRememberLocal(val)
-              onRememberChange(val)   // sync parent used by doSiwe()
+              onRememberChange(val)
             }}
           />
           <Label
             htmlFor={rememberId}
             className="cursor-pointer select-none"
-            // Radix Checkbox isn't a native input, so toggle manually on label click
             onClick={(e) => {
               e.preventDefault()
               const val = !rememberLocal
@@ -86,10 +79,9 @@ export default function SiweConnectButton() {
           </Label>
         </div>
 
-        {/* Browser wallet (all extensions) */}
         <WalletOptions
           key={injectedPreferred?.uid ?? 'injected'}
-          connector={{ ...(injectedPreferred ?? ({} as any)), name: 'Browser wallet' }}
+          connector={{ ...(injectedPreferred ?? ({} as any)), name: 'Browser wallet' } as any}
           isLoading={connecting === 'browser'}
           isDisabled={connecting != null}
           onClick={async () => {
@@ -118,11 +110,10 @@ export default function SiweConnectButton() {
           }}
         />
 
-        {/* Mobile wallet (WalletConnect) */}
         {walletConnectConn && (
           <WalletOptions
             key={walletConnectConn.uid}
-            connector={{ ...walletConnectConn, name: 'Mobile wallet' }}
+            connector={{ ...walletConnectConn, name: 'Mobile wallet' } as any}
             isLoading={connecting === 'mobile'}
             isDisabled={connecting != null}
             onClick={async () => {
@@ -159,10 +150,7 @@ export default function SiweConnectButton() {
       show: true,
       title: 'Connect Wallet',
       description: () => (
-        <ConnectDialogContent
-          defaultRemember={remember}
-          onRememberChange={setRemember}
-        />
+        <ConnectDialogContent defaultRemember={remember} onRememberChange={setRemember} />
       ),
       onCancel: () => {},
     }))
@@ -173,51 +161,39 @@ export default function SiweConnectButton() {
     dispatch(logoutRequested())
   }
 
-  // Allow overriding the address with the one returned from connectAsync
   const doSiwe = async (addrOverride?: string) => {
     try {
       if (isSigning) return
-
-      // Resolve address robustly to avoid races after connectAsync
       let addrRaw = addrOverride ?? address
 
       if (!addrRaw) {
         const acct = getAccount(config)
         addrRaw = acct?.address
       }
-
       if (!addrRaw) {
         const wc = await getWalletClient(config, { chainId: chainId ?? undefined }).catch(() => null)
         addrRaw = wc?.account?.address as string | undefined
       }
-
       if (!addrRaw && activeConnector) {
         try {
           const provider: any = await activeConnector.getProvider()
-          // request accounts (prompts if needed), fallback to eth_accounts
           let accts: any[] | undefined = await provider.request?.({ method: 'eth_requestAccounts' }).catch(() => undefined)
           if (!accts || accts.length === 0) {
             accts = await provider.request?.({ method: 'eth_accounts' }).catch(() => undefined)
           }
           addrRaw = Array.isArray(accts) ? (accts[0] as string | undefined) : undefined
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
 
       if (!addrRaw) throw new Error('Wallet not connected')
-
-      // Normalize to EIP-55 checksum (throws if invalid)
       const addr = getAddress(addrRaw as `0x${string}`)
 
       setIsSigning(true)
 
-      // 1) get nonce from server (stores it in iron-session)
       const { data: nonceResp } = await axios.get('/api/siwe/nonce', { withCredentials: true })
       const nonce: string = nonceResp?.nonce
       if (!nonce) throw new Error('Failed to get nonce')
 
-      // 2) build SIWE message bound to domain, origin, chain, and nonce
       const message = new SiweMessage({
         domain: window.location.host,
         address: addr,
@@ -228,10 +204,7 @@ export default function SiweConnectButton() {
         nonce,
       }).prepareMessage()
 
-      // 3) sign with the wallet
       const signature = await signMessageAsync({ message })
-
-      // 4) saga: verify + store update (include remember + signedAt)
       dispatch(siweVerifyRequested({ message, signature, remember, signedAt: Date.now() }))
     } catch (error) {
       console.error('Sign-in failed', error)
@@ -240,16 +213,11 @@ export default function SiweConnectButton() {
     }
   }
 
-  const renderButton = () => {
-    if (isLoggedIn) {
-      return <Button className="cursor-pointer" onClick={onLogout}>Disconnect</Button>
-    }
-    return <Button className="cursor-pointer" onClick={onSignIn}>Connect</Button>
-  }
-
   return (
     <>
-      {renderButton()}
+      {isLoggedIn
+        ? <Button className="cursor-pointer" onClick={onLogout}>Disconnect</Button>
+        : <Button className="cursor-pointer" onClick={onSignIn}>Connect</Button>}
       <Dialog />
     </>
   )

@@ -1,6 +1,8 @@
+'use client'
+
 import React from 'react'
-import Image from 'next/image'
 import { useAccount, useDisconnect, useEnsAvatar, useEnsName } from 'wagmi'
+import Image from 'next/image'
 
 export default function Account() {
   const { address } = useAccount()
@@ -10,7 +12,7 @@ export default function Account() {
 
   return (
     <div>
-      {ensAvatar && <Image src={ensAvatar} alt="ENS Avatar" width={32} height={32} />}
+      {ensAvatar && <Image alt="ENS Avatar" src={ensAvatar} />}
       {address && <div>{ensName ? `${ensName} (${address})` : address}</div>}
       <button onClick={() => disconnect()}>Disconnect</button>
     </div>

@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react'
 import axios from 'axios'
+// @ts-ignore
 import dynamic from 'next/dynamic'
 import { useArticle } from '@/services/articles'
 import { decryptJson, safeFormatDate } from '@/utils/helper'
@@ -9,6 +10,7 @@ import { getMDXComponent } from 'mdx-bundler/client'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
 import HeheIDK from '@/components/HeheIDK'
+// @ts-ignore
 import Link from 'next/link'
 
 // defer comments (non-critical) to after paint

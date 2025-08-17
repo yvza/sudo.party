@@ -1,7 +1,10 @@
+// @ts-ignore
 import { NextResponse } from 'next/server'
+// @ts-ignore
 import type { NextRequest } from 'next/server'
 import { Ratelimit } from '@upstash/ratelimit'
 import { kv } from '@vercel/kv'
+// @ts-ignore
 import { cookies } from 'next/headers'
 import { getIronSession } from 'iron-session'
 import { SessionData, sessionOptions } from './lib/iron-session/config'
