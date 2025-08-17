@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { Ratelimit } from '@upstash/ratelimit'
 import { kv } from '@vercel/kv'
+import { ipAddress } from '@vercel/functions'
 
 // Compute seconds until midnight UTC (or choose your own reset window)
 function ttlToMidnight(): number {
@@ -71,8 +72,10 @@ function pickRule(pathname: string, method: string): Rule {
 }
 
 function clientIp(req: NextRequest) {
+  const ip = ipAddress(req as unknown as Request)
+
   return (
-    req.ip ||
+    ip ||
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     req.headers.get('x-real-ip') ||
     '0.0.0.0'
