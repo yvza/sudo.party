@@ -45,6 +45,26 @@ function* verifyWorker(action: ReturnType<typeof siweVerifyRequested>): SagaIter
     const data = resp.data
     if (!data?.isLoggedIn) throw new Error('Not logged in')
 
+    // NEW: set iron-session TTL metadata (remember/lastSignedAt) via /api/auth
+    // Safe reads in case the slice type wasn't updated yet:
+    const remember = Boolean((action as any)?.payload?.remember)
+    const signedAt = typeof (action as any)?.payload?.signedAt === 'number'
+      ? (action as any).payload.signedAt
+      : Date.now()
+    const identifier = String(data.address || '').toLowerCase()
+    if (!identifier) throw new Error('Missing wallet address from verify response')
+    // If your accounts.pk is numeric and returned in data.pk, prefer that; else reuse the address
+    const pkForAccount = (typeof data.pk === 'number' && Number.isInteger(data.pk) && data.pk > 0)
+      ? data.pk
+      : identifier
+    yield call(axios.post, '/api/auth', {
+      pk: pkForAccount,
+      identifier,
+      type: 'wallet',
+      remember,
+      signedAt,
+    })
+
     // update auth (this should bump sessionEpoch in your reducer)
     yield put(siweVerifySucceeded({
       address: data.address,
@@ -67,8 +87,19 @@ function* verifyWorker(action: ReturnType<typeof siweVerifyRequested>): SagaIter
 
 function* hydrateWorker(): SagaIterator {
   try {
-    const resp: AxiosResponse<SessionResponse> = yield call(axios.get, '/api/session')
-    yield put(sessionHydrateSucceeded(resp.data))
+    const resp: AxiosResponse<{
+      authenticated: boolean;
+      address: string | null;
+      membership: { slug: 'public'|'sgbcode'|'sudopartypass'; name: string; rank: number } | null;
+    }> = yield call(axios.get, '/api/me')
+    const me = resp.data
+    yield put(sessionHydrateSucceeded({
+      isLoggedIn: !!me.authenticated,
+      address: me.address,
+      membership: me.membership?.slug ?? 'public',
+      rank: me.membership?.rank ?? 1,
+      pk: null,
+    }))
   } catch {
     yield put(sessionHydrateSucceeded({
       isLoggedIn: false,
@@ -82,7 +113,7 @@ function* hydrateWorker(): SagaIterator {
 
 function* logoutWorker(): SagaIterator {
   try {
-    yield call(axios.post, '/api/logout', {})
+    yield call(axios.delete, '/api/auth')
   } finally {
     // reducer should bump sessionEpoch here
     yield put(logoutSucceeded())

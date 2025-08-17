@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getIronSession } from "iron-session";
-import { sessionOptions, type SessionData } from "@/lib/iron-session/config";
+import { type SessionData } from "@/lib/iron-session/config";
 import { turso } from "@/lib/turso";
 import { getRequiredMembershipForSlug } from "@/lib/posts-meta";
+import { requireActiveSession, isSignatureFresh } from "@/lib/auth/require-session";
 
 const MAX_COMMENT_CHARS = 500;
 
@@ -129,9 +129,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === "POST") {
-    const session = await getIronSession<SessionData>(req, res, sessionOptions);
-    if (!(session.isLoggedIn && session.identifier)) {
-      return res.status(401).json({ error: "Not authenticated" });
+    const { ok, session, reason } = await requireActiveSession(req, res);
+    if (!ok) {
+      // 401 on unauthenticated/expired
+      return res.status(401).json({ error: "Not authenticated", reason });
+    }
+
+    // OPTIONAL: require a fresh signature for this action (usually for high-risk ops)
+    if (!isSignatureFresh(session)) {
+      return res.status(401).json({ error: "Re-auth required", reason: "stale_signature" });
     }
 
     const addressLower = String(session.identifier).toLowerCase();

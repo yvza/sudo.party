@@ -12,6 +12,12 @@ export type SessionData = {
   // NEW fields for membership gating
   membership?: 'public' | 'sgbcode' | 'sudopartypass'
   rank?: number // 1..3
+
+  // NEW: security metadata
+  createdAt?: number        // epoch ms when session created
+  lastActivity?: number     // epoch ms of last use
+  remember?: boolean        // remember-me checkbox
+  lastSignedAt?: number     // epoch ms when the user last SIWE-signed
 }
 
 export const defaultSession: SessionData = {
@@ -21,6 +27,10 @@ export const defaultSession: SessionData = {
   type: null,
   membership: 'public',
   rank: 1,
+  createdAt: 0,
+  lastActivity: 0,
+  remember: false,
+  lastSignedAt: 0
 }
 
 export const sessionOptions: SessionOptions = {
@@ -29,5 +39,8 @@ export const sessionOptions: SessionOptions = {
   cookieOptions: {
     secure: isProd,
     sameSite: 'lax',
+    httpOnly: true,
+    path: '/',
+    maxAge: 60 * 60 * 24 * 30, // 30 days cookie; server enforces stricter TTLs
   },
 }

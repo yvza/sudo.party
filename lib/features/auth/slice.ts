@@ -84,7 +84,12 @@ const slice = createSlice({
 })
 
 // Actions that sagas will listen for (dispatched from the UI)
-export const siweVerifyRequested = createAction<{ message: string; signature: string }>('auth/siweVerifyRequested')
+export const siweVerifyRequested = createAction<{
+  message: string;
+  signature: string;
+  remember?: boolean;
+  signedAt?: number;
+}>("auth/siweVerifyRequested");
 export const sessionHydrateRequested = createAction('auth/sessionHydrateRequested')
 export const logoutRequested = createAction('auth/logoutRequested')
 

@@ -15,6 +15,7 @@ import { RootState } from '@/lib/store'
 
 export default function SiweConnectButton() {
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
+  const [remember, setRemember] = useState(true)
   const { address, isConnected, connector: activeConnector } = useAccount()
   const chainId = useChainId()
   const config = useConfig()
@@ -38,11 +39,26 @@ export default function SiweConnectButton() {
   }, [])
 
   // Dialog content owns its own "connecting" state so it re-renders while loading
-  const ConnectDialogContent = () => {
+  const ConnectDialogContent = ({
+    remember,
+    setRemember,
+  }: {
+    remember: boolean;
+    setRemember: (v: boolean) => void;
+  }) => {
     const [connecting, setConnecting] = useState<null | 'browser' | 'mobile'>(null)
 
     return (
       <div className="flex gap-3 flex-col lg:flex-row justify-center flex-wrap mt-2">
+        {/* Remember me toggle */}
+        <label className="flex items-center gap-2 text-sm w-full justify-center mb-1">
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+          />
+          Remember me (keep me signed in longer)
+        </label>
         {/* Browser wallet (all extensions) */}
         <WalletOptions
           key={injectedPreferred?.uid ?? 'injected'}
@@ -115,7 +131,7 @@ export default function SiweConnectButton() {
     dispatch(showAlertDialog({
       show: true,
       title: 'Connect Wallet',
-      description: () => <ConnectDialogContent />,
+      description: () => <ConnectDialogContent remember={remember} setRemember={setRemember} />,
       onCancel: () => {},
     }))
   }
@@ -184,7 +200,7 @@ export default function SiweConnectButton() {
       const signature = await signMessageAsync({ message })
 
       // 4) saga: verify + store update
-      dispatch(siweVerifyRequested({ message, signature }))
+      dispatch(siweVerifyRequested({ message, signature, remember, signedAt: Date.now() }))
     } catch (error) {
       console.error('Sign-in failed', error)
     } finally {

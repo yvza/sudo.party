@@ -20,25 +20,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     args: [addressLower],
   });
 
-  if (!rs.rows.length) {
-    return res.status(200).json({
-      authenticated: true,
-      address: addressLower,
-      membership: { slug: "public", name: "Public", rank: 1 },
-    });
+  // Default membership if no wallet row yet
+  let membership = { slug: "public", name: "Public", rank: 1 } as const;
+  let walletId: number | null = null;
+
+  if (rs.rows.length) {
+    const row: any = rs.rows[0];
+    walletId = typeof row.walletId === "number" ? row.walletId : Number(row.walletId) || null;
+    if (row.slug) {
+      membership = { slug: row.slug, name: row.name, rank: row.rank ?? 1 } as const;
+    }
   }
 
-  const row: any = rs.rows[0];
-  const membership = row.slug
-    ? { slug: row.slug, name: row.name, rank: row.rank ?? 1 }
-    : { slug: "public", name: "Public", rank: 1 };
-
-  if (!session.pk && row.walletId) {
-    session.pk = Number(row.walletId);
-    session.membership = membership.slug as any;
-    session.rank = membership.rank as any;
-    await (session as any).save?.();
+  // Sync session in one place (works whether a wallet row exists or not)
+  if (!session.pk && walletId) {
+    session.pk = walletId;
   }
+  session.membership = membership.slug as any;
+  session.rank = membership.rank as any;
+  session.lastActivity = Date.now();
+  await (session as any).save?.();
 
   return res.status(200).json({ authenticated: true, address: addressLower, membership });
 }
