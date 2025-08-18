@@ -25,14 +25,6 @@ type VerifyResponse = {
   pk?: number | null
 }
 
-type SessionResponse = {
-  isLoggedIn: boolean
-  address: string | null
-  membership: Membership
-  rank: number
-  pk: number | null
-}
-
 const isArticleKey = (q: { queryKey: unknown }) => {
   const arr = q && Array.isArray((q as any).queryKey) ? (q as any).queryKey as unknown[] : []
   const root = arr[0]

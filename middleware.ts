@@ -60,7 +60,7 @@ function pickRule(pathname: string, method: string): Rule {
   const isSiweVerify   = method === 'POST' && /^\/api\/siwe\/verify$/.test(coarse)
 
   if (isSiweNonce)  return env === 'preview' ? { tokens: 30, window: '1 m' } : { tokens: 15, window: '1 m' }
-  if (isSiweVerify) return env === 'preview' ? { tokens: 10, window: '5 m' } : { tokens: 6,  window: '5 m' }
+  if (isSiweVerify) return env === 'preview' ? { tokens: 10, window: '5 m' } : { tokens: 3,  window: '5 m' }
 
   if (isCommentsGet)  return env === 'preview' ? { tokens: 300, window: '1 m' } : { tokens: 150, window: '1 m' }
   if (isCommentsPost) return env === 'preview' ? { tokens: 40,  window: '5 m' } : { tokens: 20,  window: '5 m' }
