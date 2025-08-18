@@ -18,6 +18,21 @@ const WalletOptions = dynamic(() => import('../walletConnect/WalletOptions'), { 
 import { RootState } from '@/lib/store'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
+import { AlertCircleIcon } from 'lucide-react'
+
+function WalletBindingNotice() {
+  return (
+    <Alert variant="destructive">
+        <AlertCircleIcon />
+        <AlertTitle>Please keep a secure backup of your wallet.</AlertTitle>
+        <AlertDescription>
+          <p><br /></p>
+          <p>Coming soon: you’ll be able to link your unique SGB Code (e.g., SGB-YourUniqueId) in Settings. Once a code is linked to a wallet, it is permanently bound and cannot be reused or transferred. This binding will be required to obtain SGB membership on this site.</p>
+        </AlertDescription>
+      </Alert>
+  )
+}
 
 export default function SiweConnectButton() {
   const isLoggedIn = useSelector((s: RootState) => s.auth.isLoggedIn)
@@ -55,6 +70,8 @@ export default function SiweConnectButton() {
 
     return (
       <div className="flex gap-3 flex-col lg:flex-row justify-center flex-wrap mt-2">
+        <WalletBindingNotice />
+        
         <div className="w-full flex items-center justify-center mb-1 gap-2 text-sm">
           <Checkbox
             id={rememberId}
