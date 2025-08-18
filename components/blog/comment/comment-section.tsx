@@ -137,9 +137,6 @@ export default function CommentSection({
         <CardHeader><CardTitle>Join the discussion</CardTitle></CardHeader>
         <CardContent>
           <p className="text-sm opacity-80">Sign in to view and post comments.</p>
-          <div className="mt-4">
-            <Button asChild><a href="/auth">Sign in</a></Button>
-          </div>
         </CardContent>
       </Card>
     );
