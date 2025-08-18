@@ -3,7 +3,7 @@
 @plugin 'tailwindcss-animate';
 @plugin '@tailwindcss/typography';
 
-@custom-variant dark (&:where(class, class *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-*: initial;
