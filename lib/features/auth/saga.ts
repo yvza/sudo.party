@@ -102,7 +102,7 @@ function* hydrateWorker(): SagaIterator {
       pk: null,
     }))
     // mark the session as ready and keep the error for debugging/telemetry
-    yield put(sessionHydrateFailed( 'session hydrate failed'))
+    yield put(sessionHydrateFailed('session hydrate failed'))
   }
 }
 

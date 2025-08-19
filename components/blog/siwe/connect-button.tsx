@@ -37,11 +37,11 @@ function WalletBindingNotice() {
 
 export default function SiweConnectButton() {
   const isLoggedIn = useSelector((s: RootState) => s.auth.isLoggedIn)
-  // NEW: a boolean that tells us redux auth has finished bootstrapping (see slice patch below)
-  const sessionReady = useSelector((s: RootState) => s.auth.sessionReady)
-
+  const sessionReady = useSelector((s: RootState) => s.auth.sessionReady) // ⬅️ gate on this
   const [remember, setRemember] = useState(true)
-  const { address, isConnected, connector: activeConnector, status } = useAccount() // status: 'connecting'|'reconnecting'|'connected'|'disconnected'
+
+  // ⬇️ include `status` so we can avoid showing UI while Wagmi is restoring a connector
+  const { address, isConnected, connector: activeConnector, status } = useAccount()
   const chainId = useChainId()
   const config = useConfig()
   const { signMessageAsync } = useSignMessage()
@@ -54,10 +54,14 @@ export default function SiweConnectButton() {
   const walletConnectConn = connectors.find((c) => c.type === 'walletConnect')
   const injectedPreferred = connectors.find((c) => c.id === 'injected' || c.type === 'injected') ?? injectedList[0] ?? null
 
+  // 🔒 Hydrate ONLY once per browser runtime (on hard reload), never on client-side page changes
   useEffect(() => {
-    dispatch(sessionHydrateRequested())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    const g = globalThis as any
+    if (!g.__AUTH_HYDRATED_ONCE__) {
+      g.__AUTH_HYDRATED_ONCE__ = true
+      dispatch(sessionHydrateRequested())
+    }
+  }, [dispatch])
 
   const ConnectDialogContent = ({
     defaultRemember,
@@ -235,18 +239,17 @@ export default function SiweConnectButton() {
   }
 
   // ---------------------------
-  // IMPORTANT: Gate rendering
+  // RENDER GATE (no flicker on page change)
   // ---------------------------
-  // Hold UI until:
-  // - redux auth has finished hydrating (sessionReady)
-  // - wagmi isn’t in the middle of connecting/reconnecting
+  // Only show "loading" when:
+  // - first load and redux session isn't ready yet, or
+  // - wagmi is actively (re)connecting
   const settling =
     !sessionReady ||
     status === 'connecting' ||
     status === 'reconnecting'
 
   if (settling) {
-    // You can swap this for a skeleton with fixed width to prevent layout shift
     return <SiweButtonSkeleton />
   }
 
