@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 // @ts-ignore
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { Toaster } from '@/components/ui/toaster'
+import { Toaster } from '@/components/ui/sonner'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/react'
 import { lang } from '@/lib/constants'

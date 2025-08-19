@@ -141,7 +141,7 @@ export default function TopNav() {
             type="button"
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-200"
+            className="cursor-pointer inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-200"
           >
             <SunIcon className="hidden dark:inline-block" />
             <MoonIcon className="inline-block dark:hidden" />
