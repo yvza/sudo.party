@@ -9,6 +9,7 @@ import {
   sessionHydrateSucceeded,
   logoutRequested,
   logoutSucceeded,
+  sessionHydrateFailed,
 } from './slice'
 import { hideAlertDialog } from '@/lib/features/alertDialog/toggle'
 import { queryClient } from '@/lib/react-query/client'
@@ -100,6 +101,8 @@ function* hydrateWorker(): SagaIterator {
       rank: 1,
       pk: null,
     }))
+    // mark the session as ready and keep the error for debugging/telemetry
+    yield put(sessionHydrateFailed( 'session hydrate failed'))
   }
 }
 

@@ -19,7 +19,7 @@ const BTN_RADIUS = 'rounded-md'
 const BTN_TXT = 'text-sm font-medium'
 
 // Sword-glint skeleton that matches "Connect" width (no CLS)
-function SiweButtonSkeleton() {
+export function SiweButtonSkeleton() {
   return (
     <div
       className={`relative inline-flex ${BTN_H} ${BTN_RADIUS} items-center justify-center shrink-0 overflow-hidden border border-slate-200 dark:border-neutral-700 bg-slate-100/40 dark:bg-neutral-800/40 sheen`}

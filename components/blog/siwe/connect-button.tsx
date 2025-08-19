@@ -20,24 +20,28 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { AlertCircleIcon } from 'lucide-react'
+import { SiweButtonSkeleton } from '@/components/TopNav'
 
 function WalletBindingNotice() {
   return (
     <Alert variant="destructive">
-        <AlertCircleIcon />
-        <AlertTitle>Please keep a secure backup of your wallet.</AlertTitle>
-        <AlertDescription>
-          <p><br /></p>
-          <p>Coming soon: you’ll be able to link your unique SGB Code (e.g., SGB-YourUniqueId) in Settings. Once a code is linked to a wallet, it is permanently bound and cannot be reused or transferred. This binding will be required to obtain SGB membership on this site.</p>
-        </AlertDescription>
-      </Alert>
+      <AlertCircleIcon />
+      <AlertTitle>Please keep a secure backup of your wallet!</AlertTitle>
+      <AlertDescription>
+        <p><br /></p>
+        <p>Coming soon: you’ll be able to link your unique SGB Code (e.g., SGB-YourUniqueId) in Settings. Once a code is linked to a wallet, it is permanently bound and cannot be reused or transferred. This binding will be required to obtain SGB membership on this site.</p>
+      </AlertDescription>
+    </Alert>
   )
 }
 
 export default function SiweConnectButton() {
   const isLoggedIn = useSelector((s: RootState) => s.auth.isLoggedIn)
+  // NEW: a boolean that tells us redux auth has finished bootstrapping (see slice patch below)
+  const sessionReady = useSelector((s: RootState) => s.auth.sessionReady)
+
   const [remember, setRemember] = useState(true)
-  const { address, isConnected, connector: activeConnector } = useAccount()
+  const { address, isConnected, connector: activeConnector, status } = useAccount() // status: 'connecting'|'reconnecting'|'connected'|'disconnected'
   const chainId = useChainId()
   const config = useConfig()
   const { signMessageAsync } = useSignMessage()
@@ -71,7 +75,7 @@ export default function SiweConnectButton() {
     return (
       <div className="flex gap-3 flex-col lg:flex-row justify-center flex-wrap mt-2">
         <WalletBindingNotice />
-        
+
         <div className="w-full flex items-center justify-center mb-1 gap-2 text-sm">
           <Checkbox
             id={rememberId}
@@ -228,6 +232,22 @@ export default function SiweConnectButton() {
     } finally {
       setIsSigning(false)
     }
+  }
+
+  // ---------------------------
+  // IMPORTANT: Gate rendering
+  // ---------------------------
+  // Hold UI until:
+  // - redux auth has finished hydrating (sessionReady)
+  // - wagmi isn’t in the middle of connecting/reconnecting
+  const settling =
+    !sessionReady ||
+    status === 'connecting' ||
+    status === 'reconnecting'
+
+  if (settling) {
+    // You can swap this for a skeleton with fixed width to prevent layout shift
+    return <SiweButtonSkeleton />
   }
 
   return (
