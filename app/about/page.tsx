@@ -6,31 +6,27 @@ export default function page() {
   const renderAbout = () => {
     return (
       <div className="mx-5 sm:mx-auto max-w-2xl text-justify">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-left">Welcome to sudo.party! ☕</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-left">About sudo.party</h1>
 
-        <p className="mb-4">
-          Hi everyone, welcome to <span className="font-bold">sudo.party</span>!
+        <p className="mb-4 leading-relaxed">
+          Welcome to our platform dedicated to exploring the evolving landscape of <span className="font-semibold">cryptocurrency</span>, <span className="font-semibold">blockchain technology</span>, <span className="font-semibold">Web3 development</span>, <span className="font-semibold">programming</span>, <span className="font-semibold">engineering</span>, <span className="font-semibold">cybersecurity</span>, and <span className="font-semibold">technical insights</span>. We aim to provide thoughtful, well-researched content for both newcomers and seasoned professionals.
         </p>
 
-        <p className="mb-4">
-          Discover insightful content on <span className="font-bold">Cryptocurrency</span>, <span className="font-bold">Blockchain</span>, <span className="font-bold">Web3</span>, <span className="font-bold">Programming</span>, <span className="font-bold">Engineering</span>, <span className="font-bold">Exploit</span>, <span className="font-bold">Cyber Security</span>, and uncover some <span className="font-bold">Tips and Tricks</span> on our platform. Just chat us on <a href="https://fb.me/sudo.party" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Facebook</a>, and we&apos;ll guide you through a few quick questions. We&apos;ll reply as soon as possible, ensuring you get seamless access to our restricted content.
+        <p className="mb-4 leading-relaxed">
+          Most of our content is freely accessible to all visitors. Some in-depth technical articles are available through our access pass system to maintain content quality and community focus. Feel free to reach out via <a href="https://fb.me/sudo.party" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline font-medium">Facebook</a> if you have questions or would like to connect.
         </p>
 
-        <p className="mb-4">
-          While everything on <span className="font-bold">sudo.party</span> is freely accessible, certain articles are restricted based on your access pass, providing a personalized experience for our readers.
+        <p className="mb-4 leading-relaxed">
+          All articles are carefully researched and written by our team, ensuring authentic, human-crafted content based on practical experience and thorough investigation.
         </p>
 
-        <p className="mb-4">
-          100% bonafide human-written article and based on personal research.
+        <p className="mb-4 leading-relaxed">
+          If you find our content valuable, your support helps us continue creating quality technical resources for the community.
         </p>
 
-        <p className="mb-4">
-          Your contribution helps us keep the content flowing!
-        </p>
-
-        <p className='text-xs sm:text-base'>
-          ETH: 0x44596abF3541CF677906A1303a15146ccF17a7dB
-        </p>
+        {/* <p className='text-xs sm:text-base text-gray-600'>
+          ETH: <a href='https://etherscan.io/address/0x44596abF3541CF677906A1303a15146ccF17a7dB' target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline font-mono">0x44596abF3541CF677906A1303a15146ccF17a7dB</a>
+        </p> */}
       </div>
     )
   }
@@ -38,7 +34,7 @@ export default function page() {
   return (
     <>
       <TopNav />
-      <div className='mx-auto max-w-xl py-0 sm:py-8'>
+      <div className='mx-auto max-w-xl py-8'>
         {renderAbout()}
       </div>
       <BottomNav />
