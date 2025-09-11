@@ -37,7 +37,7 @@ export default function Client({
       status,
       reason: body.reason as any,             // e.g. 'LOGIN_REQUIRED' | 'INSUFFICIENT_MEMBERSHIP'
       message: body.message as string | undefined,
-      required: body.required as any,         // 'public' | 'sgbcode' | 'sudopartypass'
+      required: body.required as any,         // 'public' | 'supporter' | 'sudopartypass'
       userMembership: body.userMembership as any,
     }
   }, [error])

@@ -16,7 +16,7 @@ import { queryClient } from '@/lib/react-query/client'
 
 axios.defaults.withCredentials = true
 
-type Membership = 'public' | 'sgbcode' | 'sudopartypass'
+type Membership = 'public' | 'supporter' | 'sudopartypass'
 
 type VerifyResponse = {
   isLoggedIn: boolean
@@ -83,7 +83,7 @@ function* hydrateWorker(): SagaIterator {
     const resp: AxiosResponse<{
       authenticated: boolean;
       address: string | null;
-      membership: { slug: 'public'|'sgbcode'|'sudopartypass'; name: string; rank: number } | null;
+      membership: { slug: 'public'|'supporter'|'sudopartypass'; name: string; rank: number } | null;
     }> = yield call(axios.get, '/api/me')
     const me = resp.data
     yield put(sessionHydrateSucceeded({

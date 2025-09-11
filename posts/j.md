@@ -2,7 +2,7 @@
 title: Iiii iii iii
 date: 2024-02-04
 draft: false
-membership: sgbcode
+membership: supporter
 description:
 label: how to
 ---

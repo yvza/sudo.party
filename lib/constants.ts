@@ -7,7 +7,6 @@ const lang = {
   accessKey: 'Access Key',
   submit: 'Submit',
   currentlyNotAvailable: 'Currently not available',
-  sgbCode: 'SGB Code',
   sudoPartyPass: 'sudo.party pass',
   idn: 'IDN',
   labs: 'labs',

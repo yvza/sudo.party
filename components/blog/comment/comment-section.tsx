@@ -7,8 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 const MAX_COMMENT_CHARS = 500;
 
-export type MembershipSlug = "public" | "sgbcode" | "sudopartypass";
-const rankBySlug: Record<MembershipSlug, number> = { public: 1, sgbcode: 2, sudopartypass: 3 };
+export type MembershipSlug = "public" | "supporter" | "sudopartypass";
+const rankBySlug: Record<MembershipSlug, number> = { public: 1, supporter: 2, sudopartypass: 3 };
 
 type Me = {
   authenticated: boolean;

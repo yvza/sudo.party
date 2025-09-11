@@ -10,7 +10,7 @@ export type SessionData = {
   // siwe nonce (transient)
   nonce?: string
   // NEW fields for membership gating
-  membership?: 'public' | 'sgbcode' | 'sudopartypass'
+  membership?: 'public' | 'supporter' | 'sudopartypass'
   rank?: number // 1..3
 
   // NEW: security metadata

@@ -1,7 +1,7 @@
 // lib/features/auth/slice.ts
 import { createSlice, PayloadAction, createAction } from '@reduxjs/toolkit'
 
-export type Membership = 'public' | 'sgbcode' | 'sudopartypass'
+export type Membership = 'public' | 'supporter' | 'sudopartypass'
 
 export type AuthState = {
   isLoggedIn: boolean

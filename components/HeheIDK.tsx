@@ -1,6 +1,6 @@
 import React from 'react'
 
-type Membership = 'public' | 'sgbcode' | 'sudopartypass'
+type Membership = 'public' | 'supporter' | 'sudopartypass'
 type Reason = 'LOGIN_REQUIRED' | 'INSUFFICIENT_MEMBERSHIP' | 'NOT_FOUND' | 'UNKNOWN'
 
 type Props = {
@@ -22,7 +22,7 @@ type Props = {
 
 const label: Record<Membership, string> = {
   public: 'Public',
-  sgbcode: 'SGB Code',
+  supporter: 'Supporter',
   sudopartypass: 'Sudo Party Pass',
 }
 
@@ -42,7 +42,7 @@ function humanizeError(p: Props) {
     }
   }
   if (reason === 'INSUFFICIENT_MEMBERSHIP') {
-    const req = p.required ?? 'sgbcode'
+    const req = p.required ?? 'supporter'
     const you = p.userMembership ?? 'public'
     return {
       title: 'Membership required',

@@ -1,4 +1,4 @@
-type Membership = 'public'|'sgbcode'|'sudopartypass'
+type Membership = 'public'|'supporter'|'sudopartypass'
 type Reason = 'LOGIN_REQUIRED'|'INSUFFICIENT_MEMBERSHIP'|'NOT_FOUND'|'UNKNOWN'
 
 export type ApiError = {
@@ -12,7 +12,7 @@ export type ApiError = {
 
 const label: Record<Membership, string> = {
   public: 'Public',
-  sgbcode: 'SGB Code',
+  supporter: 'Supporter',
   sudopartypass: 'Sudo Party Pass',
 }
 

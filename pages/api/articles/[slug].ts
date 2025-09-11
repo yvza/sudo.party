@@ -11,7 +11,7 @@ import { encryptJson, isDevBypass } from "@/utils/helper";
 import { turso } from "@/lib/turso";
 
 // Membership helpers (single source of truth)
-const MembershipRank = { public: 1, sgbcode: 2, sudopartypass: 3 } as const;
+const MembershipRank = { public: 1, supporter: 2, sudopartypass: 3 } as const;
 type MembershipSlug = keyof typeof MembershipRank;
 const normalizeMembership = (v?: string): MembershipSlug => {
   const x = (v || "public").toLowerCase();
@@ -97,14 +97,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         userRank = Number((rows[0] as any)?.rank ?? 1);
       }
 
-      const requiredSlug = membership // from frontmatter, e.g. 'sgbcode' or 'sudopartypass'
+      const requiredSlug = membership // from frontmatter, e.g. 'supporter' or 'sudopartypass'
       if (userRank < requiredRank) {
         res.setHeader("Cache-Control", "private, no-store");
         return res.status(403).json({
           error: "Forbidden",
           reason: "INSUFFICIENT_MEMBERSHIP",        // <— key
           message: "Your membership level is not high enough to view this post.",
-          required: requiredSlug,                   // 'sgbcode' | 'sudopartypass'
+          required: requiredSlug,                   // 'supporter' | 'sudopartypass'
           userMembership: session.membership || 'public',
           userRank,
         })

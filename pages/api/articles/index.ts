@@ -15,11 +15,11 @@ type Meta = {
   label?: string;
   description?: string;
   draft?: boolean;
-  membership?: "public" | "sgbcode" | "sudopartypass";
+  membership?: "public" | "supporter" | "sudopartypass";
 };
 
 // membership helpers
-const MembershipRank = { public: 1, sgbcode: 2, sudopartypass: 3 } as const;
+const MembershipRank = { public: 1, supporter: 2, sudopartypass: 3 } as const;
 type MembershipSlug = keyof typeof MembershipRank;
 const normalizeMembership = (v?: string): MembershipSlug => {
   const x = (v || "public").toLowerCase();

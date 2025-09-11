@@ -1,6 +1,6 @@
 export const MembershipRank = {
   public: 1,
-  sgbcode: 2,
+  supporter: 2,
   sudopartypass: 3,
 } as const
 

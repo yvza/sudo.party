@@ -10,7 +10,7 @@ type Meta = {
   label?: string
   description?: string
   draft?: boolean
-  membership?: 'public' | 'sgbcode' | 'sudopartypass'
+  membership?: 'public' | 'supporter' | 'sudopartypass'
 }
 
 function readAllMeta(): Meta[] {
