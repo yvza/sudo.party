@@ -1,10 +1,19 @@
-const { withContentCollections } = require("@content-collections/next");
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {},
+  webpack: config => {
+    config.externals.push('pino-pretty', 'lokijs', 'encoding')
+    return config
+  },
   reactStrictMode: true,
-  swcMinify: true,
-  images: {},
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'dummyimage.com'
+      },
+    ],
+  },
 }
 
-module.exports = withContentCollections(nextConfig)
+module.exports = nextConfig

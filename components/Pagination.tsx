@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Pagination,
   PaginationContent,
@@ -6,74 +8,63 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { PaginationProps } from "@/types/global"
 
-interface Props {
-  totalPages: number
-  currentPage?: number
-}
-
-const Pager = ({ totalPages, currentPage = 1 }: Props) => {
+const Pager = ({ totalPages, currentPage = 1, isNoPostFound }: PaginationProps) => {
   const pagesToShow = 3;
   const startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2));
   const endPage = Math.min(startPage + pagesToShow - 1, totalPages);
+  const isFirstPage = currentPage === 1
+  const isLastpage = currentPage === totalPages
+
+  // Enhanced click handler to prevent same-page requests
+  const handlePageClick = (page: number, event: React.MouseEvent) => {
+    if (page === currentPage) {
+      event.preventDefault()
+      return
+    }
+  }
 
   return (
     <Pagination>
       <PaginationContent>
-      {currentPage === 1 ? (
+      {isFirstPage || isNoPostFound ? (
         <PaginationItem>
-          <PaginationPrevious
-            className="cursor-not-allowed"
-            href="#"
-            isActive={false}
-            scroll={false}
-          />
+          <PaginationPrevious className="cursor-not-allowed" href="#" isActive={false} />
         </PaginationItem>
       ) : (
         <PaginationItem>
-          <PaginationPrevious
-            href={{
-              pathname: "/blog",
-              query: { page: currentPage - 1 }
-            }}
-            isActive
-          />
+          <PaginationPrevious href={`/blog?page=${currentPage - 1}`} isActive />
         </PaginationItem>
       )}
 
       {Array.from({ length: endPage - startPage + 1 }).map((_, i) => {
-        const page = startPage + i;
+        const page = startPage + i
+        const isCurrentPage = page === currentPage
+
         return <PaginationItem key={i}>
           <PaginationLink
-            href={{
-              pathname: "/blog",
-              query: { page }
-            }}
-            isActive={currentPage === page}
+            href={isCurrentPage ? "#" : `/blog?page=${page}`}
+            isActive={isCurrentPage}
+            onClick={(e) => handlePageClick(page, e)}
+            className={isCurrentPage ? "cursor-default" : ""}
           >
             {page}
           </PaginationLink>
         </PaginationItem>
       })}
 
-      {currentPage === totalPages ? (
+      {isLastpage || isNoPostFound ? (
         <PaginationItem>
           <PaginationNext
             className="cursor-not-allowed"
             href="#"
             isActive={false}
-            scroll={false}
           />
         </PaginationItem>
       ) : (
         <PaginationItem>
-          <PaginationNext
-            href={{
-              pathname: "/blog",
-              query: { page: currentPage + 1 }
-            }}
-            isActive
-          />
+          <PaginationNext href={`/blog?page=${currentPage + 1}`} isActive />
         </PaginationItem>
       )}
       </PaginationContent>

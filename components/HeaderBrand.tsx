@@ -1,17 +1,11 @@
 import React, { forwardRef } from 'react'
 import { lang } from '@/lib/constants'
+// @ts-ignore
 import Link from 'next/link'
-import localFont from 'next/font/local'
+import { HeaderBrandProps } from '@/types/global'
+// import { honkFont } from '@/utils/fonts'
 
-const honkFont = localFont({ src: '../app/fonts/Honk-Regular.ttf' })
-
-interface headerBrandProps {
-  fontSize?: string,
-  sloganOn?: boolean,
-  hideOnMobile?: boolean
-}
-
-const HeaderBrand = forwardRef<HTMLDivElement, headerBrandProps>(({
+const HeaderBrand = forwardRef<HTMLDivElement, HeaderBrandProps>(({
   fontSize = 'text-5xl',
   sloganOn = true,
   hideOnMobile = false
@@ -19,7 +13,7 @@ const HeaderBrand = forwardRef<HTMLDivElement, headerBrandProps>(({
   return (
     <Link href='/blog'>
       <header ref={ref} className={`flex-col items-center ${hideOnMobile && 'hidden sm:flex'}`}>
-        <h1 className={`text-center ${fontSize} font-black ${honkFont.className}`}>{lang.siteUrl}</h1>
+        <h1 className={`text-center ${fontSize} font-black`}>{lang.siteUrl}</h1>
         {sloganOn && <h5 className="mb-8">{lang.slogan}</h5>}
       </header>
     </Link>

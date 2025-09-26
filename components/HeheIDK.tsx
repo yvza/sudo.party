@@ -1,6 +1,85 @@
+import Link from 'next/link'
 import React from 'react'
 
-export default function HeheIDK() {
+type Reason = 'LOGIN_REQUIRED' | 'INSUFFICIENT_MEMBERSHIP' | 'NOT_FOUND' | 'UNKNOWN'
+
+type Props = {
+  /** HTTP status from the API (e.g., 401, 403, 404) */
+  status?: number
+  /** Optional machine-friendly reason from API JSON */
+  reason?: Reason
+  /** Optional server-provided message override */
+  message?: string
+  /** Required tier for this content (when 403) */
+  requiredRank?: number | string
+  /** Viewer’s tier (when 403) */
+  userRank?: number | string
+  /** Callbacks to wire buttons */
+  onLogin?: () => void
+  onUpgrade?: () => void
+  className?: string
+}
+
+function resolveReason(p: Props): Reason {
+  if (p.reason) return p.reason;
+  switch (p.status) {
+    case 401: return "LOGIN_REQUIRED";
+    case 403: return "INSUFFICIENT_MEMBERSHIP";
+    case 404: return "NOT_FOUND";
+    default:  return "UNKNOWN";
+  }
+}
+
+function toRank(v: number | string | undefined, fallback = 2): number {
+  const n = typeof v === "string" ? Number(v) : v;
+  return Number.isFinite(n as number) && (n as number) > 0 ? (n as number) : fallback;
+}
+
+function buildCopy(p: Props) {
+  const r = resolveReason(p);
+
+  if (r === "LOGIN_REQUIRED") {
+    return {
+      title: "Sign in required",
+      desc: p.message ?? "Please sign in with your wallet to access this post.",
+      action: { kind: "login" as const, label: "Sign in" },
+    };
+  }
+
+  if (r === "INSUFFICIENT_MEMBERSHIP") {
+    const needed = toRank(p.requiredRank, 2); // coerce "3" -> 3, default to 2
+    // Rule set:
+    // - needed === 2 -> Supporter CTA
+    // - needed >= 3  -> Restricted (no CTA)
+    if (needed === 2) {
+      return {
+        title: "Supporter access required",
+        desc: p.message ?? "This is a Supporter-only post. Unlock Supporter access to read it.",
+        action: { kind: "upgrade" as const, label: "Become a Supporter" },
+      };
+    }
+    return {
+      title: "Restricted post",
+      desc: p.message ?? "You don’t have access to view this.",
+    };
+  }
+
+  if (r === "NOT_FOUND") {
+    return {
+      title: "Post not found",
+      desc: p.message ?? "This post may have been moved or deleted.",
+    };
+  }
+
+  return {
+    title: "Something went wrong",
+    desc: p.message ?? "Please try again later.",
+  };
+}
+
+export default function HeheIDK(props: Props) {
+  const copy = buildCopy(props)
+
   const defaultStyle: React.CSSProperties = {
     whiteSpace: 'pre',
     fontFamily: 'monospace',
@@ -9,18 +88,12 @@ export default function HeheIDK() {
     letterSpacing: 'unset',
     transform: 'unset',
     overflowY: 'hidden',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    textAlign: 'center'
   }
+  const fontSizeLargeScreen: React.CSSProperties = { fontSize: '10px', lineHeight: '10px' }
+  const fontSizeSmallScreen: React.CSSProperties = { fontSize: '7px', lineHeight: '7px' }
 
-  const fontSizeLargeScreen: React.CSSProperties = {
-    fontSize: '10px',
-    lineHeight: '10px',
-  }
-
-  const fontSizeSmallScreen: React.CSSProperties = {
-    fontSize: '7px',
-    lineHeight: '7px',
-  }
   const imgLargeScreen = `░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -94,7 +167,6 @@ export default function HeheIDK() {
 ░░░░░░░░░░░░░░░░░░▒░░░░     ░░░░▒░░░▒░▓░░         ░░▓░░▒▒░▒░░░ ░░▒░▒░░░  ░░     ░░░        ░░░▒   ░░
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░`
-
   const imgSmallScreen = `███▓█▓▓█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█▓█▓▓▓▓▓▓▓▓█▓▓▓▓▓▓█▓▓█▓█▓▓▓▓▓▓▓▓█▓████████████████████████████████████████
 █████▓█▓█▓▓█▓▓█████▓▓▓▓▓▓████▓▓▓▓▓████▓▓▓▓▓▓█▓▓█▓█▓▓▓▓▓▓▓███████████████████████████████████████████
 ████████████████████████████████████████████████████████████████████████████████████████████████████
@@ -160,9 +232,39 @@ export default function HeheIDK() {
 ███████████████████████████████████████████████████████████████████████████████████████▓▓▓▓▒▒▓▒▓▓▓▒█`
 
   return (
-    <>
-      <pre style={{...defaultStyle, ...fontSizeLargeScreen}} className='hidden sm:block text-black dark:text-white'>{imgLargeScreen}</pre>
-      <pre style={{...defaultStyle, ...fontSizeSmallScreen}} className='sm:hidden text-black dark:text-white'>{imgSmallScreen}</pre>
-    </>
+    <div className={props.className}>
+      {/* ASCII art (assumes imgLargeScreen/imgSmallScreen exist in your file) */}
+      <pre
+        style={{ ...defaultStyle, ...fontSizeLargeScreen }}
+        className="hidden sm:block text-black dark:text-white"
+        aria-hidden
+      >
+        {/* @ts-ignore */}
+        {typeof imgLargeScreen !== "undefined" ? imgLargeScreen : ""}
+      </pre>
+      <div className="sm:hidden text-center" aria-hidden>
+        <pre style={{ ...defaultStyle, ...fontSizeSmallScreen }} className="text-black dark:text-white">
+          {/* @ts-ignore */}
+          {typeof imgSmallScreen !== "undefined" ? imgSmallScreen : ""}
+        </pre>
+      </div>
+
+      {/* Message + actions */}
+      <div className="mx-auto max-w-xl text-center space-y-4 py-8">
+        <h2 className="text-2xl font-semibold">{copy.title}</h2>
+        <p className="text-neutral-600 dark:text-neutral-300">{copy.desc}</p>
+
+        {copy?.action?.kind === "upgrade" && (
+          <div className="flex items-center justify-center">
+            <Link
+              href="/blog/support"
+              className="inline-flex items-center rounded-lg bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+            >
+              {copy.action.label}
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

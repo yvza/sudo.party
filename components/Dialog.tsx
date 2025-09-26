@@ -1,52 +1,52 @@
-import React, {useState} from 'react'
+import React from 'react'
 import {
     AlertDialog,
     AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
-    AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogDescription
 } from "@/components/ui/alert-dialog"
+import { RootState } from '@/lib/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { hideAlertDialog } from '@/lib/features/alertDialog/toggle';
 
-interface DialogProps {
-  show: boolean;
-  title: string;
-  description: string;
-  onCancel?: () => void;
-  onAction: () => void;
-}
-
-const Dialog: React.FC<DialogProps> = ({show, title, description, onCancel, onAction}) => {
-  const [isOpen, setIsOpen] = useState(show);
+const Dialog: React.FC = () => {
+  const { show, title, description, onCancel, onAction } = useSelector((state: RootState) => state.alertDialog)
+  const dispatch = useDispatch()
 
   const onClose = () => {
-    setIsOpen(!isOpen);
+    dispatch(hideAlertDialog())
+    dispatch
     if (onCancel) {
       onCancel();
     }
   }
 
   const RenderDialogAction = () => {
+    if (onCancel) {
+      return <AlertDialogCancel className='cursor-pointer' onClick={onClose}>Cancel</AlertDialogCancel>
+    }
+
     if (!onCancel) {
-      return <AlertDialogAction onClick={onAction}>Continue</AlertDialogAction>
+      return <AlertDialogAction className='cursor-pointer' onClick={onAction}>Continue</AlertDialogAction>
     }
 
     return <>
-      <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
-      <AlertDialogAction onClick={onAction}>Continue</AlertDialogAction>
+      <AlertDialogCancel className='cursor-pointer' onClick={onClose}>Cancel</AlertDialogCancel>
+      <AlertDialogAction className='cursor-pointer' onClick={onAction}>Continue</AlertDialogAction>
     </>
   }
 
   return (
-    <AlertDialog open={isOpen}>
+    <AlertDialog open={show}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {description}
-          </AlertDialogDescription>
+          {description()}
+          <AlertDialogDescription></AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <RenderDialogAction />
