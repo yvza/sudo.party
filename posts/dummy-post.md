@@ -1,7 +1,7 @@
 ---
 title: Bypassing Your Mom!
 date: 2025-01-02
-draft: false
+draft: true
 membership: public
 description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. lorem ipsum dolor sit amet, consectetur adipiscing elit.
 label: how to, exploit, news
