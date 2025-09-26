@@ -1,6 +1,6 @@
+import Link from 'next/link'
 import React from 'react'
 
-type Membership = 'public' | 'supporter' | 'sudopartypass'
 type Reason = 'LOGIN_REQUIRED' | 'INSUFFICIENT_MEMBERSHIP' | 'NOT_FOUND' | 'UNKNOWN'
 
 type Props = {
@@ -11,55 +11,74 @@ type Props = {
   /** Optional server-provided message override */
   message?: string
   /** Required tier for this content (when 403) */
-  required?: Membership
+  requiredRank?: number | string
   /** Viewer’s tier (when 403) */
-  userMembership?: Membership
+  userRank?: number | string
   /** Callbacks to wire buttons */
   onLogin?: () => void
   onUpgrade?: () => void
   className?: string
 }
 
-const label: Record<Membership, string> = {
-  public: 'Public',
-  supporter: 'Supporter',
-  sudopartypass: 'Sudo Party Pass',
+function resolveReason(p: Props): Reason {
+  if (p.reason) return p.reason;
+  switch (p.status) {
+    case 401: return "LOGIN_REQUIRED";
+    case 403: return "INSUFFICIENT_MEMBERSHIP";
+    case 404: return "NOT_FOUND";
+    default:  return "UNKNOWN";
+  }
 }
 
-function humanizeError(p: Props) {
-  const reason: Reason =
-    p.reason ??
-    (p.status === 401 ? 'LOGIN_REQUIRED'
-      : p.status === 403 ? 'INSUFFICIENT_MEMBERSHIP'
-      : p.status === 404 ? 'NOT_FOUND'
-      : 'UNKNOWN')
+function toRank(v: number | string | undefined, fallback = 2): number {
+  const n = typeof v === "string" ? Number(v) : v;
+  return Number.isFinite(n as number) && (n as number) > 0 ? (n as number) : fallback;
+}
 
-  if (reason === 'LOGIN_REQUIRED') {
+function buildCopy(p: Props) {
+  const r = resolveReason(p);
+
+  if (r === "LOGIN_REQUIRED") {
     return {
-      title: 'Sign in required',
-      desc: p.message ?? 'Please sign in with your wallet to access this content.',
-      action: { kind: 'login' as const, label: 'Sign In' },
-    }
+      title: "Sign in required",
+      desc: p.message ?? "Please sign in with your wallet to access this post.",
+      action: { kind: "login" as const, label: "Sign in" },
+    };
   }
-  if (reason === 'INSUFFICIENT_MEMBERSHIP') {
-    const req = p.required ?? 'supporter'
-    const you = p.userMembership ?? 'public'
+
+  if (r === "INSUFFICIENT_MEMBERSHIP") {
+    const needed = toRank(p.requiredRank, 2); // coerce "3" -> 3, default to 2
+    // Rule set:
+    // - needed === 2 -> Supporter CTA
+    // - needed >= 3  -> Restricted (no CTA)
+    if (needed === 2) {
+      return {
+        title: "Supporter access required",
+        desc: p.message ?? "This is a Supporter-only post. Unlock Supporter access to read it.",
+        action: { kind: "upgrade" as const, label: "Become a Supporter" },
+      };
+    }
     return {
-      title: 'Membership required',
-      desc:
-        p.message ??
-        `This post requires ${label[req]} membership (you have ${label[you]}).`,
-      action: { kind: 'upgrade' as const, label: 'View membership options' },
-    }
+      title: "Restricted post",
+      desc: p.message ?? "You don’t have access to view this.",
+    };
   }
-  if (reason === 'NOT_FOUND') {
-    return { title: 'Post not found', desc: p.message ?? 'This post may have been moved or deleted.' }
+
+  if (r === "NOT_FOUND") {
+    return {
+      title: "Post not found",
+      desc: p.message ?? "This post may have been moved or deleted.",
+    };
   }
-  return { title: 'Something went wrong', desc: p.message ?? 'Please try again later.' }
+
+  return {
+    title: "Something went wrong",
+    desc: p.message ?? "Please try again later.",
+  };
 }
 
 export default function HeheIDK(props: Props) {
-  const copy = humanizeError(props)
+  const copy = buildCopy(props)
 
   const defaultStyle: React.CSSProperties = {
     whiteSpace: 'pre',
@@ -214,24 +233,37 @@ export default function HeheIDK(props: Props) {
 
   return (
     <div className={props.className}>
-      {/* ASCII art */}
+      {/* ASCII art (assumes imgLargeScreen/imgSmallScreen exist in your file) */}
       <pre
         style={{ ...defaultStyle, ...fontSizeLargeScreen }}
         className="hidden sm:block text-black dark:text-white"
         aria-hidden
       >
-        {imgLargeScreen}
+        {/* @ts-ignore */}
+        {typeof imgLargeScreen !== "undefined" ? imgLargeScreen : ""}
       </pre>
       <div className="sm:hidden text-center" aria-hidden>
         <pre style={{ ...defaultStyle, ...fontSizeSmallScreen }} className="text-black dark:text-white">
-          {imgSmallScreen}
+          {/* @ts-ignore */}
+          {typeof imgSmallScreen !== "undefined" ? imgSmallScreen : ""}
         </pre>
       </div>
 
-      {/* Human-readable message + actions */}
+      {/* Message + actions */}
       <div className="mx-auto max-w-xl text-center space-y-4 py-8">
         <h2 className="text-2xl font-semibold">{copy.title}</h2>
-        <p className="text-muted-foreground">{copy.desc}</p>
+        <p className="text-neutral-600 dark:text-neutral-300">{copy.desc}</p>
+
+        {copy?.action?.kind === "upgrade" && (
+          <div className="flex items-center justify-center">
+            <Link
+              href="/blog/support"
+              className="inline-flex items-center rounded-lg bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+            >
+              {copy.action.label}
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   )

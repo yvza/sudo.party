@@ -12,6 +12,7 @@ import BottomNav from '@/components/BottomNav'
 import HeheIDK from '@/components/HeheIDK'
 // @ts-ignore
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 // defer comments (non-critical) to after paint
 const CommentSection = dynamic(
@@ -24,6 +25,7 @@ export default function Client({
   frontTitle,
   frontDate
 }: { slug: string; frontTitle?: string; frontDate?: string }) {
+  const router = useRouter();
   const earlyDate = safeFormatDate(frontDate as any)
 
   const { data, error, isPending } = useArticle(slug)
@@ -37,8 +39,8 @@ export default function Client({
       status,
       reason: body.reason as any,             // e.g. 'LOGIN_REQUIRED' | 'INSUFFICIENT_MEMBERSHIP'
       message: body.message as string | undefined,
-      required: body.required as any,         // 'public' | 'supporter' | 'sudopartypass'
-      userMembership: body.userMembership as any,
+      requiredRank: body.requiredRank as any,         // 'public' | 'supporter' | 'sudopartypass'
+      userRank: body.userRank as any,
     }
   }, [error])
 
@@ -64,8 +66,8 @@ export default function Client({
               status={errProps.status}
               reason={errProps.reason}
               message={errProps.message}
-              required={errProps.required}
-              userMembership={errProps.userMembership}
+              requiredRank={errProps.requiredRank}
+              userRank={errProps.userRank}
             />
           </div>
         </div>
@@ -85,7 +87,20 @@ export default function Client({
               {safeFormatDate(payload?.frontmatter?.date as any) || earlyDate}
             </time>
             <span>•</span>
-            <Link href="/blog" className="border-b hover:opacity-80">Back</Link>
+            <a
+              href="/blog"
+              className="border-b hover:opacity-80 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                if (window.history.length > 1) {
+                  router.back();
+                } else {
+                  router.push("/blog");
+                }
+              }}
+            >
+              Back
+            </a>
           </div>
         </div>
 

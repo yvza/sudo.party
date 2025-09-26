@@ -17,16 +17,12 @@ export default function page() {
         </p>
 
         <p className="mb-4 leading-relaxed">
-          All articles are carefully researched and written by our team, ensuring authentic, human-crafted content based on practical experience and thorough investigation.
+          All articles are carefully researched and written by my self, ensuring authentic, human-crafted content based on practical experience and thorough investigation.
         </p>
 
         <p className="mb-4 leading-relaxed">
           If you find our content valuable, your support helps us continue creating quality technical resources for the community.
         </p>
-
-        {/* <p className='text-xs sm:text-base text-gray-600'>
-          ETH: <a href='https://etherscan.io/address/0x44596abF3541CF677906A1303a15146ccF17a7dB' target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline font-mono">0x44596abF3541CF677906A1303a15146ccF17a7dB</a>
-        </p> */}
       </div>
     )
   }
