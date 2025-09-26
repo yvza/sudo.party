@@ -146,11 +146,17 @@ export default function CommentSection({
   if (me.isSuccess && me.data?.authenticated && !canComment) {
     return (
       <Card className="mt-10">
-        <CardHeader><CardTitle>Comments for members</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Comments</CardTitle>
+        </CardHeader>
         <CardContent>
-          <p className="text-sm opacity-80">Your membership doesn’t include comments for this post.</p>
+          <p className="text-sm text-muted-foreground">
+            Commenting is limited for this post.
+          </p>
           <div className="mt-4">
-            <Button asChild variant="secondary"><a href="/shop">Upgrade membership</a></Button>
+            <Button asChild variant="secondary">
+              <a href="/blog/support">Become a Supporter</a>
+            </Button>
           </div>
         </CardContent>
       </Card>
