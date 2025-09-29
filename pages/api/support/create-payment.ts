@@ -3,9 +3,6 @@ import { randomUUID } from "crypto";
 import { createClient } from "@libsql/client";
 
 function getBaseUrl(): string {
-  if (process.env.PAYMENTO_BASE_URL) return process.env.PAYMENTO_BASE_URL;
-  if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   if (process.env.NODE_ENV === "development") return "http://localhost:3000";
   return "https://sudo.party";
 }
