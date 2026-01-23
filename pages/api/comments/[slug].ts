@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { turso } from "@/lib/turso";
 import { getRequiredMembershipForSlug } from "@/lib/posts-meta";
 import { requireActiveSession } from "@/lib/auth/require-session";
+import { assertSameOrigin } from "@/utils/helper";
 
 const MAX_COMMENT_CHARS = 500;
 
@@ -130,12 +131,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                    w.address AS authorAddress,
                    c.content AS body,
                    c.parent_id AS parentId,
-                   c.created_at AS createdAt
+                   c.created_at AS createdAt,
+                   (SELECT COUNT(*) FROM supporter_grants sg WHERE sg.wallet_id = w.id) AS supportCount,
+                   CASE WHEN w.address = ? THEN 1 ELSE 0 END AS isCreator
             FROM comments c
             JOIN wallets w ON w.id = c.wallet_id
             WHERE c.post_slug = ? AND c.is_deleted = 0 AND c.is_approved = 1
             ORDER BY c.created_at ASC`,
-      args: [slug],
+      args: [process.env.CREATOR_ADDRESS?.toLowerCase() || '', slug],
     });
 
     const comments = rs.rows.map((r: any) => ({
@@ -145,6 +148,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       body: r.body,
       parentId: r.parentId,
       createdAt: toUnix(r.createdAt),
+      supportCount: Number(r.supportCount) || 0,
+      isCreator: Boolean(r.isCreator),
     }));
 
     res.setHeader("Cache-Control", "no-store");
@@ -152,6 +157,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === "POST") {
+    if (!assertSameOrigin(req)) {
+      return res.status(403).json({ error: "CSRF protection: origin mismatch" });
+    }
+
     const { ok, session, reason } = await requireActiveSession(req, res);
     if (!ok) {
       return res.status(401).json({ error: "Not authenticated", reason });

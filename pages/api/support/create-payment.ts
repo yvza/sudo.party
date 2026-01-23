@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { randomUUID } from "crypto";
 import { createClient } from "@libsql/client";
+import { assertSameOrigin } from "@/utils/helper";
 
 function getBaseUrl(): string {
   if (process.env.NODE_ENV === "development") return "http://localhost:3000";
@@ -10,6 +11,10 @@ function getBaseUrl(): string {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+    if (!assertSameOrigin(req)) {
+      return res.status(403).json({ error: "CSRF protection: origin mismatch" });
+    }
 
     const { fiatAmount = 5, fiatCurrency = "USD", addressLower } = req.body || {};
     const min = Number(process.env.SUPPORT_MIN_USD || 5);

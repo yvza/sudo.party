@@ -1,8 +1,7 @@
 'use client'
 
-import React, { useEffect, useState, useId } from 'react'
-import axios from 'axios'
-axios.defaults.withCredentials = true
+import React, { useEffect, useState, useId, memo } from 'react'
+import { api } from '@/utils/fetcher'
 
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/lib/store'
@@ -48,7 +47,8 @@ import dynamic from 'next/dynamic'
 import { SiweButtonSkeleton } from '@/components/TopNav'
 const WalletOptions = dynamic(() => import('../walletConnect/WalletOptions'), { ssr: false })
 
-function WalletBindingNotice() {
+// Extracted and memoized component to prevent re-creation on every render
+const WalletBindingNotice = memo(function WalletBindingNotice() {
   return (
     <Alert variant="destructive">
       <AlertCircleIcon />
@@ -56,14 +56,158 @@ function WalletBindingNotice() {
       <AlertDescription>
         <p><br /></p>
         <p>
-          Coming soon: you’ll be able to link your unique SGB Code (e.g., SGB-YourUniqueId) in
+          Coming soon: you'll be able to link your unique SGB Code (e.g., SGB-YourUniqueId) in
           Settings. Once a code is linked to a wallet, it is permanently bound and cannot be reused
           or transferred. This binding will be required to obtain SGB membership on this site.
         </p>
       </AlertDescription>
     </Alert>
   )
+})
+
+// Extracted component props type
+type ConnectDialogContentProps = {
+  defaultRemember: boolean
+  onRememberChange: (v: boolean) => void
+  injectedPreferred: any
+  walletConnectConn: any
+  connecting: null | 'browser' | 'mobile'
+  setConnecting: (v: null | 'browser' | 'mobile') => void
+  isConnected: boolean
+  activeConnector: any
+  disconnectAsync: () => Promise<void>
+  connectAsync: (args: { connector: any }) => Promise<any>
+  doSiwe: (addrOverride?: string) => Promise<void>
+  setDialogOpen: (v: boolean) => void
+  isVerifying: boolean
 }
+
+// Extracted outside main component to prevent re-creation on every render
+const ConnectDialogContent = memo(function ConnectDialogContent({
+  defaultRemember,
+  onRememberChange,
+  injectedPreferred,
+  walletConnectConn,
+  connecting,
+  setConnecting,
+  isConnected,
+  activeConnector,
+  disconnectAsync,
+  connectAsync,
+  doSiwe,
+  setDialogOpen,
+  isVerifying,
+}: ConnectDialogContentProps) {
+  const [rememberLocal, setRememberLocal] = useState<boolean>(defaultRemember)
+  const rememberId = useId()
+
+  useEffect(() => setRememberLocal(defaultRemember), [defaultRemember])
+
+  // Buttons should be disabled during connection OR after SIWE (verifying)
+  const buttonsDisabled = connecting != null || isVerifying
+
+  return (
+    <div className="flex gap-3 flex-col lg:flex-row justify-center flex-wrap mt-2">
+      <WalletBindingNotice />
+
+      <div className="w-full flex items-center justify-center mb-1 gap-2 text-sm">
+        <Checkbox
+          id={rememberId}
+          checked={rememberLocal}
+          disabled={buttonsDisabled}
+          onCheckedChange={(v) => {
+            const val = v === true
+            setRememberLocal(val)
+            onRememberChange(val)
+          }}
+        />
+        <Label
+          htmlFor={rememberId}
+          className="cursor-pointer select-none"
+          onClick={(e) => {
+            if (buttonsDisabled) return
+            e.preventDefault()
+            const val = !rememberLocal
+            setRememberLocal(val)
+            onRememberChange(val)
+          }}
+        >
+          Remember me (keep me signed in longer)
+        </Label>
+      </div>
+
+      {/* Browser wallet — keep dialog OPEN and show loader */}
+      <WalletOptions
+        key={injectedPreferred?.uid ?? 'injected'}
+        connector={{ ...(injectedPreferred ?? ({} as any)), name: 'Browser wallet' } as any}
+        isLoading={connecting === 'browser'}
+        isDisabled={buttonsDisabled}
+        onClick={async (e?: React.MouseEvent) => {
+          e?.preventDefault()
+          e?.stopPropagation()
+          if (!injectedPreferred || buttonsDisabled) return
+          setConnecting('browser')
+          try {
+            if (isConnected && activeConnector?.id === injectedPreferred.id) {
+              await doSiwe()
+              return
+            }
+            if (isConnected && activeConnector?.id && activeConnector.id !== injectedPreferred.id) {
+              await disconnectAsync()
+            }
+            const res = await connectAsync({ connector: injectedPreferred })
+            const first = (res as any)?.accounts?.[0] as string | undefined
+            await doSiwe(first)
+          } catch (e: any) {
+            if (e?.name === 'ConnectorAlreadyConnectedError') {
+              await doSiwe()
+              return
+            }
+            console.error('connect failed', e)
+          } finally {
+            setConnecting(null) // leave dialog open; user can close manually
+          }
+        }}
+      />
+
+      {/* Mobile wallet — closing dialog is OK (QR flow) */}
+      {walletConnectConn && (
+        <WalletOptions
+          key={walletConnectConn.uid}
+          connector={{ ...walletConnectConn, name: 'Mobile wallet' } as any}
+          isLoading={connecting === 'mobile'}
+          isDisabled={buttonsDisabled}
+          onClick={async () => {
+            if (buttonsDisabled) return
+            setConnecting('mobile')
+            try {
+              if (isConnected && activeConnector?.id === walletConnectConn.id) {
+                await doSiwe()
+                return
+              }
+              if (isConnected && activeConnector?.id && activeConnector.id !== walletConnectConn.id) {
+                await disconnectAsync()
+              }
+              // (optional) close before QR
+              setDialogOpen(false)
+              const res = await connectAsync({ connector: walletConnectConn })
+              const first = (res as any)?.accounts?.[0] as string | undefined
+              await doSiwe(first)
+            } catch (e: any) {
+              if (e?.name === 'ConnectorAlreadyConnectedError') {
+                await doSiwe()
+                return
+              }
+              console.error('connect failed', e)
+            } finally {
+              setConnecting(null)
+            }
+          }}
+        />
+      )}
+    </div>
+  )
+})
 
 export default function SiweConnectButton() {
   const isLoggedIn = useSelector((s: RootState) => s.auth.isLoggedIn)
@@ -76,6 +220,9 @@ export default function SiweConnectButton() {
 
   // parent-level "connecting" so we can lock the Dialog while browser-connecting
   const [connecting, setConnecting] = useState<null | 'browser' | 'mobile'>(null)
+
+  // Track SIWE verification in progress (from sign to success/fail)
+  const [isVerifying, setIsVerifying] = useState(false)
 
   const { address, isConnected, connector: activeConnector, status } = useAccount()
   const chainId = useChainId()
@@ -90,7 +237,7 @@ export default function SiweConnectButton() {
   const injectedPreferred =
     connectors.find((c) => c.id === 'injected' || c.type === 'injected') ?? injectedList[0] ?? null
 
-  // hydrate auth exactly once per runtime
+  // Hydrate auth once on mount
   useEffect(() => {
     const g = globalThis as any
     if (!g.__AUTH_HYDRATED_ONCE__) {
@@ -98,6 +245,14 @@ export default function SiweConnectButton() {
       dispatch(sessionHydrateRequested())
     }
   }, [dispatch])
+
+  // Clear verifying state when session becomes ready (login success)
+  useEffect(() => {
+    if (sessionReady && isLoggedIn) {
+      setIsVerifying(false)
+      setDialogOpen(false)
+    }
+  }, [sessionReady, isLoggedIn])
 
   const onSignIn = () => {
     // open local dialog (not the global alert dialog)
@@ -140,7 +295,7 @@ export default function SiweConnectButton() {
 
       setIsSigning(true)
 
-      const { data: nonceResp } = await axios.get('/api/siwe/nonce', { withCredentials: true })
+      const nonceResp = await api.get<{ nonce: string }>('/api/siwe/nonce')
       const nonce: string = nonceResp?.nonce
       if (!nonce) throw new Error('Failed to get nonce')
 
@@ -155,154 +310,36 @@ export default function SiweConnectButton() {
       }).prepareMessage()
 
       const signature = await signMessageAsync({ message })
-      // On success, you may want to close the dialog:
-      // setDialogOpen(false)
+
+      // Keep loading state until verification completes
+      setIsVerifying(true)
+
       dispatch(siweVerifyRequested({ message, signature, remember, signedAt: Date.now() }))
     } catch (error) {
       console.error('Sign-in failed', error)
+      setIsVerifying(false)
     } finally {
       setIsSigning(false)
     }
   }
 
-  const ConnectDialogContent = ({
-    defaultRemember,
-    onRememberChange,
-  }: {
-    defaultRemember: boolean
-    onRememberChange: (v: boolean) => void
-  }) => {
-    const [rememberLocal, setRememberLocal] = useState<boolean>(defaultRemember)
-    const rememberId = useId()
-
-    useEffect(() => setRememberLocal(defaultRemember), [defaultRemember])
-
-    return (
-      <div className="flex gap-3 flex-col lg:flex-row justify-center flex-wrap mt-2">
-        <WalletBindingNotice />
-
-        <div className="w-full flex items-center justify-center mb-1 gap-2 text-sm">
-          <Checkbox
-            id={rememberId}
-            checked={rememberLocal}
-            onCheckedChange={(v) => {
-              const val = v === true
-              setRememberLocal(val)
-              onRememberChange(val)
-            }}
-          />
-          <Label
-            htmlFor={rememberId}
-            className="cursor-pointer select-none"
-            onClick={(e) => {
-              e.preventDefault()
-              const val = !rememberLocal
-              setRememberLocal(val)
-              onRememberChange(val)
-            }}
-          >
-            Remember me (keep me signed in longer)
-          </Label>
-        </div>
-
-        {/* Browser wallet — keep dialog OPEN and show loader */}
-        <WalletOptions
-          key={injectedPreferred?.uid ?? 'injected'}
-          connector={{ ...(injectedPreferred ?? ({} as any)), name: 'Browser wallet' } as any}
-          isLoading={connecting === 'browser'}
-          isDisabled={connecting != null}
-          onClick={async (e?: React.MouseEvent) => {
-            e?.preventDefault()
-            e?.stopPropagation()
-            if (!injectedPreferred) return
-            setConnecting('browser')
-            try {
-              if (isConnected && activeConnector?.id === injectedPreferred.id) {
-                await doSiwe()
-                return
-              }
-              if (isConnected && activeConnector?.id && activeConnector.id !== injectedPreferred.id) {
-                await disconnectAsync()
-              }
-              const res = await connectAsync({ connector: injectedPreferred })
-              const first = (res as any)?.accounts?.[0] as string | undefined
-              await doSiwe(first)
-            } catch (e: any) {
-              if (e?.name === 'ConnectorAlreadyConnectedError') {
-                await doSiwe()
-                return
-              }
-              console.error('connect failed', e)
-            } finally {
-              setConnecting(null) // leave dialog open; user can close manually
-            }
-          }}
-        />
-
-        {/* Mobile wallet — closing dialog is OK (QR flow) */}
-        {walletConnectConn && (
-          <WalletOptions
-            key={walletConnectConn.uid}
-            connector={{ ...walletConnectConn, name: 'Mobile wallet' } as any}
-            isLoading={connecting === 'mobile'}
-            isDisabled={connecting != null}
-            onClick={async () => {
-              setConnecting('mobile')
-              try {
-                if (isConnected && activeConnector?.id === walletConnectConn.id) {
-                  await doSiwe()
-                  return
-                }
-                if (isConnected && activeConnector?.id && activeConnector.id !== walletConnectConn.id) {
-                  await disconnectAsync()
-                }
-                // (optional) close before QR
-                setDialogOpen(false)
-                const res = await connectAsync({ connector: walletConnectConn })
-                const first = (res as any)?.accounts?.[0] as string | undefined
-                await doSiwe(first)
-              } catch (e: any) {
-                if (e?.name === 'ConnectorAlreadyConnectedError') {
-                  await doSiwe()
-                  return
-                }
-                console.error('connect failed', e)
-              } finally {
-                setConnecting(null)
-              }
-            }}
-          />
-        )}
-      </div>
-    )
-  }
-
   // ---------------------------
-  // RENDER GATE (no flicker, keep dialog during connect)
+  // RENDER
   // ---------------------------
 
-  // Hide only on the very first load while Redux session is hydrating
-  // (and the dialog isn't open), or during background reconnects when
-  // the dialog isn't open. Do NOT hide when status === 'connecting'
-  // because that's the user-triggered Browser-wallet flow where we want
-  // the dialog to stay visible and show the loader.
-  const initialHydrating = !sessionReady && !dialogOpen
-  const reconnectSettling = status === 'reconnecting' && !dialogOpen
-
-  if (initialHydrating || reconnectSettling) {
-    return <SiweButtonSkeleton />
-  }
+  // Loading state: during connection, signing, OR verification
+  const isLoading = connecting !== null || isSigning || isVerifying
 
   return (
     <>
       {isLoggedIn ? (
-        <Button className="cursor-pointer" onClick={onLogout}>
-          Disconnect
+        <Button className="cursor-pointer" onClick={onLogout} suppressHydrationWarning>
+          <span suppressHydrationWarning>Disconnect</span>
         </Button>
       ) : (
         <>
-          <Button className="cursor-pointer" onClick={onSignIn}>
-            Connect
+          <Button className="cursor-pointer" onClick={onSignIn} suppressHydrationWarning>
+            <span suppressHydrationWarning>Connect</span>
           </Button>
 
           {/* Local, controlled connect dialog */}
@@ -329,6 +366,17 @@ export default function SiweConnectButton() {
               <ConnectDialogContent
                 defaultRemember={remember}
                 onRememberChange={setRemember}
+                injectedPreferred={injectedPreferred}
+                walletConnectConn={walletConnectConn}
+                connecting={connecting}
+                setConnecting={setConnecting}
+                isConnected={isConnected}
+                activeConnector={activeConnector}
+                disconnectAsync={disconnectAsync}
+                connectAsync={connectAsync}
+                doSiwe={doSiwe}
+                setDialogOpen={setDialogOpen}
+                isVerifying={isVerifying}
               />
 
               <DialogFooter>

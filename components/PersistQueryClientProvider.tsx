@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/lib/store'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -16,7 +16,7 @@ export default function PersistQueryClientProviderClient({ children }: { childre
   const epoch = useSelector((s: RootState) => s.auth.sessionEpoch)
 
   const [PersistProvider, setPersistProvider] = useState<null | React.ComponentType<any>>(null)
-  const [persister, setPersister] = useState<any>(null)
+  const [createPersister, setCreatePersister] = useState<any>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -28,19 +28,23 @@ export default function PersistQueryClientProviderClient({ children }: { childre
       ])
       if (!cancelled) {
         setPersistProvider(() => PersistQueryClientProvider as any)
-        setPersister(
-          createSyncStoragePersister({
-            storage: window.localStorage,
-            key: `rqcache:v5:epoch:${epoch}`,
-          }),
-        )
+        setCreatePersister(() => createSyncStoragePersister)
       }
     }
     load()
     return () => {
       cancelled = true
     }
-  }, [epoch])
+  }, [])
+
+  // Memoize persister creation to prevent unnecessary re-creation
+  const persister = useMemo(() => {
+    if (!createPersister || typeof window === 'undefined') return null
+    return createPersister({
+      storage: window.localStorage,
+      key: `rqcache:v5:epoch:${epoch}`,
+    })
+  }, [createPersister, epoch])
 
   // SSR (and until dynamic imports finish): plain provider
   if (typeof window === 'undefined' || !PersistProvider || !persister) {

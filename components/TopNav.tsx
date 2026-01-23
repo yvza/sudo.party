@@ -10,78 +10,13 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { usePathname } from 'next/navigation'
-import dynamic from 'next/dynamic'
 import { useTheme } from 'next-themes'
+import SiweConnectButton from './blog/siwe/connect-button'
 
-// --- match shadcn <Button> default sizing
-const BTN_H = 'h-9'
-const BTN_RADIUS = 'rounded-md'
-const BTN_TXT = 'text-sm font-medium'
-
-// Sword-glint skeleton that matches "Connect" width (no CLS)
+// Kept for backwards compatibility
 export function SiweButtonSkeleton() {
-  return (
-    <div
-      className={`relative inline-flex ${BTN_H} ${BTN_RADIUS} items-center justify-center shrink-0 overflow-hidden border border-slate-200 dark:border-neutral-700 bg-slate-100/40 dark:bg-neutral-800/40 sheen`}
-    >
-      {/* Invisible label reserves the exact "Connect" width */}
-      <span className={`${BTN_TXT} invisible px-4`}>Connect</span>
-
-      <style jsx>{`
-        /* LIGHT MODE: darker diagonal sweep so it’s noticeable on pale backgrounds */
-        .sheen::after {
-          content: '';
-          position: absolute;
-          top: -50%;
-          right: -50%;
-          bottom: -50%;
-          left: -50%;
-          /* center is a semi-transparent charcoal; edges fade to 0 */
-          background: linear-gradient(
-            to bottom,
-            rgba(0, 0, 0, 0) 0%,
-            rgba(0, 0, 0, 0.28) 50%,
-            rgba(0, 0, 0, 0) 100%
-          );
-          transform: rotateZ(60deg) translate(-6em, 9em);
-          animation: sheen-sweep 0.3s linear infinite;
-          will-change: transform;
-          pointer-events: none;
-          mix-blend-mode: multiply;   /* darken against light bg */
-          opacity: 1;
-          filter: blur(0.4px);
-        }
-
-        /* DARK MODE: bright cyan/white sweep so it pops on dark bg */
-        :global(.dark) .sheen::after {
-          background: linear-gradient(
-            to bottom,
-            rgba(134, 214, 255, 0) 0%,
-            rgba(230, 251, 255, 0.9) 50%,
-            rgba(134, 214, 255, 0) 100%
-          );
-          mix-blend-mode: screen;     /* lighten against dark bg */
-          opacity: 0.85;
-          filter: blur(0.6px);
-        }
-
-        @keyframes sheen-sweep {
-          0%   { transform: rotateZ(60deg) translate(-6em, 9em); }
-          100% { transform: rotateZ(60deg) translate(2em, -11em); }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .sheen::after { animation: none; }
-        }
-      `}</style>
-    </div>
-  )
+  return null
 }
-
-const SiweConnectButton = dynamic(
-  () => import('./blog/siwe/connect-button'),
-  { ssr: false, loading: () => <SiweButtonSkeleton /> }
-)
 
 export default function TopNav() {
   const pathName = usePathname()
@@ -134,6 +69,9 @@ export default function TopNav() {
           </Link>
           <Link href="/about">
             <div className={`${linkBase} ${isActive('/about') ? linkActive : linkRest}`}>About</div>
+          </Link>
+          <Link href="/blog/support">
+            <div className={`${linkBase} ${isActive('/blog/support') ? linkActive : linkRest}`}>Support</div>
           </Link>
 
           {/* theme toggle — SSR-safe */}
@@ -197,6 +135,11 @@ export default function TopNav() {
               <DropdownMenuItem>
                 <Link href="/about">
                   <div className={`${linkBase} ${isActive('/about') ? linkActive : linkRest}`}>About</div>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/blog/support">
+                  <div className={`${linkBase} ${isActive('/blog/support') ? linkActive : linkRest}`}>Support</div>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>

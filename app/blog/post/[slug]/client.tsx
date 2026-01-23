@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import axios from 'axios'
+import { isFetchError } from '@/utils/fetcher'
 // @ts-ignore
 import dynamic from 'next/dynamic'
 import { useArticle } from '@/services/articles'
@@ -30,11 +30,11 @@ export default function Client({
 
   const { data, error, isPending } = useArticle(slug)
 
-  // Map Axios error -> HeheIDK props (dynamic)
+  // Map Fetch error -> HeheIDK props (dynamic)
   const errProps = useMemo(() => {
-    if (!axios.isAxiosError(error)) return null
-    const status = error.response?.status ?? 0
-    const body = (error.response?.data ?? {}) as any
+    if (!isFetchError(error)) return null
+    const status = error.status ?? 0
+    const body = (error.data ?? {}) as any
     return {
       status,
       reason: body.reason as any,             // e.g. 'LOGIN_REQUIRED' | 'INSUFFICIENT_MEMBERSHIP'
