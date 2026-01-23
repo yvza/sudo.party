@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 const MAX_COMMENT_CHARS = 500;
 
@@ -33,15 +34,17 @@ type CommentNode = Comment & { children: CommentNode[] };
 // Badge component for supporters and creator - minimalist with subtle animation
 const CommentBadge = memo(function CommentBadge({
   supportCount,
-  isCreator
+  isCreator,
+  t
 }: {
   supportCount?: number;
   isCreator?: boolean;
+  t: ReturnType<typeof useTranslations>;
 }) {
   if (isCreator) {
     return (
       <span className="creator-badge inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border border-slate-900 dark:border-slate-100 text-slate-900 dark:text-slate-100 relative overflow-hidden">
-        <span className="relative z-10">Creator</span>
+        <span className="relative z-10">{t('comments.creator')}</span>
         <style jsx>{`
           .creator-badge::after {
             content: '';
@@ -81,7 +84,7 @@ const CommentBadge = memo(function CommentBadge({
   if (supportCount && supportCount > 0) {
     return (
       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border border-slate-400 dark:border-slate-600 text-slate-600 dark:text-slate-400">
-        {supportCount}x Supporter
+        {t('comments.supporter', { count: supportCount })}
       </span>
     );
   }

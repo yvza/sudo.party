@@ -1,0 +1,75 @@
+{
+  "nav": {
+    "blog": "Blog",
+    "about": "Tentang",
+    "support": "Dukung",
+    "disclaimer": "Disclaimer",
+    "privacyPolicy": "Kebijakan Privasi",
+    "toggleTheme": "Ganti tema"
+  },
+  "auth": {
+    "signInRequired": "Masuk diperlukan",
+    "signInDescription": "Silakan masuk dengan wallet Anda untuk mengakses postingan ini.",
+    "connect": "Hubungkan",
+    "disconnect": "Putuskan"
+  },
+  "supporter": {
+    "accessRequired": "Akses Supporter diperlukan",
+    "becomeSupporter": "Jadi Supporter",
+    "buyArticle": "Beli Artikel Ini",
+    "buyFor": "Beli seharga ${price}",
+    "permanentAccess": "Dapatkan akses permanen ke artikel ini dengan pembayaran satu kali.",
+    "supporterBenefits": "Keuntungan Supporter",
+    "unlimitedAccess": "Akses tak terbatas ke semua artikel",
+    "earlyAccess": "Akses lebih awal ke konten baru",
+    "supportCreator": "Dukung kreator langsung"
+  },
+  "comments": {
+    "title": "Komentar",
+    "count": "Komentar ({count})",
+    "signInToComment": "Masuk untuk melihat dan mengirim komentar.",
+    "writeComment": "Tulis komentar...",
+    "reply": "Balas",
+    "post": "Kirim",
+    "cancel": "Batal",
+    "creator": "Kreator",
+    "supporter": "{count}x Supporter",
+    "noComments": "Belum ada komentar",
+    "beFirst": "Jadilah yang pertama berkomentar!"
+  },
+  "common": {
+    "backToBlog": "Kembali ke Blog",
+    "loading": "Memuat...",
+    "redirecting": "Mengalihkan...",
+    "somethingWentWrong": "Terjadi kesalahan",
+    "tryAgain": "Coba lagi",
+    "close": "Tutup",
+    "save": "Simpan",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "share": "Bagikan",
+    "copy": "Salin",
+    "copied": "Tersalin!"
+  },
+  "payment": {
+    "processing": "Memproses pembayaran...",
+    "success": "Pembayaran berhasil!",
+    "failed": "Pembayaran gagal",
+    "verifying": "Memverifikasi pembayaran...",
+    "thankYou": "Terima kasih atas dukungan Anda!",
+    "redirectingToArticle": "Mengalihkan ke artikel...",
+    "redirectingToBlog": "Mengalihkan ke blog..."
+  },
+  "blog": {
+    "latestPosts": "Postingan Terbaru",
+    "allPosts": "Semua Postingan",
+    "readMore": "Baca selengkapnya",
+    "minRead": "{min} menit baca",
+    "publishedOn": "Dipublikasikan pada",
+    "updatedOn": "Diperbarui pada",
+    "tags": "Tag",
+    "category": "Kategori",
+    "search": "Cari artikel...",
+    "noResults": "Tidak ada hasil ditemukan"
+  }
+}

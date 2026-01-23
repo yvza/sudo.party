@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { Link, usePathname } from '@/lib/i18n-navigation'
 import { HamburgerMenuIcon, MoonIcon, SunIcon } from '@radix-ui/react-icons'
 import {
   DropdownMenu,
@@ -9,9 +9,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import SiweConnectButton from './blog/siwe/connect-button'
+import LanguageSwitcher from './LanguageSwitcher'
 
 // Kept for backwards compatibility
 export function SiweButtonSkeleton() {
@@ -74,6 +74,9 @@ export default function TopNav() {
             <div className={`${linkBase} ${isActive('/blog/support') ? linkActive : linkRest}`}>Support</div>
           </Link>
 
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           {/* theme toggle — SSR-safe */}
           <button
             type="button"
@@ -101,6 +104,8 @@ export default function TopNav() {
         </Link>
 
         <div className="flex flex-row gap-4 items-center">
+          <LanguageSwitcher />
+
           <button
             type="button"
             onClick={toggleTheme}

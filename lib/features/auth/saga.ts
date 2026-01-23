@@ -134,10 +134,14 @@ function* logoutWorker(): SagaIterator {
     // Clear auth hint on logout
     clearAuthHint()
 
-    // clear article caches from previous epoch
+    // Invalidate and remove article caches - this forces refetch on active queries
+    queryClient.invalidateQueries({ predicate: isArticleKey })
     queryClient.removeQueries({ predicate: isArticleKey })
-    // (optional)
-    // queryClient.refetchQueries({ predicate: isArticleKey, type: 'active' })
+
+    // Force page reload to ensure clean state for protected content
+    if (typeof window !== 'undefined') {
+      window.location.reload()
+    }
   }
 }
 

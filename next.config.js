@@ -1,3 +1,7 @@
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./i18n.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async headers() {
@@ -7,7 +11,7 @@ const nextConfig = {
       // Basic hardening
       { key: 'X-Content-Type-Options', value: 'nosniff' },
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-      // You’re not embedding this app elsewhere
+      // You're not embedding this app elsewhere
       { key: 'X-Frame-Options', value: 'DENY' }, // (CSP frame-ancestors is stronger, set below)
       // Cut down powerful APIs
       { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), fullscreen=(self), browsing-topics=()' },
@@ -30,4 +34,4 @@ const nextConfig = {
   }
 }
 
-module.exports = nextConfig
+module.exports = withNextIntl(nextConfig)

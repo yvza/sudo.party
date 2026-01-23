@@ -107,6 +107,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 4) Persist payment (idempotent by token)
     const orderIdToStore = orderId ?? expectedOrderId ?? null;
+    const fiatAmount = Number(b.fiatAmount ?? b.FiatAmount ?? 0);
     await db.execute({
       sql: `INSERT INTO payments (token, order_id, payment_id, status_code, status_text, raw_payload, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, strftime('%s','now'))
@@ -120,7 +121,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       args: [token, orderIdToStore, paymentId, status, String(status), JSON.stringify(b)],
     });
 
-    // 5) Ensure supporter tier exists
+    // Check payment kind from additionalData
+    const kind = additional.find(a => a.key === "kind")?.value;
+    const articleSlug = additional.find(a => a.key === "article_slug")?.value;
+
+    // Handle article purchases separately (permanent access, no membership upgrade)
+    if (kind === "article-purchase" && articleSlug) {
+      // Create article_purchases table if it doesn't exist
+      try {
+        await db.execute({
+          sql: `CREATE TABLE IF NOT EXISTS article_purchases (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            wallet_id INTEGER NOT NULL,
+            article_slug TEXT NOT NULL,
+            payment_token TEXT NOT NULL,
+            price_usd REAL NOT NULL,
+            purchased_at INTEGER DEFAULT (strftime('%s','now')),
+            UNIQUE(wallet_id, article_slug),
+            FOREIGN KEY (wallet_id) REFERENCES wallets(id)
+          )`,
+        });
+      } catch {}
+
+      // Insert article purchase (idempotent by wallet_id + article_slug)
+      await db.execute({
+        sql: `INSERT INTO article_purchases (wallet_id, article_slug, payment_token, price_usd)
+              VALUES (?, ?, ?, ?)
+              ON CONFLICT(wallet_id, article_slug) DO NOTHING`,
+        args: [walletId, articleSlug, token, fiatAmount],
+      });
+
+      // Clear outbox
+      try {
+        await db.execute({ sql: `DELETE FROM payment_outbox WHERE token = ?`, args: [token] });
+      } catch {}
+
+      return res.status(200).json({ ok: true, message: "Article purchase verified and processed." });
+    }
+
+    // 5) Ensure supporter tier exists (for support donations)
     await db.execute({
       sql: `INSERT INTO membership_types (slug, name, rank, is_default)
             SELECT 'supporter','Supporter',2,0

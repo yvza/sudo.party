@@ -4,7 +4,9 @@ import { createClient } from "@libsql/client";
 import { assertSameOrigin } from "@/utils/helper";
 
 function getBaseUrl(): string {
-  if (process.env.NODE_ENV === "development") return "http://localhost:3000";
+  // Allow override via env var (useful for development with ngrok/tunnels)
+  if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
+  if (process.env.NODE_ENV === "development") return "https://sudo.party"; // Paymento requires HTTPS
   return "https://sudo.party";
 }
 
@@ -16,10 +18,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(403).json({ error: "CSRF protection: origin mismatch" });
     }
 
-    const { fiatAmount = 5, fiatCurrency = "USD", addressLower } = req.body || {};
+    const { fiatAmount = 5, fiatCurrency = "USD", addressLower, articleSlug } = req.body || {};
+
+    // For article purchases, use the provided amount; for donations, enforce minimum
+    const isArticlePurchase = !!articleSlug;
     const min = Number(process.env.SUPPORT_MIN_USD || 5);
-    if (Number(fiatAmount) < min) {
+    if (!isArticlePurchase && Number(fiatAmount) < min) {
       return res.status(400).json({ error: `Min amount is $${min}` });
+    }
+    if (isArticlePurchase && Number(fiatAmount) <= 0) {
+      return res.status(400).json({ error: "Invalid article price" });
     }
     if (!addressLower || typeof addressLower !== "string") {
       return res.status(400).json({ error: "Connect your wallet first" });
@@ -73,9 +81,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         orderId, // UUID, gateway-friendly
         Speed: 1,
         additionalData: [
-          { key: "kind", value: "support-donation" },
-          { key: "wallet_id", value: String(walletId) }, // mapping we control
+          { key: "kind", value: articleSlug ? "article-purchase" : "support-donation" },
+          { key: "wallet_id", value: String(walletId) },
           { key: "address", value: addressLower },
+          ...(articleSlug ? [{ key: "article_slug", value: articleSlug }] : []),
         ],
       }),
     });

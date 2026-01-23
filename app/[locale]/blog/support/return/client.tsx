@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { Link, useRouter } from "@/lib/i18n-navigation";
+import { useSearchParams } from "next/navigation";
 
 type VerifyResp =
   | { ok: true; message: string }
   | { ok: false; message: string; reason?: string; status?: number };
+
+type PurchaseInfo = {
+  type: "article" | "supporter";
+  articleSlug?: string;
+};
 
 export default function SupportReturnClient() {
   const qp = useSearchParams();
@@ -17,7 +22,8 @@ export default function SupportReturnClient() {
 
   const [state, setState] = useState<"idle" | "verifying" | "done">("idle");
   const [resp, setResp] = useState<VerifyResp | null>(null);
-  const [countdown, setCountdown] = useState<number>(15);
+  const [countdown, setCountdown] = useState<number>(5);
+  const [purchaseInfo, setPurchaseInfo] = useState<PurchaseInfo>({ type: "supporter" });
   const abortRef = useRef<AbortController | null>(null);
 
   const returnTo = useMemo<string>(() => {
@@ -28,6 +34,17 @@ export default function SupportReturnClient() {
     } catch {}
     return "/blog";
   }, [fromParam]);
+
+  // Load purchase info from sessionStorage
+  useEffect(() => {
+    try {
+      const purchaseType = sessionStorage.getItem("support.purchaseType");
+      const articleSlug = sessionStorage.getItem("support.articleSlug");
+      if (purchaseType === "article" && articleSlug) {
+        setPurchaseInfo({ type: "article", articleSlug });
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,15 +109,21 @@ export default function SupportReturnClient() {
   }, [token]);
 
   const isOK = resp?.ok === true;
+  const isArticlePurchase = purchaseInfo.type === "article";
 
   useEffect(() => {
     if (!isOK) return;
 
+    // Clear sessionStorage
     try {
       sessionStorage.removeItem("support.returnTo");
+      sessionStorage.removeItem("support.purchaseType");
+      sessionStorage.removeItem("support.articleSlug");
     } catch {}
 
-    setCountdown(15);
+    // Shorter countdown for article purchases (5s) vs supporter (15s)
+    const redirectTime = isArticlePurchase ? 5 : 15;
+    setCountdown(redirectTime);
 
     const intervalId = window.setInterval(() => {
       setCountdown((s) => (s > 0 ? s - 1 : 0));
@@ -108,13 +131,20 @@ export default function SupportReturnClient() {
 
     const timeoutId = window.setTimeout(() => {
       router.replace(returnTo);
-    }, 15000);
+    }, redirectTime * 1000);
 
     return () => {
       clearInterval(intervalId);
       clearTimeout(timeoutId);
     };
-  }, [isOK, router, returnTo]);
+  }, [isOK, router, returnTo, isArticlePurchase]);
+
+  // Dynamic title and message based on purchase type
+  const successTitle = isArticlePurchase ? "Article purchased!" : "Payment verified";
+  const successMessage = isArticlePurchase
+    ? "You now have permanent access to this article."
+    : resp?.message || "Payment verified and processed.";
+  const buttonText = isArticlePurchase ? "Read article now" : "Continue now";
 
   return (
     <main className="min-h-[70vh] bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
@@ -122,10 +152,10 @@ export default function SupportReturnClient() {
         <header className="mb-6">
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-neutral-600 dark:text-neutral-300 dark:border-neutral-800">
             <span className="h-1.5 w-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
-            Payment verification
+            {isArticlePurchase ? "Article purchase" : "Payment verification"}
           </div>
           <h1 className="mt-3 text-2xl font-semibold tracking-tight">
-            {state !== "done" ? "Verifying payment…" : isOK ? "Payment verified" : "Verification failed"}
+            {state !== "done" ? "Verifying payment…" : isOK ? successTitle : "Verification failed"}
           </h1>
         </header>
 
@@ -154,12 +184,14 @@ export default function SupportReturnClient() {
           <p className="text-sm text-neutral-700 dark:text-neutral-300">
             {state !== "done"
               ? "Please wait while we confirm your payment on-chain."
-              : resp?.message || (isOK ? "Payment verified and processed." : "We couldn’t verify your payment.")}
+              : isOK
+              ? successMessage
+              : resp?.message || "We couldn't verify your payment."}
           </p>
 
           {isOK && (
             <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
-              Redirecting in {countdown}s… If it doesn’t,{" "}
+              Redirecting in {countdown}s… If it doesn't,{" "}
               <button
                 onClick={() => router.replace(returnTo)}
                 className="underline underline-offset-2 hover:text-neutral-700 dark:hover:text-neutral-300"
@@ -191,7 +223,7 @@ export default function SupportReturnClient() {
                   href={returnTo}
                   className="inline-flex items-center rounded-lg bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
                 >
-                  Continue now
+                  {buttonText}
                 </Link>
                 <span className="text-xs text-neutral-500 dark:text-neutral-400">You can safely close this tab.</span>
               </>
@@ -215,7 +247,7 @@ export default function SupportReturnClient() {
         </section>
 
         <p className="mt-6 text-xs text-neutral-500 dark:text-neutral-400">
-          We verify directly with the payment gateway. Refreshing this page won’t charge you again.
+          We verify directly with the payment gateway. Refreshing this page won't charge you again.
         </p>
       </div>
     </main>

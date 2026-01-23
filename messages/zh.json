@@ -1,0 +1,75 @@
+{
+  "nav": {
+    "blog": "博客",
+    "about": "关于",
+    "support": "支持",
+    "disclaimer": "免责声明",
+    "privacyPolicy": "隐私政策",
+    "toggleTheme": "切换主题"
+  },
+  "auth": {
+    "signInRequired": "需要登录",
+    "signInDescription": "请使用您的钱包登录以访问此文章。",
+    "connect": "连接",
+    "disconnect": "断开"
+  },
+  "supporter": {
+    "accessRequired": "需要支持者权限",
+    "becomeSupporter": "成为支持者",
+    "buyArticle": "购买此文章",
+    "buyFor": "购买 ${price}",
+    "permanentAccess": "一次性付款即可永久访问此文章。",
+    "supporterBenefits": "支持者福利",
+    "unlimitedAccess": "无限访问所有文章",
+    "earlyAccess": "抢先获取新内容",
+    "supportCreator": "直接支持创作者"
+  },
+  "comments": {
+    "title": "评论",
+    "count": "评论 ({count})",
+    "signInToComment": "登录以查看和发表评论。",
+    "writeComment": "写评论...",
+    "reply": "回复",
+    "post": "发送",
+    "cancel": "取消",
+    "creator": "创作者",
+    "supporter": "{count}次支持者",
+    "noComments": "暂无评论",
+    "beFirst": "成为第一个评论的人！"
+  },
+  "common": {
+    "backToBlog": "返回博客",
+    "loading": "加载中...",
+    "redirecting": "跳转中...",
+    "somethingWentWrong": "出错了",
+    "tryAgain": "重试",
+    "close": "关闭",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "share": "分享",
+    "copy": "复制",
+    "copied": "已复制！"
+  },
+  "payment": {
+    "processing": "正在处理付款...",
+    "success": "付款成功！",
+    "failed": "付款失败",
+    "verifying": "正在验证付款...",
+    "thankYou": "感谢您的支持！",
+    "redirectingToArticle": "正在跳转到文章...",
+    "redirectingToBlog": "正在跳转到博客..."
+  },
+  "blog": {
+    "latestPosts": "最新文章",
+    "allPosts": "所有文章",
+    "readMore": "阅读更多",
+    "minRead": "{min}分钟阅读",
+    "publishedOn": "发布于",
+    "updatedOn": "更新于",
+    "tags": "标签",
+    "category": "分类",
+    "search": "搜索文章...",
+    "noResults": "未找到结果"
+  }
+}
