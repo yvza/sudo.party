@@ -65,6 +65,58 @@ const WalletBindingNotice = memo(function WalletBindingNotice() {
   )
 })
 
+// Error message helper - converts technical errors to user-friendly messages
+function getErrorMessage(error: any): string {
+  const message = error?.message?.toLowerCase() || ''
+  const name = error?.name || ''
+  const code = error?.code
+
+  // User rejected/cancelled
+  if (
+    name === 'UserRejectedRequestError' ||
+    code === 4001 ||
+    message.includes('user rejected') ||
+    message.includes('user denied') ||
+    message.includes('user cancelled') ||
+    message.includes('user canceled') ||
+    message.includes('rejected the request')
+  ) {
+    return 'Connection cancelled. Click a wallet option to try again.'
+  }
+
+  // No wallet installed
+  if (
+    message.includes('no provider') ||
+    message.includes('provider not found') ||
+    message.includes('connector not found')
+  ) {
+    return 'No wallet detected. Please install MetaMask or another wallet extension.'
+  }
+
+  // Already processing
+  if (message.includes('already pending') || code === -32002) {
+    return 'A connection request is already pending. Please check your wallet.'
+  }
+
+  // Chain/network issues
+  if (message.includes('chain') || message.includes('network')) {
+    return 'Network error. Please check your wallet is on the correct network.'
+  }
+
+  // Signature rejected
+  if (message.includes('signature') && message.includes('reject')) {
+    return 'Signature rejected. Please sign the message to complete login.'
+  }
+
+  // Generic wallet error
+  if (message.includes('wallet')) {
+    return 'Wallet error. Please try again or use a different wallet.'
+  }
+
+  // Fallback
+  return 'Connection failed. Please try again.'
+}
+
 // Extracted component props type
 type ConnectDialogContentProps = {
   defaultRemember: boolean
@@ -80,6 +132,8 @@ type ConnectDialogContentProps = {
   doSiwe: (addrOverride?: string) => Promise<void>
   setDialogOpen: (v: boolean) => void
   isVerifying: boolean
+  errorMessage: string | null
+  setErrorMessage: (msg: string | null) => void
 }
 
 // Extracted outside main component to prevent re-creation on every render
@@ -97,11 +151,18 @@ const ConnectDialogContent = memo(function ConnectDialogContent({
   doSiwe,
   setDialogOpen,
   isVerifying,
+  errorMessage,
+  setErrorMessage,
 }: ConnectDialogContentProps) {
   const [rememberLocal, setRememberLocal] = useState<boolean>(defaultRemember)
   const rememberId = useId()
 
   useEffect(() => setRememberLocal(defaultRemember), [defaultRemember])
+
+  // Clear error when user starts a new connection attempt
+  const clearErrorAndConnect = () => {
+    setErrorMessage(null)
+  }
 
   // Buttons should be disabled during connection OR after SIWE (verifying)
   const buttonsDisabled = connecting != null || isVerifying
@@ -109,6 +170,16 @@ const ConnectDialogContent = memo(function ConnectDialogContent({
   return (
     <div className="flex gap-3 flex-col lg:flex-row justify-center flex-wrap mt-2">
       <WalletBindingNotice />
+
+      {/* Error message display */}
+      {errorMessage && (
+        <Alert variant="default" className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/30">
+          <AlertCircleIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <AlertDescription className="text-amber-700 dark:text-amber-300">
+            {errorMessage}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="w-full flex items-center justify-center mb-1 gap-2 text-sm">
         <Checkbox
@@ -146,6 +217,7 @@ const ConnectDialogContent = memo(function ConnectDialogContent({
           e?.preventDefault()
           e?.stopPropagation()
           if (!injectedPreferred || buttonsDisabled) return
+          clearErrorAndConnect()
           setConnecting('browser')
           try {
             if (isConnected && activeConnector?.id === injectedPreferred.id) {
@@ -163,6 +235,8 @@ const ConnectDialogContent = memo(function ConnectDialogContent({
               await doSiwe()
               return
             }
+            const userMessage = getErrorMessage(e)
+            setErrorMessage(userMessage)
             console.error('connect failed', e)
           } finally {
             setConnecting(null) // leave dialog open; user can close manually
@@ -179,6 +253,7 @@ const ConnectDialogContent = memo(function ConnectDialogContent({
           isDisabled={buttonsDisabled}
           onClick={async () => {
             if (buttonsDisabled) return
+            clearErrorAndConnect()
             setConnecting('mobile')
             try {
               if (isConnected && activeConnector?.id === walletConnectConn.id) {
@@ -198,6 +273,10 @@ const ConnectDialogContent = memo(function ConnectDialogContent({
                 await doSiwe()
                 return
               }
+              const userMessage = getErrorMessage(e)
+              setErrorMessage(userMessage)
+              // Re-open dialog to show error for mobile
+              setDialogOpen(true)
               console.error('connect failed', e)
             } finally {
               setConnecting(null)
@@ -223,6 +302,9 @@ export default function SiweConnectButton() {
 
   // Track SIWE verification in progress (from sign to success/fail)
   const [isVerifying, setIsVerifying] = useState(false)
+
+  // Error message for user feedback
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const { address, isConnected, connector: activeConnector, status } = useAccount()
   const chainId = useChainId()
@@ -250,11 +332,14 @@ export default function SiweConnectButton() {
   useEffect(() => {
     if (sessionReady && isLoggedIn) {
       setIsVerifying(false)
+      setErrorMessage(null)
       setDialogOpen(false)
     }
   }, [sessionReady, isLoggedIn])
 
   const onSignIn = () => {
+    // Clear any previous error when opening dialog
+    setErrorMessage(null)
     // open local dialog (not the global alert dialog)
     setDialogOpen(true)
   }
@@ -315,7 +400,9 @@ export default function SiweConnectButton() {
       setIsVerifying(true)
 
       dispatch(siweVerifyRequested({ message, signature, remember, signedAt: Date.now() }))
-    } catch (error) {
+    } catch (error: any) {
+      const userMessage = getErrorMessage(error)
+      setErrorMessage(userMessage)
       console.error('Sign-in failed', error)
       setIsVerifying(false)
     } finally {
@@ -377,6 +464,8 @@ export default function SiweConnectButton() {
                 doSiwe={doSiwe}
                 setDialogOpen={setDialogOpen}
                 isVerifying={isVerifying}
+                errorMessage={errorMessage}
+                setErrorMessage={setErrorMessage}
               />
 
               <DialogFooter>
