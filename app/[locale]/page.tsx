@@ -1,9 +1,5 @@
-'use client'
-
-import React, { useEffect, useState } from 'react'
 import { Link } from '@/lib/i18n-navigation'
-import { useTheme } from 'next-themes'
-import { MoonIcon, SunIcon } from '@radix-ui/react-icons'
+import ThemeToggle from '@/components/ThemeToggle'
 
 const projects = [
   {
@@ -54,33 +50,15 @@ const stats = [
   { label: 'Status', value: 'Building' },
 ]
 
+// Get current year at build time for static rendering
+const currentYear = new Date().getFullYear()
+
 export default function Page() {
-  const { setTheme, resolvedTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const toggleTheme = () => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
-  }
-
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 transition-colors">
-      {/* Theme Toggle */}
+      {/* Theme Toggle - Only interactive part */}
       <div className="fixed top-6 right-6 z-50">
-        <button
-          onClick={toggleTheme}
-          className="p-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-          aria-label="Toggle theme"
-        >
-          {mounted && (
-            resolvedTheme === 'dark'
-              ? <SunIcon className="w-5 h-5" />
-              : <MoonIcon className="w-5 h-5" />
-          )}
-        </button>
+        <ThemeToggle />
       </div>
 
       {/* Hero Section */}
@@ -172,53 +150,27 @@ export default function Page() {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => {
-              const CardWrapper = project.internal
-                ? ({ children, className }: { children: React.ReactNode; className: string }) => (
-                    <Link href={project.href} className={className}>{children}</Link>
-                  )
-                : ({ children, className }: { children: React.ReactNode; className: string }) => (
-                    <a href={project.href} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>
-                  )
-
-              return (
-                <CardWrapper
+            {projects.map((project) => (
+              project.internal ? (
+                <Link
                   key={project.name}
+                  href={project.href}
                   className="group relative p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-lg dark:hover:shadow-neutral-900/50 transition-all duration-300 hover:-translate-y-1"
                 >
-                  {/* Tag */}
-                  <div className="absolute top-4 right-4">
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                      {project.tag}
-                    </span>
-                  </div>
-
-                  {/* Icon */}
-                  <div className="text-4xl mb-4">{project.icon}</div>
-
-                  {/* Content */}
-                  <h3 className="text-lg font-semibold mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {project.name}
-                    {!project.internal && (
-                      <svg className="inline-block w-4 h-4 ml-1 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    )}
-                  </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                    {project.description}
-                  </p>
-
-                  {/* Hover arrow */}
-                  <div className="mt-4 flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span>Explore</span>
-                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </CardWrapper>
+                  <ProjectCardContent project={project} />
+                </Link>
+              ) : (
+                <a
+                  key={project.name}
+                  href={project.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-lg dark:hover:shadow-neutral-900/50 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <ProjectCardContent project={project} />
+                </a>
               )
-            })}
+            ))}
 
             {/* Coming Soon Card */}
             <div className="relative p-6 rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50">
@@ -268,7 +220,7 @@ export default function Page() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-neutral-500 dark:text-neutral-500">
-              © {new Date().getFullYear()} sudo.party. Independent research.
+              © {currentYear} sudo.party. Independent research.
             </div>
             <div className="flex items-center gap-6 text-sm">
               <Link href="/disclaimer" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">
@@ -285,5 +237,43 @@ export default function Page() {
         </div>
       </footer>
     </div>
+  )
+}
+
+// Extracted for cleaner code - still server-rendered
+function ProjectCardContent({ project }: { project: typeof projects[0] }) {
+  return (
+    <>
+      {/* Tag */}
+      <div className="absolute top-4 right-4">
+        <span className="px-2 py-1 text-xs font-medium rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+          {project.tag}
+        </span>
+      </div>
+
+      {/* Icon */}
+      <div className="text-4xl mb-4">{project.icon}</div>
+
+      {/* Content */}
+      <h3 className="text-lg font-semibold mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+        {project.name}
+        {!project.internal && (
+          <svg className="inline-block w-4 h-4 ml-1 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        )}
+      </h3>
+      <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+        {project.description}
+      </p>
+
+      {/* Hover arrow */}
+      <div className="mt-4 flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span>Explore</span>
+        <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </>
   )
 }
