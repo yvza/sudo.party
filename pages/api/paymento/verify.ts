@@ -1,5 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@libsql/client";
+import { getArticlePrice } from "@/lib/posts-meta";
+import {
+  getClientIP,
+  applyRateLimit,
+  validateArticleSlug,
+  pricesMatch,
+  logAuditEvent,
+} from "@/lib/security/payment-security";
 
 const PAID = 7;
 const APPROVED = 8;
@@ -11,14 +19,19 @@ function expiryEpochMonths(months: number, baseSeconds?: number): number | null 
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const ip = getClientIP(req);
+
   // Best practice: return 200 with ok:false for non-POST too (avoid probes inferring behavior)
   if (req.method !== "POST") {
     return res.status(200).json({ ok: false, message: "Method not allowed", reason: "method_not_allowed" });
   }
 
+  // Rate limiting - prevent brute force token guessing
+  if (!applyRateLimit(req, res, "verify-payment")) return;
+
   try {
     const { token } = req.body || {};
-    if (!token || typeof token !== "string") {
+    if (!token || typeof token !== "string" || token.length > 500) {
       return res.status(200).json({ ok: false, message: "Missing token", reason: "missing_token" });
     }
 
@@ -38,10 +51,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       verify = JSON.parse(vtext);
     } catch {
+      await logAuditEvent({
+        eventType: "payment_failed",
+        timestamp: Date.now(),
+        ip,
+        token: token.substring(0, 20),
+        reason: "verify_non_json",
+      });
       return res.status(200).json({ ok: false, message: "Payment verification failed.", reason: "verify_non_json" });
     }
 
     if (!vr.ok || !verify?.success || !verify?.body) {
+      await logAuditEvent({
+        eventType: "payment_failed",
+        timestamp: Date.now(),
+        ip,
+        token: token.substring(0, 20),
+        reason: verify?.message || "verify_failed",
+      });
       return res.status(200).json({
         ok: false,
         message: "Payment verification failed.",
@@ -57,6 +84,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const paymentId: number | null = b.paymentId ?? b.PaymentId ?? null;
 
     if (!verifiedToken || verifiedToken !== token) {
+      await logAuditEvent({
+        eventType: "suspicious_activity",
+        timestamp: Date.now(),
+        ip,
+        token: token.substring(0, 20),
+        reason: "token_mismatch",
+      });
       return res.status(200).json({ ok: false, message: "Payment verification failed.", reason: "token_mismatch" });
     }
 
@@ -69,19 +103,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // 2) (Optional) payment_outbox check (if table exists)
     let expectedWalletId: number | null = null;
     let expectedOrderId: string | null = null;
+    let expectedPrice: number | null = null;
     try {
       const out = await db.execute({
-        sql: `SELECT wallet_id, order_id FROM payment_outbox WHERE token = ? LIMIT 1`,
+        sql: `SELECT wallet_id, order_id, expected_price FROM payment_outbox WHERE token = ? LIMIT 1`,
         args: [token],
       });
       if (out.rows.length) {
         expectedWalletId = (out.rows[0].wallet_id as number) ?? null;
         expectedOrderId = (out.rows[0].order_id as string) ?? null;
+        expectedPrice = (out.rows[0].expected_price as number) ?? null;
       }
     } catch {
       // table may not exist; ignore
     }
     if (expectedOrderId && orderId && expectedOrderId !== orderId) {
+      await logAuditEvent({
+        eventType: "suspicious_activity",
+        timestamp: Date.now(),
+        ip,
+        token: token.substring(0, 20),
+        reason: "order_mismatch",
+      });
       return res.status(200).json({ ok: false, message: "Payment verification failed.", reason: "order_mismatch" });
     }
 
@@ -123,10 +166,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check payment kind from additionalData
     const kind = additional.find(a => a.key === "kind")?.value;
-    const articleSlug = additional.find(a => a.key === "article_slug")?.value;
+    const articleSlugRaw = additional.find(a => a.key === "article_slug")?.value;
 
     // Handle article purchases separately (permanent access, no membership upgrade)
-    if (kind === "article-purchase" && articleSlug) {
+    if (kind === "article-purchase" && articleSlugRaw) {
+      // SECURITY: Validate article slug format
+      const validatedSlug = validateArticleSlug(articleSlugRaw);
+      if (!validatedSlug) {
+        await logAuditEvent({
+          eventType: "suspicious_activity",
+          timestamp: Date.now(),
+          ip,
+          walletId,
+          token: token.substring(0, 20),
+          reason: "Invalid article slug in verify",
+          metadata: { providedSlug: String(articleSlugRaw).substring(0, 50) },
+        });
+        return res.status(200).json({ ok: false, reason: "invalid_article_slug" });
+      }
+
+      // SECURITY: Verify article exists and get server-side price
+      const serverPrice = getArticlePrice(validatedSlug);
+      if (serverPrice === null) {
+        await logAuditEvent({
+          eventType: "suspicious_activity",
+          timestamp: Date.now(),
+          ip,
+          walletId,
+          articleSlug: validatedSlug,
+          token: token.substring(0, 20),
+          reason: "Article not purchasable in verify",
+        });
+        return res.status(200).json({ ok: false, reason: "article_not_purchasable" });
+      }
+
+      // SECURITY: Verify paid amount matches expected price
+      if (!pricesMatch(fiatAmount, serverPrice)) {
+        await logAuditEvent({
+          eventType: "suspicious_activity",
+          timestamp: Date.now(),
+          ip,
+          walletId,
+          articleSlug: validatedSlug,
+          amount: fiatAmount,
+          token: token.substring(0, 20),
+          reason: "Price mismatch in verify",
+          metadata: { paidAmount: fiatAmount, expectedPrice: serverPrice },
+        });
+        return res.status(200).json({ ok: false, reason: "price_mismatch" });
+      }
+
       // Create article_purchases table if it doesn't exist
       try {
         await db.execute({
@@ -148,7 +237,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         sql: `INSERT INTO article_purchases (wallet_id, article_slug, payment_token, price_usd)
               VALUES (?, ?, ?, ?)
               ON CONFLICT(wallet_id, article_slug) DO NOTHING`,
-        args: [walletId, articleSlug, token, fiatAmount],
+        args: [walletId, validatedSlug, token, fiatAmount],
+      });
+
+      // Log successful verification
+      await logAuditEvent({
+        eventType: "payment_verified",
+        timestamp: Date.now(),
+        ip,
+        walletId,
+        articleSlug: validatedSlug,
+        amount: fiatAmount,
+        token: token.substring(0, 20),
       });
 
       // Clear outbox
