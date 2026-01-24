@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
-import path from "path";
 import matter from "gray-matter";
 import { requireActiveSession } from "@/lib/auth/require-session";
 import { requiredRankForPost, userRankForAddress } from "@/lib/auth/membership";
@@ -9,7 +8,7 @@ import { SessionData, sessionOptions } from "@/lib/iron-session/config";
 import { bundleMDX } from "mdx-bundler";
 import { encryptJson, isDevBypass } from "@/utils/helper";
 import { turso } from "@/lib/turso";
-import { getArticlePrice } from "@/lib/posts-meta";
+import { getArticlePrice, getPostFilePath } from "@/lib/posts-meta";
 
 // Membership helpers (single source of truth)
 const MembershipRank = { public: 1, supporter: 2, sudopartypass: 3 } as const;
@@ -39,7 +38,7 @@ async function hasArticlePurchase(address: string, slug: string): Promise<boolea
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { slug } = req.query as { slug?: string };
+  const { slug, locale = 'id' } = req.query as { slug?: string; locale?: string };
   if (!slug) return res.status(400).json({ error: "Missing slug" });
 
   // 🔒 Guard GET (and HEAD) — prevent cURL scraping of gated content
@@ -73,8 +72,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
   
-  const filePath = path.join("./posts", `${slug}.md`);
-  if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
+  const filePath = getPostFilePath(slug, locale);
+  if (!filePath || !fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
 
   const raw = fs.readFileSync(filePath, "utf-8");
   const { data } = matter(raw);

@@ -14,8 +14,8 @@ export const getArticles = async (params?: GetArticlesParams) => {
   return api.get<{ total: number; page: number; limit: number; data: any[] }>('/api/articles', { params })
 }
 
-export const getArticle = async (slug: string) => {
-  return api.get(`/api/articles/${slug}`)
+export const getArticle = async (slug: string, locale: string = 'id') => {
+  return api.get(`/api/articles/${slug}`, { params: { locale } })
 }
 
 export const useArticles = (params?: GetArticlesParams) => {
@@ -37,11 +37,11 @@ export const useArticles = (params?: GetArticlesParams) => {
   })
 }
 
-export const useArticle = (slug?: string) => {
+export const useArticle = (slug?: string, locale: string = 'id') => {
   const epoch = useSelector((s: RootState) => s.auth.sessionEpoch)
   return useQuery({
-    queryKey: ['article', slug ?? null, epoch],
-    queryFn: () => getArticle(slug as string),
+    queryKey: ['article', slug ?? null, locale, epoch],
+    queryFn: () => getArticle(slug as string, locale),
     enabled: !!slug,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60 * 24,

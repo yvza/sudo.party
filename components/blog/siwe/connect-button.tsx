@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useId, memo } from 'react'
 import { api } from '@/utils/fetcher'
+import { authLogger } from '@/lib/logger'
 
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/lib/store'
@@ -237,7 +238,7 @@ const ConnectDialogContent = memo(function ConnectDialogContent({
             }
             const userMessage = getErrorMessage(e)
             setErrorMessage(userMessage)
-            console.error('connect failed', e)
+            authLogger.error('connect failed', e)
           } finally {
             setConnecting(null) // leave dialog open; user can close manually
           }
@@ -277,7 +278,7 @@ const ConnectDialogContent = memo(function ConnectDialogContent({
               setErrorMessage(userMessage)
               // Re-open dialog to show error for mobile
               setDialogOpen(true)
-              console.error('connect failed', e)
+              authLogger.error('connect failed', e)
             } finally {
               setConnecting(null)
             }
@@ -403,7 +404,7 @@ export default function SiweConnectButton() {
     } catch (error: any) {
       const userMessage = getErrorMessage(error)
       setErrorMessage(userMessage)
-      console.error('Sign-in failed', error)
+      authLogger.error('Sign-in failed', error)
       setIsVerifying(false)
     } finally {
       setIsSigning(false)

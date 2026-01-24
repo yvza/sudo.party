@@ -5,6 +5,7 @@ import { assertSameOrigin } from "@/utils/helper";
 import { getIronSession } from "iron-session";
 import { SessionData, sessionOptions } from "@/lib/iron-session/config";
 import { getArticlePrice } from "@/lib/posts-meta";
+import { securityLogger } from "@/lib/logger";
 import {
   applyRateLimit,
   validateArticleSlug,
@@ -263,7 +264,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     } catch {
       // Log but don't fail - outbox is defense-in-depth
-      console.error("[SECURITY] Failed to record payment outbox");
+      securityLogger.error("Failed to record payment outbox");
     }
 
     // Audit log successful payment initiation

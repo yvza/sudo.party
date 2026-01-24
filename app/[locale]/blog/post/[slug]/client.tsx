@@ -14,6 +14,7 @@ import ArticlePurchaseCTA from '@/components/ArticlePurchaseCTA'
 import { Link, useRouter } from '@/lib/i18n-navigation'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/lib/store'
+import { useLocale } from 'next-intl'
 
 // defer comments (non-critical) to after paint
 const CommentSection = dynamic(
@@ -27,9 +28,10 @@ export default function Client({
   frontDate
 }: { slug: string; frontTitle?: string; frontDate?: string }) {
   const router = useRouter();
+  const locale = useLocale();
   const earlyDate = safeFormatDate(frontDate as any)
 
-  const { data, error, isPending } = useArticle(slug)
+  const { data, error, isPending } = useArticle(slug, locale)
 
   // Map Fetch error -> HeheIDK props (dynamic)
   const errProps = useMemo(() => {

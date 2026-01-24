@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import crypto from "crypto";
 import { createClient } from "@libsql/client";
+import { securityLogger } from "@/lib/logger";
 
 // ============================================================================
 // PAYMENT SECURITY MODULE
@@ -83,7 +84,7 @@ export function verifyPaymentoHmac(
 
   if (!secretKey) {
     // If no HMAC secret configured, log warning but allow (fallback to API verification)
-    console.warn("[SECURITY] PAYMENTO_HMAC_SECRET not configured - HMAC verification skipped");
+    securityLogger.warn("PAYMENTO_HMAC_SECRET not configured - HMAC verification skipped");
     return { valid: true, reason: "hmac_not_configured" };
   }
 
@@ -267,7 +268,7 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
     });
   } catch (error) {
     // Don't let audit logging failures break the main flow
-    console.error("[AUDIT] Failed to log event:", error);
+    securityLogger.error("Failed to log audit event:", error);
   }
 }
 
