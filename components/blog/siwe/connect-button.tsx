@@ -57,7 +57,7 @@ const WalletBindingNotice = memo(function WalletBindingNotice() {
       <AlertDescription>
         <p><br /></p>
         <p>
-          Coming soon: you'll be able to link your unique SGB Code (e.g., SGB-YourUniqueId) in
+          Coming soon: you&apos;ll be able to link your unique SGB Code (e.g., SGB-YourUniqueId) in
           Settings. Once a code is linked to a wallet, it is permanently bound and cannot be reused
           or transferred. This binding will be required to obtain SGB membership on this site.
         </p>

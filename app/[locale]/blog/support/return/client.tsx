@@ -191,7 +191,7 @@ export default function SupportReturnClient() {
 
           {isOK && (
             <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
-              Redirecting in {countdown}s… If it doesn't,{" "}
+              Redirecting in {countdown}s… If it doesn&apos;t,{" "}
               <button
                 onClick={() => router.replace(returnTo)}
                 className="underline underline-offset-2 hover:text-neutral-700 dark:hover:text-neutral-300"
@@ -247,7 +247,7 @@ export default function SupportReturnClient() {
         </section>
 
         <p className="mt-6 text-xs text-neutral-500 dark:text-neutral-400">
-          We verify directly with the payment gateway. Refreshing this page won't charge you again.
+          We verify directly with the payment gateway. Refreshing this page won&apos;t charge you again.
         </p>
       </div>
     </main>

@@ -99,7 +99,7 @@ export default async function BlogSupportPage() {
                   Additional donations extend your access period.
                 </>
               ) : (
-                <>For now, it's lifetime. We may adjust in the future.</>
+                <>For now, it&apos;s lifetime. We may adjust in the future.</>
               )}
             </p>
           </div>
@@ -109,8 +109,8 @@ export default async function BlogSupportPage() {
         <section className="mt-6 rounded-xl border bg-neutral-50 p-4 dark:bg-neutral-900/50 dark:border-neutral-800">
           <h3 className="text-sm font-semibold">Or Buy Individual Articles</h3>
           <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
-            Don't want a subscription? Some articles can be purchased individually for permanent access.
-            Look for the "Buy for $X" button on locked posts. Individual purchases never expire.
+            Don&apos;t want a subscription? Some articles can be purchased individually for permanent access.
+            Look for the &quot;Buy for $X&quot; button on locked posts. Individual purchases never expire.
           </p>
         </section>
 
