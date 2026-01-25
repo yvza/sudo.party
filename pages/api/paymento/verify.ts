@@ -223,18 +223,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         actualPaid = Number(expectedPriceFromAdditional);
       }
 
-      console.log(`[verify] Article purchase debug:`, {
-        fiatAmount,
-        actualPaid,
-        fiatAmountType: typeof fiatAmount,
-        expectedPrice,
-        expectedPriceFromAdditional,
-        expectedPriceType: typeof expectedPrice,
-        priceToVerify,
-        priceToVerifyType: typeof priceToVerify,
-        rawFiatAmount: b.fiatAmount ?? b.FiatAmount,
-      });
-
       if (priceToVerify === null) {
         await logAuditEvent({
           eventType: "suspicious_activity",
