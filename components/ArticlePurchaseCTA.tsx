@@ -63,7 +63,7 @@ export default function ArticlePurchaseCTA({ slug, price, addressLower }: Props)
             disabled={busy || !addressLower}
             className="inline-flex items-center justify-center rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
           >
-            {busy ? t('common.redirecting') : t('supporter.buyFor', { price: `$${price}` })}
+            {busy ? t('common.redirecting') : t('supporter.buyFor', { price })}
           </button>
           {!addressLower && (
             <p className="mt-2 text-xs text-amber-600">
@@ -72,9 +72,6 @@ export default function ArticlePurchaseCTA({ slug, price, addressLower }: Props)
           )}
           {error && <p className="mt-2 text-red-600 text-sm">{error}</p>}
         </form>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          {t('payment.redirectingToBlog')}
-        </p>
       </div>
     </div>
   );

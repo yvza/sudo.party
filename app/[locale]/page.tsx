@@ -27,6 +27,14 @@ const projects = [
     internal: false,
   },
   {
+    name: 'Zachaval',
+    description: 'Valorant gameplay, tips, and entertainment content.',
+    href: 'https://youtube.com/@zachaval',
+    icon: '🎮',
+    tag: 'Gaming',
+    internal: false,
+  },
+  {
     name: 'Old Blog',
     description: 'Archived writings and early research from the beginning.',
     href: 'https://old.sudo.party',
@@ -45,9 +53,9 @@ const projects = [
 ]
 
 const stats = [
-  { label: 'Projects', value: '5+' },
-  { label: 'Research Focus', value: 'Crypto & Web3' },
-  { label: 'Status', value: 'Building' },
+  { label: 'Projects', value: '6+' },
+  { label: 'Focus', value: 'Crypto & Gaming' },
+  { label: 'Status', value: 'Active' },
 ]
 
 // Get current year at build time for static rendering
@@ -75,7 +83,7 @@ export default function Page() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/50 backdrop-blur-sm">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-              Building in public
+              Independent Creator
             </span>
           </div>
 
@@ -88,9 +96,9 @@ export default function Page() {
 
           {/* Tagline */}
           <p className="text-xl sm:text-2xl text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-            Independent research on crypto, blockchain, and Web3.
+            Research, analytics, and content creation.
             <span className="block mt-2 text-neutral-500 dark:text-neutral-500">
-              Exploring the ecosystem, one project at a time.
+              From blockchain insights to gaming entertainment.
             </span>
           </p>
 
@@ -142,10 +150,10 @@ export default function Page() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              The Ecosystem
+              Projects
             </h2>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-xl mx-auto">
-              A collection of tools, research, and platforms built around crypto and Web3.
+              Research platforms, analytics tools, and content across crypto, Web3, and gaming.
             </p>
           </div>
 
@@ -193,10 +201,18 @@ export default function Page() {
             About
           </h2>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed mb-8">
-            Independent researcher and builder focused on crypto, blockchain technology, and the Web3 ecosystem.
-            All content here is based on personal research and exploration.
+            Creator focused on blockchain research, on-chain analytics, and gaming content.
+            Building tools and sharing insights across multiple platforms.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
+            <a
+              href="https://youtube.com/@zachaval"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-2.5 rounded-full border border-neutral-300 dark:border-neutral-700 text-sm font-medium hover:bg-white dark:hover:bg-neutral-800 transition-colors"
+            >
+              YouTube →
+            </a>
             <a
               href="https://fb.me/sudo.party"
               target="_blank"

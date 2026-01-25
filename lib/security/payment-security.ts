@@ -8,6 +8,41 @@ import { securityLogger } from "@/lib/logger";
 // Provides comprehensive security layers for payment processing
 // ============================================================================
 
+// ============================================================================
+// ENVIRONMENT-AWARE PAYMENTO CREDENTIALS
+// Selects production or development credentials based on environment
+// ============================================================================
+
+function isProduction(): boolean {
+  return (
+    process.env.NODE_ENV === "production" ||
+    process.env.VERCEL_ENV === "production" ||
+    process.env.NEXT_PUBLIC_NODE_ENV === "production"
+  );
+}
+
+/**
+ * Get Paymento API key based on environment
+ * Uses PAYMENTO_API_KEY_PROD for production, PAYMENTO_API_KEY for dev
+ */
+export function getPaymentoApiKey(): string {
+  if (isProduction()) {
+    return process.env.PAYMENTO_API_KEY_PROD || process.env.PAYMENTO_API_KEY || "";
+  }
+  return process.env.PAYMENTO_API_KEY || "";
+}
+
+/**
+ * Get Paymento HMAC secret based on environment
+ * Uses PAYMENTO_HMAC_SECRET_PROD for production, PAYMENTO_HMAC_SECRET for dev
+ */
+export function getPaymentoHmacSecret(): string | undefined {
+  if (isProduction()) {
+    return process.env.PAYMENTO_HMAC_SECRET_PROD || process.env.PAYMENTO_HMAC_SECRET;
+  }
+  return process.env.PAYMENTO_HMAC_SECRET;
+}
+
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 5; // 5 requests per minute per IP
@@ -81,7 +116,7 @@ export function verifyPaymentoHmac(
   rawBody: string | Buffer,
   signature: string | undefined
 ): { valid: boolean; reason?: string } {
-  const secretKey = process.env.PAYMENTO_HMAC_SECRET;
+  const secretKey = getPaymentoHmacSecret();
 
   if (!secretKey) {
     // If no HMAC secret configured, log warning but allow (fallback to API verification)

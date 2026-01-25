@@ -15,6 +15,7 @@ import {
   logAuditEvent,
   getClientIP,
   generatePaymentHash,
+  getPaymentoApiKey,
 } from "@/lib/security/payment-security";
 
 function getBaseUrl(): string {
@@ -192,7 +193,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const r = await fetch("https://api.paymento.io/v1/payment/request", {
       method: "POST",
       headers: {
-        "Api-key": process.env.PAYMENTO_API_KEY || "",
+        "Api-key": getPaymentoApiKey(),
         "Content-Type": "application/json",
         Accept: "application/json",
       },
