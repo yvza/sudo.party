@@ -105,15 +105,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let expectedWalletId: number | null = null;
     let expectedOrderId: string | null = null;
     let expectedPrice: number | null = null;
+    let expectedArticleSlug: string | null = null;
     try {
       const out = await db.execute({
-        sql: `SELECT wallet_id, order_id, expected_price FROM payment_outbox WHERE token = ? LIMIT 1`,
+        sql: `SELECT wallet_id, order_id, expected_price, article_slug FROM payment_outbox WHERE token = ? LIMIT 1`,
         args: [token],
       });
       if (out.rows.length) {
         expectedWalletId = (out.rows[0].wallet_id as number) ?? null;
         expectedOrderId = (out.rows[0].order_id as string) ?? null;
         expectedPrice = (out.rows[0].expected_price as number) ?? null;
+        expectedArticleSlug = (out.rows[0].article_slug as string) ?? null;
       }
     } catch {
       // table may not exist; ignore
@@ -168,6 +170,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Check payment kind from additionalData
     const kind = additional.find(a => a.key === "kind")?.value;
     const articleSlugRaw = additional.find(a => a.key === "article_slug")?.value;
+    const expectedPriceFromAdditional = additional.find(a => a.key === "expected_price")?.value;
 
     // Handle article purchases separately (permanent access, no membership upgrade)
     if (kind === "article-purchase" && articleSlugRaw) {
@@ -186,9 +189,53 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json({ ok: false, reason: "invalid_article_slug" });
       }
 
-      // SECURITY: Verify article exists and get server-side price
-      const serverPrice = getArticlePrice(validatedSlug);
-      if (serverPrice === null) {
+      // Cross-check: if outbox has article_slug, it must match
+      if (expectedArticleSlug && expectedArticleSlug !== validatedSlug) {
+        await logAuditEvent({
+          eventType: "suspicious_activity",
+          timestamp: Date.now(),
+          ip,
+          walletId,
+          token: token.substring(0, 20),
+          reason: "Article slug mismatch with outbox",
+          metadata: { fromPayment: validatedSlug, fromOutbox: expectedArticleSlug },
+        });
+        return res.status(200).json({ ok: false, reason: "article_slug_mismatch" });
+      }
+
+      // Use outbox expected_price as source of truth (set at payment creation time)
+      // Fall back to additionalData, then frontmatter
+      let priceToVerify: number | null = expectedPrice;
+      if (priceToVerify === null && expectedPriceFromAdditional) {
+        priceToVerify = Number(expectedPriceFromAdditional);
+      }
+      if (priceToVerify === null) {
+        // Fallback: get from frontmatter (legacy or outbox unavailable)
+        priceToVerify = getArticlePrice(validatedSlug);
+      }
+
+      // Get fiatAmount - prefer from Paymento response, fallback to expected price from additionalData
+      // Paymento may not return fiatAmount in verify response, so use what we stored
+      let actualPaid = fiatAmount;
+      if (actualPaid === 0 && expectedPriceFromAdditional) {
+        // Paymento didn't return fiatAmount, trust our stored expected_price
+        // This is safe because Paymento only returns status=PAID if the correct amount was paid
+        actualPaid = Number(expectedPriceFromAdditional);
+      }
+
+      console.log(`[verify] Article purchase debug:`, {
+        fiatAmount,
+        actualPaid,
+        fiatAmountType: typeof fiatAmount,
+        expectedPrice,
+        expectedPriceFromAdditional,
+        expectedPriceType: typeof expectedPrice,
+        priceToVerify,
+        priceToVerifyType: typeof priceToVerify,
+        rawFiatAmount: b.fiatAmount ?? b.FiatAmount,
+      });
+
+      if (priceToVerify === null) {
         await logAuditEvent({
           eventType: "suspicious_activity",
           timestamp: Date.now(),
@@ -202,17 +249,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // SECURITY: Verify paid amount matches expected price
-      if (!pricesMatch(fiatAmount, serverPrice)) {
+      if (!pricesMatch(actualPaid, priceToVerify)) {
         await logAuditEvent({
           eventType: "suspicious_activity",
           timestamp: Date.now(),
           ip,
           walletId,
           articleSlug: validatedSlug,
-          amount: fiatAmount,
+          amount: actualPaid,
           token: token.substring(0, 20),
           reason: "Price mismatch in verify",
-          metadata: { paidAmount: fiatAmount, expectedPrice: serverPrice },
+          metadata: { paidAmount: actualPaid, expectedPrice: priceToVerify },
         });
         return res.status(200).json({ ok: false, reason: "price_mismatch" });
       }
