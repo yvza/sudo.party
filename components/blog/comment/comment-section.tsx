@@ -1,9 +1,11 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, memo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 const MAX_COMMENT_CHARS = 500;
 
@@ -23,9 +25,90 @@ type Comment = {
   body: string;
   createdAt: number; // unix seconds
   parentId: number | null;
+  supportCount?: number;
+  isCreator?: boolean;
 };
 
 type CommentNode = Comment & { children: CommentNode[] };
+
+// Badge component for supporters and creator - minimalist with subtle animation
+const CommentBadge = memo(function CommentBadge({
+  supportCount,
+  isCreator,
+  t
+}: {
+  supportCount?: number;
+  isCreator?: boolean;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  if (isCreator) {
+    return (
+      <span className="creator-badge inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border border-slate-900 dark:border-slate-100 text-slate-900 dark:text-slate-100 relative overflow-hidden">
+        <span className="relative z-10">{t('comments.creator')}</span>
+        <style jsx>{`
+          .creator-badge::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+              90deg,
+              transparent 0%,
+              rgba(0, 0, 0, 0.12) 50%,
+              transparent 100%
+            );
+            animation: creator-shimmer 2.5s ease-in-out infinite;
+          }
+          :global(.dark) .creator-badge::after {
+            background: linear-gradient(
+              90deg,
+              transparent 0%,
+              rgba(255, 255, 255, 0.25) 50%,
+              transparent 100%
+            );
+          }
+          @keyframes creator-shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .creator-badge::after { animation: none; }
+          }
+        `}</style>
+      </span>
+    );
+  }
+
+  if (supportCount && supportCount > 0) {
+    return (
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border border-slate-400 dark:border-slate-600 text-slate-600 dark:text-slate-400">
+        {t('comments.supporter', { count: supportCount })}
+      </span>
+    );
+  }
+
+  return null;
+});
+
+// Loading skeleton for comments
+const CommentsSkeleton = memo(function CommentsSkeleton() {
+  return (
+    <div className="space-y-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="rounded-2xl border p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+      ))}
+    </div>
+  );
+});
 
 // ES5-safe: surrogate-pair aware code point counter
 function countGraphemes(input: string): number {
@@ -128,7 +211,16 @@ export default function CommentSection({
     return roots;
   }, [comments.data]);
 
-  if (me.isLoading) return null;
+  if (me.isLoading) {
+    return (
+      <Card className="mt-10">
+        <CardHeader><CardTitle>Comments</CardTitle></CardHeader>
+        <CardContent>
+          <CommentsSkeleton />
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Not logged in
   if (me.isSuccess && !me.data?.authenticated) {
@@ -163,18 +255,26 @@ export default function CommentSection({
     );
   }
 
+  // Count total comments (including nested)
+  const commentCount = comments.data?.comments?.length ?? 0;
+
   return (
     <Card className="mt-10">
-      <CardHeader><CardTitle>Comments</CardTitle></CardHeader>
+      <CardHeader><CardTitle>Comments ({commentCount})</CardTitle></CardHeader>
       <CardContent className="space-y-6">
+        {/* Loading state */}
+        {comments.isLoading && <CommentsSkeleton />}
+
         {/* List (threaded) */}
-        <Thread
-          nodes={tree}
-          depth={0}
-          canReply={canComment}
-          maxDepth={maxDepth}
-          onReply={(parentId, body) => add.mutate({ body, parentId })}
-        />
+        {!comments.isLoading && (
+          <Thread
+            nodes={tree}
+            depth={0}
+            canReply={canComment}
+            maxDepth={maxDepth}
+            onReply={(parentId, body) => add.mutate({ body, parentId })}
+          />
+        )}
 
         {/* Top-level composer */}
         <ReplyComposer
@@ -234,6 +334,7 @@ function CommentItem({
   onReply: (parentId: number, body: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const t = useTranslations();
 
   return (
     <div>
@@ -241,8 +342,11 @@ function CommentItem({
         className="rounded-2xl border p-4"
         style={{ marginLeft: depth * 16 }} // 16px indent per level
       >
-        <div className="text-xs opacity-70">
-          {shorten(node.authorAddress)} · {formatTime(node.createdAt)}
+        <div className="flex items-center gap-2 flex-wrap text-xs opacity-70">
+          <span>{shorten(node.authorAddress)}</span>
+          <CommentBadge supportCount={node.supportCount} isCreator={node.isCreator} t={t} />
+          <span>·</span>
+          <span>{formatTime(node.createdAt)}</span>
         </div>
         <div className="mt-2 whitespace-pre-wrap text-sm">{node.body}</div>
 

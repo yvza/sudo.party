@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { useTranslations } from "next-intl";
 
 export default function SupportCTA({ minUsd = 5, addressLower }: { minUsd?: number; addressLower: string }) {
+  const t = useTranslations();
   const [amount, setAmount] = useState<number>(minUsd);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,10 +19,10 @@ export default function SupportCTA({ minUsd = 5, addressLower }: { minUsd?: numb
         body: JSON.stringify({ fiatAmount: amount, fiatCurrency: "USD", addressLower }),
       });
       const data = await r.json();
-      if (!r.ok || !data?.redirectUrl) throw new Error(data?.error || "Failed to start payment");
+      if (!r.ok || !data?.redirectUrl) throw new Error(data?.error || t('common.somethingWentWrong'));
       window.location.href = data.redirectUrl as string;
     } catch (err: any) {
-      setError(err.message || "Something went wrong");
+      setError(err.message || t('common.somethingWentWrong'));
     } finally {
       setBusy(false);
     }
@@ -41,7 +43,7 @@ export default function SupportCTA({ minUsd = 5, addressLower }: { minUsd?: numb
         />
       </label>
       <button type="submit" disabled={busy} className="inline-flex items-center border rounded px-3 py-1">
-        {busy ? "Redirecting…" : "Support via Paymento"}
+        {busy ? t('common.redirecting') : "Support via Paymento"}
       </button>
       {error && <p className="mt-2 text-red-600 text-sm">{error}</p>}
     </form>

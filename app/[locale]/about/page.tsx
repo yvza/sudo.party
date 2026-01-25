@@ -17,7 +17,7 @@ export default function page() {
         </p>
 
         <p className="mb-4 leading-relaxed">
-          All articles are carefully researched and written by my self, ensuring authentic, human-crafted content based on practical experience and thorough investigation.
+          All articles are carefully researched and written by my self.
         </p>
 
         <p className="mb-4 leading-relaxed">

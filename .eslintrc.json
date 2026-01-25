@@ -1,3 +1,17 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "@/utils/helper.server",
+            "message": "Server-only helper. Import it only from API routes, server components, or server actions."
+          }
+        ],
+        "patterns": ["**/utils/*server*"]
+      }
+    ]
+  }
 }

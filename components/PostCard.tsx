@@ -1,6 +1,8 @@
+'use client'
+
 import React from 'react'
 // @ts-ignore
-import Link from 'next/link'
+import { Link, usePathname } from '@/lib/i18n-navigation'
 import { safeFormatDate } from '@/utils/helper'
 import { Badge } from './ui/badge'
 

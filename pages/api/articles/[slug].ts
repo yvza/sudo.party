@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
-import path from "path";
 import matter from "gray-matter";
 import { requireActiveSession } from "@/lib/auth/require-session";
 import { requiredRankForPost, userRankForAddress } from "@/lib/auth/membership";
@@ -9,6 +8,7 @@ import { SessionData, sessionOptions } from "@/lib/iron-session/config";
 import { bundleMDX } from "mdx-bundler";
 import { encryptJson, isDevBypass } from "@/utils/helper";
 import { turso } from "@/lib/turso";
+import { getArticlePrice, getPostFilePath } from "@/lib/posts-meta";
 
 // Membership helpers (single source of truth)
 const MembershipRank = { public: 1, supporter: 2, sudopartypass: 3 } as const;
@@ -18,8 +18,27 @@ const normalizeMembership = (v?: string): MembershipSlug => {
   return (x in MembershipRank ? x : "public") as MembershipSlug;
 };
 
+// Check if user has purchased a specific article
+async function hasArticlePurchase(address: string, slug: string): Promise<boolean> {
+  try {
+    const { rows } = await turso.execute({
+      sql: `
+        SELECT 1 FROM article_purchases ap
+        JOIN wallets w ON w.id = ap.wallet_id
+        WHERE w.address = ? AND ap.article_slug = ?
+        LIMIT 1
+      `,
+      args: [address.toLowerCase(), slug],
+    });
+    return rows.length > 0;
+  } catch {
+    // Table might not exist yet
+    return false;
+  }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { slug } = req.query as { slug?: string };
+  const { slug, locale = 'id' } = req.query as { slug?: string; locale?: string };
   if (!slug) return res.status(400).json({ error: "Missing slug" });
 
   // 🔒 Guard GET (and HEAD) — prevent cURL scraping of gated content
@@ -29,23 +48,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: "Not authenticated", reason: "LOGIN_REQUIRED" });
     }
 
+    const address = String(session.identifier).toLowerCase();
     const [need, have] = await Promise.all([
       requiredRankForPost(slug),
-      userRankForAddress(String(session.identifier).toLowerCase()),
+      userRankForAddress(address),
     ]);
 
     if (have < need) {
-      return res.status(403).json({
-        error: "Membership not eligible",
-        reason: "INSUFFICIENT_MEMBERSHIP",
-        requiredRank: need,
-        userRank: have,
-      });
+      // Check if user has purchased this specific article
+      const hasPurchased = await hasArticlePurchase(address, slug);
+      if (!hasPurchased) {
+        // Get article price for the error response
+        const articlePrice = getArticlePrice(slug);
+        return res.status(403).json({
+          error: "Membership not eligible",
+          reason: "INSUFFICIENT_MEMBERSHIP",
+          requiredRank: need,
+          userRank: have,
+          articlePrice,
+        });
+      }
+      // User has purchased - allow access (fall through)
     }
   }
   
-  const filePath = path.join("./posts", `${slug}.md`);
-  if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
+  const filePath = getPostFilePath(slug, locale);
+  if (!filePath || !fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
 
   const raw = fs.readFileSync(filePath, "utf-8");
   const { data } = matter(raw);
@@ -99,15 +127,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const requiredSlug = membership // from frontmatter, e.g. 'supporter' or 'sudopartypass'
       if (userRank < requiredRank) {
-        res.setHeader("Cache-Control", "private, no-store");
-        return res.status(403).json({
-          error: "Forbidden",
-          reason: "INSUFFICIENT_MEMBERSHIP",        // <— key
-          message: "Your membership level is not high enough to view this post.",
-          required: requiredSlug,                   // 'supporter' | 'sudopartypass'
-          userMembership: session.membership || 'public',
-          userRank,
-        })
+        // Check if user has purchased this specific article
+        const hasPurchased = await hasArticlePurchase(address || "", slug);
+        if (!hasPurchased) {
+          // Get article price for the error response
+          const articlePrice = getArticlePrice(slug);
+          res.setHeader("Cache-Control", "private, no-store");
+          return res.status(403).json({
+            error: "Forbidden",
+            reason: "INSUFFICIENT_MEMBERSHIP",        // ← key
+            message: "Your membership level is not high enough to view this post.",
+            required: requiredSlug,                   // 'supporter' | 'sudopartypass'
+            userMembership: session.membership || 'public',
+            userRank,
+            articlePrice,                             // Include price if available for purchase CTA
+          })
+        }
+        // User has purchased - allow access (fall through)
       }
     }
   }

@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { api, isFetchError } from '@/utils/fetcher'
 import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/lib/store'
@@ -11,13 +11,11 @@ export type GetArticlesParams = {
 }
 
 export const getArticles = async (params?: GetArticlesParams) => {
-  const res = await axios.get('/api/articles', { params, withCredentials: true })
-  return res.data as { total: number; page: number; limit: number; data: any[] }
+  return api.get<{ total: number; page: number; limit: number; data: any[] }>('/api/articles', { params })
 }
 
-export const getArticle = async (slug: string) => {
-  const res = await axios.get(`/api/articles/${slug}`, { withCredentials: true })
-  return res.data
+export const getArticle = async (slug: string, locale: string = 'id') => {
+  return api.get(`/api/articles/${slug}`, { params: { locale } })
 }
 
 export const useArticles = (params?: GetArticlesParams) => {
@@ -28,8 +26,8 @@ export const useArticles = (params?: GetArticlesParams) => {
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60 * 24,
     retry: (count, err) => {
-      if (axios.isAxiosError(err)) {
-        const code = err.response?.status
+      if (isFetchError(err)) {
+        const code = err.status
         if (code === 401 || code === 403) return false
       }
       return count < 3
@@ -39,17 +37,17 @@ export const useArticles = (params?: GetArticlesParams) => {
   })
 }
 
-export const useArticle = (slug?: string) => {
+export const useArticle = (slug?: string, locale: string = 'id') => {
   const epoch = useSelector((s: RootState) => s.auth.sessionEpoch)
   return useQuery({
-    queryKey: ['article', slug ?? null, epoch],
-    queryFn: () => getArticle(slug as string),
+    queryKey: ['article', slug ?? null, locale, epoch],
+    queryFn: () => getArticle(slug as string, locale),
     enabled: !!slug,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60 * 24,
     retry: (count, err) => {
-      if (axios.isAxiosError(err)) {
-        const code = err.response?.status
+      if (isFetchError(err)) {
+        const code = err.status
         if (code === 401 || code === 403) return false
       }
       return count < 3

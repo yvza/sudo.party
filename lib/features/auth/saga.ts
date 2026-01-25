@@ -1,6 +1,6 @@
 import { call, put, takeLatest } from 'redux-saga/effects'
 import type { SagaIterator } from 'redux-saga'
-import axios, { AxiosResponse } from 'axios'
+import { api } from '@/utils/fetcher'
 import {
   siweVerifyRequested,
   siweVerifySucceeded,
@@ -10,11 +10,11 @@ import {
   logoutRequested,
   logoutSucceeded,
   sessionHydrateFailed,
+  persistAuthHint,
+  clearAuthHint,
 } from './slice'
 import { hideAlertDialog } from '@/lib/features/alertDialog/toggle'
 import { queryClient } from '@/lib/react-query/client'
-
-axios.defaults.withCredentials = true
 
 type Membership = 'public' | 'supporter' | 'sudopartypass'
 
@@ -34,8 +34,7 @@ const isArticleKey = (q: { queryKey: unknown }) => {
 
 function* verifyWorker(action: ReturnType<typeof siweVerifyRequested>): SagaIterator {
   try {
-    const resp: AxiosResponse<VerifyResponse> = yield call(axios.post, '/api/siwe/verify', action.payload)
-    const data = resp.data
+    const data: VerifyResponse = yield call(api.post, '/api/siwe/verify', action.payload)
     if (!data?.isLoggedIn) throw new Error('Not logged in')
 
     // NEW: set iron-session TTL metadata (remember/lastSignedAt) via /api/auth
@@ -50,7 +49,7 @@ function* verifyWorker(action: ReturnType<typeof siweVerifyRequested>): SagaIter
     const pkForAccount = (typeof data.pk === 'number' && Number.isInteger(data.pk) && data.pk > 0)
       ? data.pk
       : identifier
-    yield call(axios.post, '/api/auth', {
+    yield call(api.post, '/api/auth', {
       pk: pkForAccount,
       identifier,
       type: 'wallet',
@@ -66,6 +65,14 @@ function* verifyWorker(action: ReturnType<typeof siweVerifyRequested>): SagaIter
       pk: data.pk ?? null,
     }))
 
+    // Persist auth hint for instant UI on next page load
+    persistAuthHint({
+      isLoggedIn: true,
+      address: data.address,
+      membership: data.membership,
+      rank: data.rank,
+    })
+
     // clear article caches from previous epoch
     queryClient.removeQueries({ predicate: isArticleKey })
     // (optional) eagerly refetch active ones in the new epoch
@@ -80,12 +87,11 @@ function* verifyWorker(action: ReturnType<typeof siweVerifyRequested>): SagaIter
 
 function* hydrateWorker(): SagaIterator {
   try {
-    const resp: AxiosResponse<{
+    const me: {
       authenticated: boolean;
       address: string | null;
       membership: { slug: 'public'|'supporter'|'sudopartypass'; name: string; rank: number } | null;
-    }> = yield call(axios.get, '/api/me')
-    const me = resp.data
+    } = yield call(api.get, '/api/me')
     yield put(sessionHydrateSucceeded({
       isLoggedIn: !!me.authenticated,
       address: me.address,
@@ -93,6 +99,18 @@ function* hydrateWorker(): SagaIterator {
       rank: me.membership?.rank ?? 1,
       pk: null,
     }))
+
+    // Persist auth hint for instant UI on next page load
+    if (me.authenticated) {
+      persistAuthHint({
+        isLoggedIn: true,
+        address: me.address,
+        membership: me.membership?.slug ?? 'public',
+        rank: me.membership?.rank ?? 1,
+      })
+    } else {
+      clearAuthHint()
+    }
   } catch {
     yield put(sessionHydrateSucceeded({
       isLoggedIn: false,
@@ -108,15 +126,22 @@ function* hydrateWorker(): SagaIterator {
 
 function* logoutWorker(): SagaIterator {
   try {
-    yield call(axios.delete, '/api/auth')
+    yield call(api.delete, '/api/auth')
   } finally {
     // reducer should bump sessionEpoch here
     yield put(logoutSucceeded())
 
-    // clear article caches from previous epoch
+    // Clear auth hint on logout
+    clearAuthHint()
+
+    // Invalidate and remove article caches - this forces refetch on active queries
+    queryClient.invalidateQueries({ predicate: isArticleKey })
     queryClient.removeQueries({ predicate: isArticleKey })
-    // (optional)
-    // queryClient.refetchQueries({ predicate: isArticleKey, type: 'active' })
+
+    // Force page reload to ensure clean state for protected content
+    if (typeof window !== 'undefined') {
+      window.location.reload()
+    }
   }
 }
 

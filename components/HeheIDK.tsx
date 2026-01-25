@@ -1,5 +1,8 @@
-import Link from 'next/link'
+'use client'
+
+import { Link } from '@/lib/i18n-navigation'
 import React from 'react'
+import { useTranslations } from 'next-intl'
 
 type Reason = 'LOGIN_REQUIRED' | 'INSUFFICIENT_MEMBERSHIP' | 'NOT_FOUND' | 'UNKNOWN'
 
@@ -33,6 +36,45 @@ function resolveReason(p: Props): Reason {
 function toRank(v: number | string | undefined, fallback = 2): number {
   const n = typeof v === "string" ? Number(v) : v;
   return Number.isFinite(n as number) && (n as number) > 0 ? (n as number) : fallback;
+}
+
+function buildCopyWithTranslations(p: Props, t: ReturnType<typeof useTranslations>) {
+  const r = resolveReason(p);
+
+  if (r === "LOGIN_REQUIRED") {
+    return {
+      title: t('auth.signInRequired'),
+      desc: p.message ?? t('auth.signInDescription'),
+      action: { kind: "login" as const, label: t('auth.connect') },
+    };
+  }
+
+  if (r === "INSUFFICIENT_MEMBERSHIP") {
+    const needed = toRank(p.requiredRank, 2);
+    if (needed === 2) {
+      return {
+        title: t('supporter.accessRequired'),
+        desc: p.message ?? t('supporter.accessRequired'),
+        action: { kind: "upgrade" as const, label: t('supporter.becomeSupporter') },
+      };
+    }
+    return {
+      title: t('supporter.accessRequired'),
+      desc: p.message ?? t('supporter.accessRequired'),
+    };
+  }
+
+  if (r === "NOT_FOUND") {
+    return {
+      title: t('common.somethingWentWrong'),
+      desc: p.message ?? t('common.somethingWentWrong'),
+    };
+  }
+
+  return {
+    title: t('common.somethingWentWrong'),
+    desc: p.message ?? t('common.tryAgain'),
+  };
 }
 
 function buildCopy(p: Props) {
@@ -78,7 +120,8 @@ function buildCopy(p: Props) {
 }
 
 export default function HeheIDK(props: Props) {
-  const copy = buildCopy(props)
+  const t = useTranslations()
+  const copy = buildCopyWithTranslations(props, t)
 
   const defaultStyle: React.CSSProperties = {
     whiteSpace: 'pre',

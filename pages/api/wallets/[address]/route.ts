@@ -1,9 +1,22 @@
 // @ts-ignore
 import { NextResponse } from 'next/server'
+import { getIronSession } from "iron-session"
+import { sessionOptions, type SessionData } from "@/lib/iron-session/config"
 import { turso } from '@/lib/turso'
 
 export async function GET(_req: Request, { params }: { params: { address: string } }) {
+  const res = new Response();
+  const session = await getIronSession<SessionData>(_req as any, res as any, sessionOptions);
+
+  if (!session?.isLoggedIn || !session.identifier) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: res.headers });
+  }
+
   const addr = params.address.toLowerCase()
+
+  if (addr !== String(session.identifier).toLowerCase()) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403, headers: res.headers });
+  }
 
   const { rows } = await turso.execute({
     sql: `

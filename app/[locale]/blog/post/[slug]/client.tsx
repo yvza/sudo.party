@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import axios from 'axios'
+import { isFetchError } from '@/utils/fetcher'
 // @ts-ignore
 import dynamic from 'next/dynamic'
 import { useArticle } from '@/services/articles'
@@ -10,9 +10,11 @@ import { getMDXComponent } from 'mdx-bundler/client'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
 import HeheIDK from '@/components/HeheIDK'
-// @ts-ignore
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import ArticlePurchaseCTA from '@/components/ArticlePurchaseCTA'
+import { Link, useRouter } from '@/lib/i18n-navigation'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/lib/store'
+import { useLocale } from 'next-intl'
 
 // defer comments (non-critical) to after paint
 const CommentSection = dynamic(
@@ -26,23 +28,28 @@ export default function Client({
   frontDate
 }: { slug: string; frontTitle?: string; frontDate?: string }) {
   const router = useRouter();
+  const locale = useLocale();
   const earlyDate = safeFormatDate(frontDate as any)
 
-  const { data, error, isPending } = useArticle(slug)
+  const { data, error, isPending } = useArticle(slug, locale)
 
-  // Map Axios error -> HeheIDK props (dynamic)
+  // Map Fetch error -> HeheIDK props (dynamic)
   const errProps = useMemo(() => {
-    if (!axios.isAxiosError(error)) return null
-    const status = error.response?.status ?? 0
-    const body = (error.response?.data ?? {}) as any
+    if (!isFetchError(error)) return null
+    const status = error.status ?? 0
+    const body = (error.data ?? {}) as any
     return {
       status,
       reason: body.reason as any,             // e.g. 'LOGIN_REQUIRED' | 'INSUFFICIENT_MEMBERSHIP'
       message: body.message as string | undefined,
       requiredRank: body.requiredRank as any,         // 'public' | 'supporter' | 'sudopartypass'
       userRank: body.userRank as any,
+      articlePrice: body.articlePrice as number | null,  // Price for individual purchase
     }
   }, [error])
+
+  // Get user address from Redux store for purchase CTA
+  const userAddress = useSelector((state: RootState) => state.auth.address)
 
   const payload = useMemo(() => {
     if (!data?.data) return null
@@ -57,6 +64,15 @@ export default function Client({
 
   // Early error UI (401/403/etc.) with human-readable copy
   if (errProps) {
+    // Only show purchase CTA when:
+    // 1. User is logged in (reason is INSUFFICIENT_MEMBERSHIP, not LOGIN_REQUIRED)
+    // 2. Article has a price set
+    // 3. User has a wallet address
+    const showPurchaseCTA = errProps.reason === 'INSUFFICIENT_MEMBERSHIP' &&
+                            errProps.articlePrice != null &&
+                            errProps.articlePrice > 0 &&
+                            !!userAddress;
+
     return (
       <>
         <TopNav />
@@ -69,6 +85,20 @@ export default function Client({
               requiredRank={errProps.requiredRank}
               userRank={errProps.userRank}
             />
+
+            {/* Show purchase option if article has a price and user is logged in */}
+            {showPurchaseCTA && (
+              <div className="mt-6">
+                <div className="text-center text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                  — or —
+                </div>
+                <ArticlePurchaseCTA
+                  slug={slug}
+                  price={errProps.articlePrice!}
+                  addressLower={userAddress?.toLowerCase() || ''}
+                />
+              </div>
+            )}
           </div>
         </div>
         <BottomNav />

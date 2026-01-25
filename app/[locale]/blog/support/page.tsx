@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n-navigation";
 import { cookies } from "next/headers";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/iron-session/config";
@@ -49,9 +49,11 @@ export default async function BlogSupportPage() {
             <div className="flex-1">
               <h2 className="text-lg font-medium">Why Support?</h2>
               <ul className="mt-2 space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
-                <li>• Unlock supporter-only posts (OG posts remain sudopartypass only).</li>
+                <li>• Access ALL supporter-only posts{months > 0 ? ` for ${months} ${months === 1 ? "month" : "months"}` : ""}.</li>
+                <li>• Cheaper than buying articles individually.</li>
+                <li>• Additional donations extend your access period.</li>
+                <li>• Get a Supporter badge next to your comments.</li>
                 <li>• Help keep the site fast, clean, and independent.</li>
-                <li>• Get a small badge next to your comments (coming soon).</li>
               </ul>
             </div>
             <div className="mt-3 w-full md:mt-0 md:w-60">
@@ -85,7 +87,7 @@ export default async function BlogSupportPage() {
             <h3 className="text-sm font-semibold">What do I get?</h3>
             <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
               Access to posts flagged for <em>Supporter</em>. OG (<em>sudopartypass</em>) posts stay
-              exclusive. Your donation also shows a small decoration badge near your comments address.
+              exclusive. Your donation also shows a Supporter badge near your comments.
             </p>
           </div>
           <div className="rounded-xl border bg-white p-4 dark:bg-neutral-900 dark:border-neutral-800">
@@ -94,13 +96,22 @@ export default async function BlogSupportPage() {
               {months > 0 ? (
                 <>
                   Supporter lasts <strong>{months}</strong> {months === 1 ? "month" : "months"} per donation.
-                  Additional donations extend your access.
+                  Additional donations extend your access period.
                 </>
               ) : (
-                <>For now, it’s lifetime. We may adjust in the future.</>
+                <>For now, it&apos;s lifetime. We may adjust in the future.</>
               )}
             </p>
           </div>
+        </section>
+
+        {/* Individual Article Purchases */}
+        <section className="mt-6 rounded-xl border bg-neutral-50 p-4 dark:bg-neutral-900/50 dark:border-neutral-800">
+          <h3 className="text-sm font-semibold">Or Buy Individual Articles</h3>
+          <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
+            Don&apos;t want a subscription? Some articles can be purchased individually for permanent access.
+            Look for the &quot;Buy for $X&quot; button on locked posts. Individual purchases never expire.
+          </p>
         </section>
 
         {/* Footer nav */}

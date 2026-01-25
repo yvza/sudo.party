@@ -1,7 +1,8 @@
+'use client'
+
 import React, { forwardRef } from 'react'
 import { lang } from '@/lib/constants'
-// @ts-ignore
-import Link from 'next/link'
+import { Link } from '@/lib/i18n-navigation'
 import { HeaderBrandProps } from '@/types/global'
 // import { honkFont } from '@/utils/fonts'
 

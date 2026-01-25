@@ -16,16 +16,62 @@ export type AuthState = {
   sessionReady: boolean
 }
 
+// Try to restore from localStorage for instant UI (no skeleton flash)
+function getPersistedAuthHint(): Partial<AuthState> {
+  if (typeof window === 'undefined') return {}
+  try {
+    const stored = localStorage.getItem('auth_hint')
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      // Only use hint if it's recent (within 24 hours)
+      if (parsed.ts && Date.now() - parsed.ts < 24 * 60 * 60 * 1000) {
+        return {
+          isLoggedIn: parsed.isLoggedIn ?? false,
+          address: parsed.address ?? null,
+          membership: parsed.membership ?? 'public',
+          rank: parsed.rank ?? 1,
+          // Mark as "hinted" but not ready - still need server validation
+          sessionReady: false,
+        }
+      }
+    }
+  } catch {}
+  return {}
+}
+
+// Save auth hint to localStorage for next page load
+export function persistAuthHint(state: Pick<AuthState, 'isLoggedIn' | 'address' | 'membership' | 'rank'>) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem('auth_hint', JSON.stringify({
+      isLoggedIn: state.isLoggedIn,
+      address: state.address,
+      membership: state.membership,
+      rank: state.rank,
+      ts: Date.now(),
+    }))
+  } catch {}
+}
+
+export function clearAuthHint() {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.removeItem('auth_hint')
+  } catch {}
+}
+
+const persistedHint = getPersistedAuthHint()
+
 const initialState: AuthState = {
-  isLoggedIn: false,
-  address: null,
-  membership: 'public',
-  rank: 1,
+  isLoggedIn: persistedHint.isLoggedIn ?? false,
+  address: persistedHint.address ?? null,
+  membership: persistedHint.membership ?? 'public',
+  rank: persistedHint.rank ?? 1,
   pk: null,
   status: 'idle',
   error: null,
   sessionEpoch: 0,
-  sessionReady: false, // NEW
+  sessionReady: false, // Still need server validation
 }
 
 /** Actions that sagas will listen for (dispatched from the UI) */

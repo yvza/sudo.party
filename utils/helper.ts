@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { compareDesc, format, parseISO } from 'date-fns'
 import crypto from 'crypto';
+import { NextApiRequest } from "next";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -234,3 +235,12 @@ export function safeFormatDate(input?: string | Date) {
 export const isDevBypass =
   process.env.NODE_ENV !== 'production' &&
   process.env.ALLOW_ALL_POSTS === '1';
+
+export function assertSameOrigin(req: NextApiRequest): boolean {
+  const xfHost = (req.headers["x-forwarded-host"] as string) || req.headers.host || "";
+  const proto = (req.headers["x-forwarded-proto"] as string) || (process.env.NODE_ENV === "production" ? "https" : "http");
+  const expected = `${proto}://${String(xfHost).toLowerCase()}`;
+  const origin = String(req.headers.origin || "").toLowerCase();
+  const referer = String(req.headers.referer || "").toLowerCase();
+  return (!!origin && origin === expected) || (!!referer && referer.startsWith(expected));
+}

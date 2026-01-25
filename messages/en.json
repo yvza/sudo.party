@@ -1,0 +1,75 @@
+{
+  "nav": {
+    "blog": "Blog",
+    "about": "About",
+    "support": "Support",
+    "disclaimer": "Disclaimer",
+    "privacyPolicy": "Privacy Policy",
+    "toggleTheme": "Toggle theme"
+  },
+  "auth": {
+    "signInRequired": "Sign in required",
+    "signInDescription": "Please sign in with your wallet to access this post.",
+    "connect": "Connect",
+    "disconnect": "Disconnect"
+  },
+  "supporter": {
+    "accessRequired": "Supporter access required",
+    "becomeSupporter": "Become a Supporter",
+    "buyArticle": "Buy This Article",
+    "buyFor": "Buy for ${price}",
+    "permanentAccess": "Get permanent access to this article for a one-time payment.",
+    "supporterBenefits": "Supporter Benefits",
+    "unlimitedAccess": "Unlimited access to all articles",
+    "earlyAccess": "Early access to new content",
+    "supportCreator": "Support the creator directly"
+  },
+  "comments": {
+    "title": "Comments",
+    "count": "Comments ({count})",
+    "signInToComment": "Sign in to view and post comments.",
+    "writeComment": "Write a comment...",
+    "reply": "Reply",
+    "post": "Post",
+    "cancel": "Cancel",
+    "creator": "Creator",
+    "supporter": "{count}x Supporter",
+    "noComments": "No comments yet",
+    "beFirst": "Be the first to comment!"
+  },
+  "common": {
+    "backToBlog": "Back to Blog",
+    "loading": "Loading...",
+    "redirecting": "Redirecting...",
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Try again",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "share": "Share",
+    "copy": "Copy",
+    "copied": "Copied!"
+  },
+  "payment": {
+    "processing": "Processing payment...",
+    "success": "Payment successful!",
+    "failed": "Payment failed",
+    "verifying": "Verifying payment...",
+    "thankYou": "Thank you for your support!",
+    "redirectingToArticle": "Redirecting to article...",
+    "redirectingToBlog": "Redirecting to blog..."
+  },
+  "blog": {
+    "latestPosts": "Latest Posts",
+    "allPosts": "All Posts",
+    "readMore": "Read more",
+    "minRead": "{min} min read",
+    "publishedOn": "Published on",
+    "updatedOn": "Updated on",
+    "tags": "Tags",
+    "category": "Category",
+    "search": "Search articles...",
+    "noResults": "No results found"
+  }
+}
