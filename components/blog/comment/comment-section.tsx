@@ -334,6 +334,7 @@ function CommentItem({
   onReply: (parentId: number, body: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const t = useTranslations();
 
   return (
     <div>
@@ -343,7 +344,7 @@ function CommentItem({
       >
         <div className="flex items-center gap-2 flex-wrap text-xs opacity-70">
           <span>{shorten(node.authorAddress)}</span>
-          <CommentBadge supportCount={node.supportCount} isCreator={node.isCreator} />
+          <CommentBadge supportCount={node.supportCount} isCreator={node.isCreator} t={t} />
           <span>·</span>
           <span>{formatTime(node.createdAt)}</span>
         </div>
