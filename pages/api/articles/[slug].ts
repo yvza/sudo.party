@@ -28,7 +28,7 @@ async function hasArticlePurchase(address: string, slug: string): Promise<boolea
         WHERE w.address = ? AND ap.article_slug = ?
         LIMIT 1
       `,
-      args: [address.toLowerCase(), slug],
+      args: [address.toLowerCase(), slug.toLowerCase()],
     });
     return rows.length > 0;
   } catch {
@@ -108,22 +108,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         })
       }
 
-      // Resolve viewer rank from DB (default = 1)
-      let userRank = 1;
+      // Resolve viewer rank from DB using centralized function (includes expiry check)
       const address = session.identifier?.toLowerCase();
-      if (address) {
-        const { rows } = await turso.execute({
-          sql: `
-            SELECT COALESCE(mt.rank, (SELECT rank FROM membership_types WHERE is_default=1)) AS rank
-            FROM wallets w
-            LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
-            WHERE w.address = ?
-            LIMIT 1
-          `,
-          args: [address],
-        });
-        userRank = Number((rows[0] as any)?.rank ?? 1);
-      }
+      const userRank = address ? await userRankForAddress(address) : 1;
 
       const requiredSlug = membership // from frontmatter, e.g. 'supporter' or 'sudopartypass'
       if (userRank < requiredRank) {
