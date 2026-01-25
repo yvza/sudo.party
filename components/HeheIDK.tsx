@@ -58,9 +58,10 @@ function buildCopyWithTranslations(p: Props, t: ReturnType<typeof useTranslation
         action: { kind: "upgrade" as const, label: t('supporter.becomeSupporter') },
       };
     }
+    // Higher tier (sudopartypass, etc.) - no upgrade CTA
     return {
-      title: t('supporter.accessRequired'),
-      desc: p.message ?? t('supporter.accessRequired'),
+      title: t('supporter.restrictedPost'),
+      desc: p.message ?? t('supporter.noAccess'),
     };
   }
 

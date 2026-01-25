@@ -15,6 +15,8 @@
   },
   "supporter": {
     "accessRequired": "Akses Supporter diperlukan",
+    "restrictedPost": "Konten terbatas",
+    "noAccess": "Anda tidak memiliki akses untuk melihat ini.",
     "becomeSupporter": "Jadi Supporter",
     "buyArticle": "Beli Artikel Ini",
     "buyFor": "Beli seharga ${price}",
