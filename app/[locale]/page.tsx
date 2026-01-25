@@ -4,7 +4,7 @@ import ThemeToggle from '@/components/ThemeToggle'
 const projects = [
   {
     name: 'Blog',
-    description: 'Research, insights, and technical deep-dives on crypto, Web3, and beyond.',
+    description: 'Research, insights, and technical deep-dives on Web3 and beyond.',
     href: '/blog',
     icon: '📝',
     tag: 'Content',
@@ -12,7 +12,7 @@ const projects = [
   },
   {
     name: 'Whales Tracker',
-    description: 'On-chain market sentiment analysis tracking whale movements and smart money.',
+    description: 'On-chain sentiment analysis tracking whale movements and smart money.',
     href: 'https://whales.sudo.party',
     icon: '🐋',
     tag: 'Analytics',
@@ -20,15 +20,23 @@ const projects = [
   },
   {
     name: 'Crypto Sentiment',
-    description: 'Real-time market sentiment data processing and analysis tools.',
+    description: 'Real-time market sentiment data processing and analysis.',
     href: 'https://crypto-sentiment.sudo.party',
     icon: '📊',
     tag: 'Analytics',
     internal: false,
   },
   {
+    name: 'Automation Bots',
+    description: 'Custom automation solutions via reverse engineering and scheduled tasks.',
+    href: '/blog',
+    icon: '🤖',
+    tag: 'Tools',
+    internal: true,
+  },
+  {
     name: 'Zachaval',
-    description: 'Valorant gameplay, tips, and entertainment content.',
+    description: 'Valorant gameplay and entertainment content.',
     href: 'https://youtube.com/@zachaval',
     icon: '🎮',
     tag: 'Gaming',
@@ -36,26 +44,12 @@ const projects = [
   },
   {
     name: 'Old Blog',
-    description: 'Archived writings and early research from the beginning.',
+    description: 'Archived writings and early research.',
     href: 'https://old.sudo.party',
     icon: '📜',
     tag: 'Archive',
     internal: false,
   },
-  {
-    name: 'Facebook',
-    description: 'Community updates and discussions.',
-    href: 'https://fb.me/sudo.party',
-    icon: '📘',
-    tag: 'Social',
-    internal: false,
-  },
-]
-
-const stats = [
-  { label: 'Projects', value: '6+' },
-  { label: 'Focus', value: 'Crypto & Gaming' },
-  { label: 'Status', value: 'Active' },
 ]
 
 // Get current year at build time for static rendering
@@ -96,9 +90,9 @@ export default function Page() {
 
           {/* Tagline */}
           <p className="text-xl sm:text-2xl text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-            Research, analytics, and content creation.
+            Research, analytics, and content creation
             <span className="block mt-2 text-neutral-500 dark:text-neutral-500">
-              From blockchain insights to gaming entertainment.
+              From blockchain insights to gaming entertainment
             </span>
           </p>
 
@@ -124,24 +118,6 @@ export default function Page() {
           <svg className="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-12 border-y border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid grid-cols-3 gap-8">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-neutral-500 dark:text-neutral-500 mt-1">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -236,7 +212,7 @@ export default function Page() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-neutral-500 dark:text-neutral-500">
-              © {currentYear} sudo.party. Independent research.
+              © {currentYear} sudo.party
             </div>
             <div className="flex items-center gap-6 text-sm">
               <Link href="/disclaimer" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">

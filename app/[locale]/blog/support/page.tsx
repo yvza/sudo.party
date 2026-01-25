@@ -49,11 +49,12 @@ export default async function BlogSupportPage() {
             <div className="flex-1">
               <h2 className="text-lg font-medium">Why Support?</h2>
               <ul className="mt-2 space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
-                <li>• Access ALL supporter-only posts{months > 0 ? ` for ${months} ${months === 1 ? "month" : "months"}` : ""}.</li>
-                <li>• Cheaper than buying articles individually.</li>
-                <li>• Additional donations extend your access period.</li>
-                <li>• Get a Supporter badge next to your comments.</li>
-                <li>• Help keep the site fast, clean, and independent.</li>
+                <li>• Access ALL supporter-only posts{months > 0 ? ` for ${months} ${months === 1 ? "month" : "months"}` : ""}</li>
+                <li>• Unlock commenting on all articles</li>
+                <li>• Cheaper than buying articles individually</li>
+                <li>• Additional donations extend your access period</li>
+                <li>• Get a Supporter badge next to your comments</li>
+                <li>• Directly fund development, research, and the caffeine behind it</li>
               </ul>
             </div>
             <div className="mt-3 w-full md:mt-0 md:w-60">
@@ -86,8 +87,15 @@ export default async function BlogSupportPage() {
           <div className="rounded-xl border bg-white p-4 dark:bg-neutral-900 dark:border-neutral-800">
             <h3 className="text-sm font-semibold">What do I get?</h3>
             <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
-              Access to posts flagged for <em>Supporter</em>. OG (<em>sudopartypass</em>) posts stay
-              exclusive. Your donation also shows a Supporter badge near your comments.
+              Full access to all Supporter-only posts, plus the ability to comment on any article.
+              Your donation also displays a Supporter badge next to your comments.
+            </p>
+          </div>
+          <div className="rounded-xl border bg-white p-4 dark:bg-neutral-900 dark:border-neutral-800">
+            <h3 className="text-sm font-semibold">What about OG content?</h3>
+            <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
+              OG (<em>sudopartypass</em>) content is reserved for members who received an exclusive invite.
+              This tier is not available for purchase.
             </p>
           </div>
           <div className="rounded-xl border bg-white p-4 dark:bg-neutral-900 dark:border-neutral-800">
@@ -109,8 +117,9 @@ export default async function BlogSupportPage() {
         <section className="mt-6 rounded-xl border bg-neutral-50 p-4 dark:bg-neutral-900/50 dark:border-neutral-800">
           <h3 className="text-sm font-semibold">Or Buy Individual Articles</h3>
           <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
-            Don&apos;t want a subscription? Some articles can be purchased individually for permanent access.
-            Look for the &quot;Buy for $X&quot; button on locked posts. Individual purchases never expire.
+            Prefer not to subscribe? Some articles can be purchased individually for permanent access.
+            Look for the &quot;Buy for $X&quot; button on locked posts. Individual purchases grant
+            content access only&mdash;commenting requires Supporter membership.
           </p>
         </section>
 
