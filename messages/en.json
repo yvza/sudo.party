@@ -15,6 +15,8 @@
   },
   "supporter": {
     "accessRequired": "Supporter access required",
+    "restrictedPost": "Restricted post",
+    "noAccess": "You don't have access to view this.",
     "becomeSupporter": "Become a Supporter",
     "buyArticle": "Buy This Article",
     "buyFor": "Buy for ${price}",
