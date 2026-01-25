@@ -7,6 +7,7 @@ import {
   validateArticleSlug,
   pricesMatch,
   logAuditEvent,
+  getPaymentoApiKey,
 } from "@/lib/security/payment-security";
 
 const PAID = 7;
@@ -39,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const vr = await fetch("https://api.paymento.io/v1/payment/verify", {
       method: "POST",
       headers: {
-        "Api-key": process.env.PAYMENTO_API_KEY || "",
+        "Api-key": getPaymentoApiKey(),
         "Content-Type": "application/json",
         Accept: "application/json",
       },
