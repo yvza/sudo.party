@@ -50,7 +50,7 @@ export default async function BlogSupportPage() {
               <h2 className="text-lg font-medium">Why Support?</h2>
               <ul className="mt-2 space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
                 <li>• Access ALL supporter-only posts{months > 0 ? ` for ${months} ${months === 1 ? "month" : "months"}` : ""}</li>
-                <li>• Unlock commenting on all articles</li>
+                <li>• Unlock commenting on supporter-level articles</li>
                 <li>• Cheaper than buying articles individually</li>
                 <li>• Additional donations extend your access period</li>
                 <li>• Get a Supporter badge next to your comments</li>
@@ -87,7 +87,7 @@ export default async function BlogSupportPage() {
           <div className="rounded-xl border bg-white p-4 dark:bg-neutral-900 dark:border-neutral-800">
             <h3 className="text-sm font-semibold">What do I get?</h3>
             <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
-              Full access to all Supporter-only posts, plus the ability to comment on any article.
+              Full access to all Supporter-only posts, plus the ability to comment on supporter-level articles.
               Your donation also displays a Supporter badge next to your comments.
             </p>
           </div>
