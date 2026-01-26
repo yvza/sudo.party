@@ -51,12 +51,12 @@ const WalletOptions = dynamic(() => import('../walletConnect/WalletOptions'), { 
 // Extracted and memoized component to prevent re-creation on every render
 const WalletBindingNotice = memo(function WalletBindingNotice() {
   return (
-    <Alert variant="destructive">
+    <Alert variant="destructive" className="w-full">
       <AlertCircleIcon />
-      <AlertTitle>Please keep a secure backup of your wallet.</AlertTitle>
-      <AlertDescription>
+      <AlertTitle className="!line-clamp-none break-words whitespace-normal">Please keep a secure backup of your wallet.</AlertTitle>
+      <AlertDescription className="break-words whitespace-normal">
         <p><br /></p>
-        <p>
+        <p className="break-words">
           Coming soon: you&apos;ll be able to link your unique SGB Code (e.g., SGB-YourUniqueId) in
           Settings. Once a code is linked to a wallet, it is permanently bound and cannot be reused
           or transferred. This binding will be required to obtain SGB membership on this site.

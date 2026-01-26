@@ -39,6 +39,7 @@
     "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "country-flag-icons": "^1.6.8",
     "date-fns": "^2.30.0",
     "gray-matter": "^4.0.3",
     "init": "^0.1.2",

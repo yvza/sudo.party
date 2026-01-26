@@ -98,6 +98,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      country-flag-icons:
+        specifier: ^1.6.8
+        version: 1.6.8
       date-fns:
         specifier: ^2.30.0
         version: 2.30.0
@@ -2455,6 +2458,9 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  country-flag-icons@1.6.8:
+    resolution: {integrity: sha512-VpRAbqZ+uUuC9OHgIZwqeDnWG4YwkD8s6jBZXlTK4WBYj3QXeS+/uCi4u2eAUdZ5eKjIAlkU5UYV/Z4RPvhYJg==}
 
   crc-32@1.2.2:
     resolution: {integrity: sha512-ROmzCKrTnOwybPcJApAA6WBWij23HVfGVNKqqrZpuyZOHqK2CwHSvpGuyt/UNNvaIjEd8X5IFGp4Mh+Ie1IHJQ==}
@@ -8171,6 +8177,8 @@ snapshots:
       path-type: 4.0.0
     optionalDependencies:
       typescript: 5.4.5
+
+  country-flag-icons@1.6.8: {}
 
   crc-32@1.2.2: {}
 

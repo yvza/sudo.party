@@ -4,11 +4,14 @@ import { useLocale } from 'next-intl'
 import { useRouter, usePathname } from '@/lib/i18n-navigation'
 import { useState, useRef, useEffect } from 'react'
 import { locales } from '@/lib/i18n-config'
+import { ID as IDFlag } from 'country-flag-icons/react/3x2'
+import { US as USFlag } from 'country-flag-icons/react/3x2'
+import { CN as CNFlag } from 'country-flag-icons/react/3x2'
 
 const languages = [
-  { code: 'id', name: 'Indonesia', flag: '🇮🇩' },
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'zh', name: '中文', flag: '🇨🇳' },
+  { code: 'id', name: 'Indonesia', Flag: IDFlag },
+  { code: 'en', name: 'English', Flag: USFlag },
+  { code: 'zh', name: '中文', Flag: CNFlag },
 ] as const
 
 export default function LanguageSwitcher() {
@@ -50,7 +53,7 @@ export default function LanguageSwitcher() {
         className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
         aria-label="Select language"
       >
-        <span className="text-base">{currentLang.flag}</span>
+        <currentLang.Flag className="w-5 h-4" />
         <span className="hidden sm:inline text-neutral-700 dark:text-neutral-300">
           {currentLang.code.toUpperCase()}
         </span>
@@ -77,7 +80,7 @@ export default function LanguageSwitcher() {
                     : ''
                 }`}
               >
-                <span className="text-base">{lang.flag}</span>
+                <lang.Flag className="w-5 h-4" />
                 <span className="text-neutral-700 dark:text-neutral-300">{lang.name}</span>
                 {lang.code === locale && (
                   <svg
