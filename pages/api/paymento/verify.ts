@@ -359,10 +359,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({ ok: true, message: "Payment verified and processed." });
   } catch (e: any) {
+    // Log full error server-side for debugging, but don't expose to client
+    console.error("[payment-verify] Internal error:", e?.message, e?.stack);
     return res.status(200).json({
       ok: false,
       message: "Internal error while verifying payment.",
-      reason: e?.message || "exception",
+      reason: "internal_error", // Generic reason - no internal details exposed
     });
   }
 }

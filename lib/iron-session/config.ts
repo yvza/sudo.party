@@ -1,6 +1,10 @@
 import { SessionOptions } from "iron-session";
 import { isProd } from "@/config";
 
+// Session duration constants (production-grade values)
+export const SESSION_MAX_AGE_SHORT = 60 * 60 * 24 * 7;  // 7 days (default)
+export const SESSION_MAX_AGE_LONG = 60 * 60 * 24 * 30;  // 30 days (remember me)
+
 export type SessionData = {
   // existing fields (keep for compatibility)
   isLoggedIn: boolean
@@ -35,6 +39,7 @@ export const defaultSession: SessionData = {
   lastSignedAt: 0
 }
 
+// Base session options (used when remember=false or for initial session)
 export const sessionOptions: SessionOptions = {
   password: process.env.IRON_SESSION_PASSWORD!,
   cookieName: 'engine',
@@ -43,6 +48,20 @@ export const sessionOptions: SessionOptions = {
     sameSite: 'lax',
     httpOnly: true,
     path: '/',
-    maxAge: 60 * 60 * 24 * 30, // 30 days cookie; server enforces stricter TTLs
+    maxAge: SESSION_MAX_AGE_SHORT, // 7 days default; extended to 30 days when remember=true
   },
+}
+
+/**
+ * Get session options with dynamic maxAge based on remember preference
+ * Use this when saving session after login to respect user's choice
+ */
+export function getSessionOptions(remember: boolean = false): SessionOptions {
+  return {
+    ...sessionOptions,
+    cookieOptions: {
+      ...sessionOptions.cookieOptions,
+      maxAge: remember ? SESSION_MAX_AGE_LONG : SESSION_MAX_AGE_SHORT,
+    },
+  };
 }

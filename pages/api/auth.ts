@@ -3,6 +3,7 @@ import { getIronSession } from 'iron-session'
 import {
   defaultSession,
   sessionOptions,
+  getSessionOptions,
   SessionData,
 } from '@/lib/iron-session/config'
 import { turso } from '@/lib/turso'
