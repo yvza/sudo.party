@@ -174,6 +174,7 @@ export function getHmacSignature(req: NextApiRequest): string | undefined {
 
 /**
  * Generate a secure hash for payment verification
+ * SECURITY: Requires dedicated PAYMENT_HASH_SECRET for cryptographic separation
  */
 export function generatePaymentHash(
   walletId: number,
@@ -181,7 +182,13 @@ export function generatePaymentHash(
   price: number,
   timestamp: number
 ): string {
-  const secret = process.env.PAYMENT_HASH_SECRET || process.env.IRON_SESSION_PASSWORD!;
+  const secret = process.env.PAYMENT_HASH_SECRET;
+  if (!secret) {
+    throw new Error(
+      "PAYMENT_HASH_SECRET environment variable is required. " +
+      "Please set a unique, strong secret (32+ characters) for payment hash generation."
+    );
+  }
   const data = `${walletId}:${articleSlug}:${price}:${timestamp}`;
   return crypto.createHmac("sha256", secret).update(data).digest("hex");
 }

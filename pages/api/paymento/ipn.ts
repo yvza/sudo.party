@@ -359,7 +359,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Respond 200 so Paymento stops retrying
     return res.status(200).json({ ok: true });
   } catch (e: any) {
+    // Log full error server-side for debugging, but don't expose to client
+    console.error("[payment-ipn] Internal error:", e?.message, e?.stack);
     // Still return 200 with ok:false so gateway doesn't hammer retries forever
-    return res.status(200).json({ ok: false, reason: "exception", message: e?.message || "error" });
+    return res.status(200).json({ ok: false, reason: "internal_error" });
   }
 }
