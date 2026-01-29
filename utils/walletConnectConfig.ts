@@ -18,7 +18,7 @@ const connectors =
           projectId: walletConnectProjectId,
           metadata: {
             name: lang.siteUrl,
-            description: 'SUDOPARTY Blog',
+            description: 'Web3 Research & Cybersecurity Insights',
             url: lang.siteFullUrl,
             icons: ['https://sudo.party/favicon.ico'],
           },

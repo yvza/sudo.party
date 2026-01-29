@@ -135,7 +135,18 @@ export default function Client({
         </div>
 
         <div className="mx-5 sm:mx-auto">
-          {isPending && <div className="py-4 text-sm text-zinc-500">Loading…</div>}
+          {isPending && (
+            <div className="py-4 space-y-4 animate-pulse">
+              <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded w-3/4"></div>
+              <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded w-full"></div>
+              <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded w-5/6"></div>
+              <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded w-full"></div>
+              <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded w-2/3"></div>
+              <div className="h-32 bg-neutral-200 dark:bg-neutral-800 rounded w-full mt-6"></div>
+              <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded w-full"></div>
+              <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded w-4/5"></div>
+            </div>
+          )}
 
           {!isPending && !payload && !error && (
             <HeheIDK status={404} reason="NOT_FOUND" />

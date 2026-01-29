@@ -421,12 +421,12 @@ export default function SiweConnectButton() {
   return (
     <>
       {isLoggedIn ? (
-        <Button className="cursor-pointer" onClick={onLogout} suppressHydrationWarning>
+        <Button className="cursor-pointer min-w-[100px]" onClick={onLogout} suppressHydrationWarning>
           <span suppressHydrationWarning>Disconnect</span>
         </Button>
       ) : (
         <>
-          <Button className="cursor-pointer" onClick={onSignIn} suppressHydrationWarning>
+          <Button className="cursor-pointer min-w-[100px]" onClick={onSignIn} suppressHydrationWarning>
             <span suppressHydrationWarning>Connect</span>
           </Button>
 
