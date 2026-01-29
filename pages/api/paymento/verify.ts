@@ -96,7 +96,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (!(status === PAID || status === APPROVED)) {
-      return res.status(200).json({ ok: false, message: "Payment not completed yet.", reason: "not_completed", status });
+      // Distinguish between "still processing" vs "failed/cancelled"
+      const pendingStatuses = [1, 2, 3, 4, 5, 6]; // Paymento pending/processing statuses
+      const isPending = pendingStatuses.includes(status);
+
+      return res.status(200).json({
+        ok: false,
+        message: isPending
+          ? "Payment is still being processed. Please wait a moment."
+          : "Payment was not completed.",
+        reason: isPending ? "not_completed" : "payment_failed",
+        status
+      });
     }
 
     const db = createClient({ url: process.env.TURSO_DATABASE_URL!, authToken: process.env.TURSO_AUTH_TOKEN });
@@ -269,11 +280,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } catch {}
 
       // Insert article purchase (idempotent by wallet_id + article_slug)
+      // Use actualPaid (verified amount) instead of raw fiatAmount which could be 0
       await db.execute({
         sql: `INSERT INTO article_purchases (wallet_id, article_slug, payment_token, price_usd)
               VALUES (?, ?, ?, ?)
               ON CONFLICT(wallet_id, article_slug) DO NOTHING`,
-        args: [walletId, validatedSlug, token, fiatAmount],
+        args: [walletId, validatedSlug, token, actualPaid],
       });
 
       // Log successful verification

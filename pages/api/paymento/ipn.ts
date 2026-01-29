@@ -266,11 +266,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } catch {}
 
       // Insert article purchase (idempotent by wallet_id + article_slug)
+      // Use serverPrice (canonical) instead of fiatAmount for consistency
       await db.execute({
         sql: `INSERT INTO article_purchases (wallet_id, article_slug, payment_token, price_usd)
               VALUES (?, ?, ?, ?)
               ON CONFLICT(wallet_id, article_slug) DO NOTHING`,
-        args: [walletId, validatedSlug, token, fiatAmount],
+        args: [walletId, validatedSlug, token, serverPrice],
       });
 
       // Log successful purchase
