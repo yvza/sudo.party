@@ -21,10 +21,12 @@ export function SiweButtonSkeleton() {
 export default function TopNav() {
   const pathName = usePathname()
   const { setTheme, resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
 
   // sticky-on-scroll affordance
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
+    setMounted(true)
     const onScroll = () => setScrolled(window.scrollY > 4)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -77,15 +79,21 @@ export default function TopNav() {
           {/* Language Switcher */}
           <LanguageSwitcher />
 
-          {/* theme toggle — SSR-safe */}
+          {/* theme toggle — SSR-safe with placeholder to prevent CLS */}
           <button
             type="button"
-            onClick={toggleTheme}
+            onClick={mounted ? toggleTheme : undefined}
             aria-label="Toggle theme"
             className="cursor-pointer inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-200"
           >
-            <SunIcon className="hidden dark:inline-block" />
-            <MoonIcon className="inline-block dark:hidden" />
+            {mounted ? (
+              <>
+                <SunIcon className="hidden dark:inline-block" />
+                <MoonIcon className="inline-block dark:hidden" />
+              </>
+            ) : (
+              <div className="w-4 h-4" />
+            )}
           </button>
 
           <div className="shrink-0">
@@ -108,12 +116,18 @@ export default function TopNav() {
 
           <button
             type="button"
-            onClick={toggleTheme}
+            onClick={mounted ? toggleTheme : undefined}
             aria-label="Toggle theme"
             className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-200"
           >
-            <SunIcon className="hidden dark:inline-block" />
-            <MoonIcon className="inline-block dark:hidden" />
+            {mounted ? (
+              <>
+                <SunIcon className="hidden dark:inline-block" />
+                <MoonIcon className="inline-block dark:hidden" />
+              </>
+            ) : (
+              <div className="w-4 h-4" />
+            )}
           </button>
 
           <div className="shrink-0">

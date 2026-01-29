@@ -60,43 +60,72 @@ export default function SupportReturnClient() {
       abortRef.current?.abort();
       abortRef.current = new AbortController();
 
-      try {
-        const r = await fetch("/api/paymento/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({ token }),
-          signal: abortRef.current.signal,
-        });
+      // Retry configuration for pending payments
+      const MAX_RETRIES = 5;
+      const INITIAL_DELAY = 2000; // 2 seconds
+      const PENDING_REASONS = ["not_completed", "pending", "processing"];
 
-        let data: any = null;
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        if (cancelled) return;
+
         try {
-          data = await r.json();
-        } catch {
-          data = null;
-        }
-
-        // STRICT: only succeed when server says ok:true
-        const success = data?.ok === true;
-        const message = success
-          ? (data?.message || "Payment verified and processed.")
-          : (data?.error || data?.message || "Payment verification failed.");
-
-        if (!cancelled) {
-          setResp(
-            success
-              ? { ok: true, message }
-              : { ok: false, message, reason: data?.reason, status: data?.status }
-          );
-          setState("done");
-        }
-      } catch (e: any) {
-        if (!cancelled) {
-          setResp({
-            ok: false,
-            message: "Network error during verification.",
-            reason: e?.message || "fetch_failed",
+          const r = await fetch("/api/paymento/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ token }),
+            signal: abortRef.current.signal,
           });
-          setState("done");
+
+          let data: any = null;
+          try {
+            data = await r.json();
+          } catch {
+            data = null;
+          }
+
+          const success = data?.ok === true;
+          const isPending = !success && PENDING_REASONS.includes(data?.reason);
+
+          // If pending and we have retries left, wait and retry
+          if (isPending && attempt < MAX_RETRIES) {
+            const delay = INITIAL_DELAY * Math.pow(1.5, attempt); // Exponential backoff
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            continue;
+          }
+
+          // Final result (success, permanent failure, or exhausted retries)
+          const message = success
+            ? (data?.message || "Payment verified and processed.")
+            : isPending
+            ? "Payment is still processing. Please wait a moment and refresh, or check your email for confirmation."
+            : (data?.error || data?.message || "Payment verification failed.");
+
+          if (!cancelled) {
+            setResp(
+              success
+                ? { ok: true, message }
+                : { ok: false, message, reason: data?.reason, status: data?.status }
+            );
+            setState("done");
+          }
+          return;
+        } catch (e: any) {
+          // Network error - retry if we have attempts left
+          if (attempt < MAX_RETRIES) {
+            const delay = INITIAL_DELAY * Math.pow(1.5, attempt);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            continue;
+          }
+
+          if (!cancelled) {
+            setResp({
+              ok: false,
+              message: "Network error during verification. Your payment may still be processing.",
+              reason: e?.message || "fetch_failed",
+            });
+            setState("done");
+          }
+          return;
         }
       }
     }
