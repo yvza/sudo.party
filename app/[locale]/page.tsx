@@ -45,7 +45,7 @@ const projects = [
   {
     name: 'Old Blog',
     description: 'Archived writings and early research.',
-    href: 'https://old.sudo.party',
+    href: 'http://old.sudo.party',
     icon: '📜',
     tag: 'Archive',
     internal: false,
