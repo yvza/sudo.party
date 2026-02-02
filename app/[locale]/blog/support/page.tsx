@@ -39,7 +39,8 @@ export default async function BlogSupportPage() {
           <p className="mt-2 text-sm leading-6 text-neutral-600 dark:text-neutral-300">
             If you enjoy the writing, you can donate via crypto (Paymento). Your first successful
             donation unlocks <strong className="font-semibold">Supporter</strong>.{" "}
-            <span className="text-neutral-700 dark:text-neutral-200">{tierCopy}.</span>
+            <span className="text-neutral-700 dark:text-neutral-200">{tierCopy}</span>
+            {months > 0 && <span className="text-neutral-700 dark:text-neutral-200">, and multiple donations stack!</span>}
           </p>
         </header>
 
@@ -103,8 +104,8 @@ export default async function BlogSupportPage() {
             <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
               {months > 0 ? (
                 <>
-                  Supporter lasts <strong>{months}</strong> {months === 1 ? "month" : "months"} per donation.
-                  Additional donations extend your access period.
+                  Each donation grants <strong>{months}</strong> {months === 1 ? "month" : "months"} of Supporter access.
+                  Multiple donations <strong>accumulate</strong>&mdash;additional contributions extend your existing balance.
                 </>
               ) : (
                 <>For now, it&apos;s lifetime. We may adjust in the future.</>
