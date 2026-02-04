@@ -35,7 +35,8 @@
     "post": "Kirim",
     "cancel": "Batal",
     "creator": "Kreator",
-    "supporter": "{count}x Supporter",
+    "og": "OG",
+    "supporter": "Supporter",
     "noComments": "Belum ada komentar",
     "beFirst": "Jadilah yang pertama berkomentar!"
   },

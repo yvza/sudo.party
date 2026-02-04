@@ -98,7 +98,10 @@ async function ensureWallet(addressLower: string) {
   };
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   const slugQ = req.query.slug;
   const slug = Array.isArray(slugQ) ? slugQ[0] : slugQ || "";
   if (!slug) return res.status(400).json({ error: "Missing slug" });
@@ -107,7 +110,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // NEW: require active session (idle/absolute TTL enforced)
     const { ok, session, reason } = await requireActiveSession(req, res);
     if (!ok) {
-      return res.status(401).json({ error: "Not authenticated", reason: "LOGIN_REQUIRED" });
+      return res
+        .status(401)
+        .json({ error: "Not authenticated", reason: "LOGIN_REQUIRED" });
     }
 
     const addressLower = String(session.identifier).toLowerCase();
@@ -132,25 +137,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                    c.content AS body,
                    c.parent_id AS parentId,
                    c.created_at AS createdAt,
-                   (SELECT COUNT(*) FROM supporter_grants sg WHERE sg.wallet_id = w.id) AS supportCount,
+                   mt.slug AS membershipSlug,
+                   w.membership_expires_at AS membershipExpiresAt,
                    CASE WHEN w.address = ? THEN 1 ELSE 0 END AS isCreator
             FROM comments c
             JOIN wallets w ON w.id = c.wallet_id
+            LEFT JOIN membership_types mt ON mt.id = w.membership_type_id
             WHERE c.post_slug = ? AND c.is_deleted = 0 AND c.is_approved = 1
             ORDER BY c.created_at ASC`,
-      args: [process.env.CREATOR_ADDRESS?.toLowerCase() || '', slug],
+      args: [process.env.CREATOR_ADDRESS?.toLowerCase() || "", slug],
     });
 
-    const comments = rs.rows.map((r: any) => ({
-      id: r.id,
-      slug: r.slug,
-      authorAddress: r.authorAddress,
-      body: r.body,
-      parentId: r.parentId,
-      createdAt: toUnix(r.createdAt),
-      supportCount: Number(r.supportCount) || 0,
-      isCreator: Boolean(r.isCreator),
-    }));
+    const nowUnix = Math.floor(Date.now() / 1000);
+    const comments = rs.rows.map((r: any) => {
+      const expiresAt = r.membershipExpiresAt
+        ? Number(r.membershipExpiresAt)
+        : null;
+      const isExpired = expiresAt !== null && expiresAt <= nowUnix;
+
+      return {
+        id: r.id,
+        slug: r.slug,
+        authorAddress: r.authorAddress,
+        body: r.body,
+        parentId: r.parentId,
+        createdAt: toUnix(r.createdAt),
+        membershipSlug: isExpired ? "public" : r.membershipSlug || "public",
+        isCreator: Boolean(r.isCreator),
+      };
+    });
 
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).json({ comments });
@@ -158,7 +173,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === "POST") {
     if (!assertSameOrigin(req)) {
-      return res.status(403).json({ error: "CSRF protection: origin mismatch" });
+      return res
+        .status(403)
+        .json({ error: "CSRF protection: origin mismatch" });
     }
 
     const { ok, session, reason } = await requireActiveSession(req, res);
@@ -173,7 +190,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(403).json({ error: "Membership not eligible" });
     }
 
-    const { body, parentId } = (typeof req.body === "object" ? req.body : {}) as {
+    const { body, parentId } = (
+      typeof req.body === "object" ? req.body : {}
+    ) as {
       body?: string;
       parentId?: number | null;
     };
