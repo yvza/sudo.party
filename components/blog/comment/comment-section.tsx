@@ -45,46 +45,72 @@ const CommentBadge = memo(function CommentBadge({
   isCreator?: boolean;
   t: ReturnType<typeof useTranslations>;
 }) {
-  // Priority 1: Creator
+  // Priority 1: Creator - matrix rain effect
   if (isCreator) {
     return (
-      <span className="creator-badge inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border border-slate-900 dark:border-slate-100 text-slate-900 dark:text-slate-100 relative overflow-hidden">
+      <span className="creator-badge inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border border-emerald-600 dark:border-emerald-400 text-emerald-700 dark:text-emerald-300 relative overflow-hidden bg-emerald-50 dark:bg-emerald-950/50">
         <span className="relative z-10">{t("comments.creator")}</span>
+        <span className="matrix-drop m1" />
+        <span className="matrix-drop m2" />
+        <span className="matrix-drop m3" />
+        <span className="matrix-drop m4" />
+        <span className="matrix-drop m5" />
         <style jsx>{`
-          .creator-badge::after {
-            content: "";
+          .creator-badge {
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+          }
+          :global(.dark) .creator-badge {
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+          }
+          .matrix-drop {
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-              90deg,
-              transparent 0%,
-              rgba(0, 0, 0, 0.12) 50%,
-              transparent 100%
-            );
-            animation: creator-shimmer 2.5s ease-in-out infinite;
+            width: 2px;
+            height: 6px;
+            background: linear-gradient(to top, #10b981, transparent);
+            border-radius: 1px;
+            opacity: 0;
+            pointer-events: none;
+            will-change: transform, opacity;
           }
-          :global(.dark) .creator-badge::after {
-            background: linear-gradient(
-              90deg,
-              transparent 0%,
-              rgba(255, 255, 255, 0.25) 50%,
-              transparent 100%
-            );
+          .m1 {
+            left: 15%;
+            animation: matrix-fall 1.5s linear infinite;
           }
-          @keyframes creator-shimmer {
+          .m2 {
+            left: 35%;
+            animation: matrix-fall 1.8s linear infinite 0.3s;
+          }
+          .m3 {
+            left: 55%;
+            animation: matrix-fall 1.4s linear infinite 0.6s;
+          }
+          .m4 {
+            left: 75%;
+            animation: matrix-fall 1.7s linear infinite 0.2s;
+          }
+          .m5 {
+            left: 90%;
+            animation: matrix-fall 1.6s linear infinite 0.5s;
+          }
+          @keyframes matrix-fall {
             0% {
-              left: -100%;
+              transform: translateY(-8px);
+              opacity: 0;
+            }
+            10% {
+              opacity: 1;
+            }
+            90% {
+              opacity: 1;
             }
             100% {
-              left: 100%;
+              transform: translateY(14px);
+              opacity: 0;
             }
           }
           @media (prefers-reduced-motion: reduce) {
-            .creator-badge::after {
-              animation: none;
+            .matrix-drop {
+              display: none;
             }
           }
         `}</style>
