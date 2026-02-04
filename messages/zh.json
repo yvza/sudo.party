@@ -35,7 +35,8 @@
     "post": "发送",
     "cancel": "取消",
     "creator": "创作者",
-    "supporter": "{count}次支持者",
+    "og": "OG",
+    "supporter": "支持者",
     "noComments": "暂无评论",
     "beFirst": "成为第一个评论的人！"
   },

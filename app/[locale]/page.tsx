@@ -1,59 +1,62 @@
-import { Link } from '@/lib/i18n-navigation'
-import ThemeToggle from '@/components/ThemeToggle'
+import { Link } from "@/lib/i18n-navigation";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const projects = [
   {
-    name: 'Blog',
-    description: 'Research, insights, and technical deep-dives on Web3 and beyond.',
-    href: '/blog',
-    icon: '📝',
-    tag: 'Content',
+    name: "Blog",
+    description:
+      "Research, insights, and technical deep-dives on Web3 and beyond.",
+    href: "/blog",
+    icon: "📝",
+    tag: "Content",
     internal: true,
   },
   {
-    name: 'Whales Tracker',
-    description: 'On-chain sentiment analysis tracking whale movements and smart money.',
-    href: 'https://whales.sudo.party',
-    icon: '🐋',
-    tag: 'Analytics',
+    name: "Whales Tracker",
+    description:
+      "On-chain sentiment analysis tracking whale movements and smart money.",
+    href: "https://whales.sudo.party",
+    icon: "🐋",
+    tag: "Analytics",
     internal: false,
   },
   {
-    name: 'Crypto Sentiment',
-    description: 'Real-time market sentiment data processing and analysis.',
-    href: 'https://crypto-sentiment.sudo.party',
-    icon: '📊',
-    tag: 'Analytics',
+    name: "Crypto Sentiment",
+    description: "Real-time market sentiment data processing and analysis.",
+    href: "https://crypto-sentiment.sudo.party",
+    icon: "📊",
+    tag: "Analytics",
     internal: false,
   },
   {
-    name: 'Automation Bots',
-    description: 'Custom automation solutions via reverse engineering and scheduled tasks.',
-    href: '/blog',
-    icon: '🤖',
-    tag: 'Tools',
+    name: "Automation Bots",
+    description:
+      "Custom automation solutions via reverse engineering and scheduled tasks.",
+    href: "/blog",
+    icon: "🤖",
+    tag: "Tools",
     internal: true,
   },
   {
-    name: 'Zachaval',
-    description: 'Valorant gameplay and entertainment content.',
-    href: 'https://youtube.com/@zachaval',
-    icon: '🎮',
-    tag: 'Gaming',
+    name: "Zachaval",
+    description: "Valorant gameplay and entertainment content.",
+    href: "https://youtube.com/@zachaval",
+    icon: "🎮",
+    tag: "Gaming",
     internal: false,
   },
   {
-    name: 'Old Blog',
-    description: 'Archived writings and early research.',
-    href: 'https://old.sudo.party',
-    icon: '📜',
-    tag: 'Archive',
+    name: "Old Blog",
+    description: "Archived writings and early research.",
+    href: "http://old.sudo.party",
+    icon: "📜",
+    tag: "Archive",
     internal: false,
   },
-]
+];
 
 // Get current year at build time for static rendering
-const currentYear = new Date().getFullYear()
+const currentYear = new Date().getFullYear();
 
 export default function Page() {
   return (
@@ -90,9 +93,9 @@ export default function Page() {
 
           {/* Tagline */}
           <p className="text-xl sm:text-2xl text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-            Research, analytics, and content creation
+            Security research, blockchain analytics, and content
             <span className="block mt-2 text-neutral-500 dark:text-neutral-500">
-              From blockchain insights to gaming entertainment
+              Breaking things, building tools, and gaming in between
             </span>
           </p>
 
@@ -114,27 +117,33 @@ export default function Page() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <svg className="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
-        </div>
+        <a
+          href="#projects"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 group flex flex-col items-center gap-2 cursor-pointer"
+          aria-label="Scroll to projects"
+        >
+          <span className="text-xs font-medium text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors opacity-0 group-hover:opacity-100 -translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+            Scroll
+          </span>
+          <div className="relative w-6 h-10 rounded-full border-2 border-neutral-300 dark:border-neutral-600 group-hover:border-neutral-400 dark:group-hover:border-neutral-500 transition-colors">
+            <span className="absolute left-1/2 -translate-x-1/2 top-2 w-1.5 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500 group-hover:bg-neutral-600 dark:group-hover:bg-neutral-300 animate-bounce transition-colors" />
+          </div>
+        </a>
       </section>
 
       {/* Projects Section */}
       <section id="projects" className="py-20 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Projects
-            </h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Projects</h2>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-xl mx-auto">
-              Research platforms, analytics tools, and content across crypto, Web3, and gaming.
+              Security research, analytics tools, and content across crypto,
+              exploits, and gaming.
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => (
+            {projects.map((project) =>
               project.internal ? (
                 <Link
                   key={project.name}
@@ -153,8 +162,8 @@ export default function Page() {
                 >
                   <ProjectCardContent project={project} />
                 </a>
-              )
-            ))}
+              ),
+            )}
 
             {/* Coming Soon Card */}
             <div className="relative p-6 rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50">
@@ -173,12 +182,10 @@ export default function Page() {
       {/* About Section */}
       <section className="py-20 px-6 bg-neutral-50 dark:bg-neutral-900/50">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
-            About
-          </h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-6">About</h2>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed mb-8">
-            Creator focused on blockchain research, on-chain analytics, and gaming content.
-            Building tools and sharing insights across multiple platforms.
+            Security researcher and content creator. Exploring vulnerabilities,
+            building analytics tools, and gaming on the side.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a
@@ -215,13 +222,22 @@ export default function Page() {
               © {currentYear} sudo.party
             </div>
             <div className="flex items-center gap-6 text-sm">
-              <Link href="/disclaimer" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">
+              <Link
+                href="/disclaimer"
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+              >
                 Disclaimer
               </Link>
-              <Link href="/privacy_policy" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">
+              <Link
+                href="/privacy_policy"
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+              >
                 Privacy
               </Link>
-              <Link href="/blog" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">
+              <Link
+                href="/blog"
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+              >
                 Blog
               </Link>
             </div>
@@ -229,11 +245,11 @@ export default function Page() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
 
 // Extracted for cleaner code - still server-rendered
-function ProjectCardContent({ project }: { project: typeof projects[0] }) {
+function ProjectCardContent({ project }: { project: (typeof projects)[0] }) {
   return (
     <>
       {/* Tag */}
@@ -250,8 +266,18 @@ function ProjectCardContent({ project }: { project: typeof projects[0] }) {
       <h3 className="text-lg font-semibold mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
         {project.name}
         {!project.internal && (
-          <svg className="inline-block w-4 h-4 ml-1 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          <svg
+            className="inline-block w-4 h-4 ml-1 opacity-50"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+            />
           </svg>
         )}
       </h3>
@@ -262,10 +288,20 @@ function ProjectCardContent({ project }: { project: typeof projects[0] }) {
       {/* Hover arrow */}
       <div className="mt-4 flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
         <span>Explore</span>
-        <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        <svg
+          className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 5l7 7-7 7"
+          />
         </svg>
       </div>
     </>
-  )
+  );
 }

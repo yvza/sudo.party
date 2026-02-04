@@ -10,7 +10,11 @@ import { useTranslations } from "next-intl";
 const MAX_COMMENT_CHARS = 500;
 
 export type MembershipSlug = "public" | "supporter" | "sudopartypass";
-const rankBySlug: Record<MembershipSlug, number> = { public: 1, supporter: 2, sudopartypass: 3 };
+const rankBySlug: Record<MembershipSlug, number> = {
+  public: 1,
+  supporter: 2,
+  sudopartypass: 3,
+};
 
 type Me = {
   authenticated: boolean;
@@ -25,66 +29,204 @@ type Comment = {
   body: string;
   createdAt: number; // unix seconds
   parentId: number | null;
-  supportCount?: number;
+  membershipSlug?: MembershipSlug;
   isCreator?: boolean;
 };
 
 type CommentNode = Comment & { children: CommentNode[] };
 
-// Badge component for supporters and creator - minimalist with subtle animation
+// Badge component - priority: Creator > OG > Supporter
 const CommentBadge = memo(function CommentBadge({
-  supportCount,
+  membershipSlug,
   isCreator,
-  t
+  t,
 }: {
-  supportCount?: number;
+  membershipSlug?: MembershipSlug;
   isCreator?: boolean;
   t: ReturnType<typeof useTranslations>;
 }) {
+  // Priority 1: Creator - matrix rain effect
   if (isCreator) {
     return (
-      <span className="creator-badge inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border border-slate-900 dark:border-slate-100 text-slate-900 dark:text-slate-100 relative overflow-hidden">
-        <span className="relative z-10">{t('comments.creator')}</span>
+      <span className="creator-badge inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border border-emerald-600 dark:border-emerald-400 text-emerald-700 dark:text-emerald-300 relative overflow-hidden bg-emerald-50 dark:bg-emerald-950/50">
+        <span className="relative z-10">{t("comments.creator")}</span>
+        <span className="matrix-drop m1" />
+        <span className="matrix-drop m2" />
+        <span className="matrix-drop m3" />
+        <span className="matrix-drop m4" />
+        <span className="matrix-drop m5" />
         <style jsx>{`
-          .creator-badge::after {
-            content: '';
+          .creator-badge {
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+          }
+          :global(.dark) .creator-badge {
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+          }
+          .matrix-drop {
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-              90deg,
-              transparent 0%,
-              rgba(0, 0, 0, 0.12) 50%,
-              transparent 100%
-            );
-            animation: creator-shimmer 2.5s ease-in-out infinite;
+            width: 2px;
+            height: 6px;
+            background: linear-gradient(to top, #10b981, transparent);
+            border-radius: 1px;
+            opacity: 0;
+            pointer-events: none;
+            will-change: transform, opacity;
           }
-          :global(.dark) .creator-badge::after {
-            background: linear-gradient(
-              90deg,
-              transparent 0%,
-              rgba(255, 255, 255, 0.25) 50%,
-              transparent 100%
-            );
+          .m1 {
+            left: 15%;
+            animation: matrix-fall 1.5s linear infinite;
           }
-          @keyframes creator-shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
+          .m2 {
+            left: 35%;
+            animation: matrix-fall 1.8s linear infinite 0.3s;
+          }
+          .m3 {
+            left: 55%;
+            animation: matrix-fall 1.4s linear infinite 0.6s;
+          }
+          .m4 {
+            left: 75%;
+            animation: matrix-fall 1.7s linear infinite 0.2s;
+          }
+          .m5 {
+            left: 90%;
+            animation: matrix-fall 1.6s linear infinite 0.5s;
+          }
+          @keyframes matrix-fall {
+            0% {
+              transform: translateY(-8px);
+              opacity: 0;
+            }
+            10% {
+              opacity: 1;
+            }
+            90% {
+              opacity: 1;
+            }
+            100% {
+              transform: translateY(14px);
+              opacity: 0;
+            }
           }
           @media (prefers-reduced-motion: reduce) {
-            .creator-badge::after { animation: none; }
+            .matrix-drop {
+              display: none;
+            }
           }
         `}</style>
       </span>
     );
   }
 
-  if (supportCount && supportCount > 0) {
+  // Priority 2: OG (sudopartypass) - sparkle particle effect
+  if (membershipSlug === "sudopartypass") {
+    return (
+      <span className="og-badge inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border border-amber-500 dark:border-amber-400 text-amber-700 dark:text-amber-300 relative overflow-hidden bg-amber-50 dark:bg-amber-950/50">
+        <span className="relative z-10">{t("comments.og")}</span>
+        <span className="og-particle og-p1" />
+        <span className="og-particle og-p2" />
+        <span className="og-particle og-p3" />
+        <span className="og-particle og-p4" />
+        <span className="og-particle og-p5" />
+        <span className="og-particle og-p6" />
+        <style jsx>{`
+          .og-badge {
+            box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+          }
+          :global(.dark) .og-badge {
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+          }
+          .og-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #fbbf24;
+            box-shadow:
+              0 0 4px #fbbf24,
+              0 0 8px rgba(251, 191, 36, 0.8);
+            pointer-events: none;
+            will-change: transform, opacity;
+          }
+          .og-p1 {
+            left: 10%;
+            animation: sparkle-a 1.8s ease-in-out infinite;
+          }
+          .og-p2 {
+            left: 30%;
+            animation: sparkle-b 2.2s ease-in-out infinite 0.4s;
+          }
+          .og-p3 {
+            left: 50%;
+            animation: sparkle-a 2s ease-in-out infinite 0.8s;
+          }
+          .og-p4 {
+            left: 70%;
+            animation: sparkle-b 1.9s ease-in-out infinite 0.2s;
+          }
+          .og-p5 {
+            left: 85%;
+            animation: sparkle-a 2.3s ease-in-out infinite 0.6s;
+          }
+          .og-p6 {
+            left: 25%;
+            animation: sparkle-b 2.1s ease-in-out infinite 1s;
+          }
+          @keyframes sparkle-a {
+            0%,
+            100% {
+              transform: translateY(12px) scale(0);
+              opacity: 0;
+            }
+            15% {
+              transform: translateY(6px) scale(1.2);
+              opacity: 1;
+            }
+            50% {
+              transform: translateY(-2px) scale(1);
+              opacity: 0.9;
+            }
+            85% {
+              transform: translateY(-10px) scale(0.5);
+              opacity: 0;
+            }
+          }
+          @keyframes sparkle-b {
+            0%,
+            100% {
+              transform: translateY(10px) scale(0);
+              opacity: 0;
+            }
+            20% {
+              transform: translateY(4px) scale(1);
+              opacity: 1;
+            }
+            55% {
+              transform: translateY(-4px) scale(0.8);
+              opacity: 0.8;
+            }
+            90% {
+              transform: translateY(-12px) scale(0.3);
+              opacity: 0;
+            }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .og-particle {
+              animation: none;
+              opacity: 0.7;
+              transform: translateY(0) scale(0.8);
+            }
+          }
+        `}</style>
+      </span>
+    );
+  }
+
+  // Priority 3: Supporter (active only - expiration handled by API)
+  if (membershipSlug === "supporter") {
     return (
       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border border-slate-400 dark:border-slate-600 text-slate-600 dark:text-slate-400">
-        {t('comments.supporter', { count: supportCount })}
+        {t("comments.supporter")}
       </span>
     );
   }
@@ -164,13 +306,17 @@ export default function CommentSection({
 
   const requiredRank = rankBySlug[requiredSlug] ?? 1;
   const userRank = me.data?.membership?.rank ?? 0;
-  const canComment = Boolean(me.data?.authenticated && userRank >= requiredRank);
+  const canComment = Boolean(
+    me.data?.authenticated && userRank >= requiredRank,
+  );
 
   // comments (only when eligible)
   const comments = useQuery<{ comments: Comment[] }>({
     queryKey: ["comments", slug],
     queryFn: async () => {
-      const r = await fetch(`/api/comments/${encodeURIComponent(slug)}`, { cache: "no-store" });
+      const r = await fetch(`/api/comments/${encodeURIComponent(slug)}`, {
+        cache: "no-store",
+      });
       return r.json();
     },
     enabled: canComment,
@@ -214,7 +360,9 @@ export default function CommentSection({
   if (me.isLoading) {
     return (
       <Card className="mt-10">
-        <CardHeader><CardTitle>Comments</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Comments</CardTitle>
+        </CardHeader>
         <CardContent>
           <CommentsSkeleton />
         </CardContent>
@@ -226,9 +374,13 @@ export default function CommentSection({
   if (me.isSuccess && !me.data?.authenticated) {
     return (
       <Card className="mt-10">
-        <CardHeader><CardTitle>Join the discussion</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Join the discussion</CardTitle>
+        </CardHeader>
         <CardContent>
-          <p className="text-sm opacity-80">Sign in to view and post comments.</p>
+          <p className="text-sm opacity-80">
+            Sign in to view and post comments.
+          </p>
         </CardContent>
       </Card>
     );
@@ -260,7 +412,9 @@ export default function CommentSection({
 
   return (
     <Card className="mt-10">
-      <CardHeader><CardTitle>Comments ({commentCount})</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>Comments ({commentCount})</CardTitle>
+      </CardHeader>
       <CardContent className="space-y-6">
         {/* Loading state */}
         {comments.isLoading && <CommentsSkeleton />}
@@ -282,7 +436,11 @@ export default function CommentSection({
           placeholder="Write a comment…"
           onSubmit={(body) => add.mutate({ body, parentId: null })}
         />
-        {add.isError ? <div className="text-sm text-red-500">{String(add.error?.message)}</div> : null}
+        {add.isError ? (
+          <div className="text-sm text-red-500">
+            {String(add.error?.message)}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -344,7 +502,11 @@ function CommentItem({
       >
         <div className="flex items-center gap-2 flex-wrap text-xs opacity-70">
           <span>{shorten(node.authorAddress)}</span>
-          <CommentBadge supportCount={node.supportCount} isCreator={node.isCreator} t={t} />
+          <CommentBadge
+            membershipSlug={node.membershipSlug}
+            isCreator={node.isCreator}
+            t={t}
+          />
           <span>·</span>
           <span>{formatTime(node.createdAt)}</span>
         </div>
@@ -354,7 +516,12 @@ function CommentItem({
         {canReply && depth < maxDepth && (
           <div className="mt-3">
             {!open ? (
-              <Button className="cursor-pointer" size="sm" variant="secondary" onClick={() => setOpen(true)}>
+              <Button
+                className="cursor-pointer"
+                size="sm"
+                variant="secondary"
+                onClick={() => setOpen(true)}
+              >
                 Reply
               </Button>
             ) : (
@@ -418,7 +585,9 @@ function ReplyComposer({
     >
       <Textarea
         value={text}
-        onChange={(e) => setText(sliceGraphemes(e.target.value, MAX_COMMENT_CHARS))}
+        onChange={(e) =>
+          setText(sliceGraphemes(e.target.value, MAX_COMMENT_CHARS))
+        }
         placeholder={placeholder ?? "Write something helpful…"}
         autoFocus={autoFocus}
         disabled={disabled}
@@ -434,7 +603,12 @@ function ReplyComposer({
           Post
         </Button>
         {onCancel ? (
-          <Button className="cursor-pointer" type="button" variant="ghost" onClick={onCancel}>
+          <Button
+            className="cursor-pointer"
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+          >
             Cancel
           </Button>
         ) : null}

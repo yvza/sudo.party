@@ -35,7 +35,8 @@
     "post": "Post",
     "cancel": "Cancel",
     "creator": "Creator",
-    "supporter": "{count}x Supporter",
+    "og": "OG",
+    "supporter": "Supporter",
     "noComments": "No comments yet",
     "beFirst": "Be the first to comment!"
   },

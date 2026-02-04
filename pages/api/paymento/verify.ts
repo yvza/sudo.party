@@ -332,15 +332,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const supporterRank = Number(row.supporter_rank ?? 2) || 2;
     const supporterTypeId = Number(row.supporter_type_id);
 
-    // Compute expiry ONLY when upgrading to supporter (never downgrade OG/private)
+    // Compute expiry for supporter tier payments (new and existing supporters)
+    // OG/Private users (rank > supporter) are not affected - they have permanent access
     const months = Number(process.env.SUPPORTER_MONTHS || "0");
     let newExpiry: number | null = null;
-    if (currentRank < supporterRank && months > 0) {
+    const isNewSupporter = currentRank < supporterRank;
+    const isExistingSupporter = currentRank === supporterRank;
+
+    if ((isNewSupporter || isExistingSupporter) && months > 0) {
       const cur = await db.execute({
         sql: `SELECT membership_expires_at FROM wallets WHERE id = ?`,
         args: [walletId],
       });
       const currentExp = Number(cur.rows[0]?.membership_expires_at) || 0;
+      // Accumulate: add time from current expiry if still valid, otherwise from now
       const base = Math.max(currentExp, Math.floor(Date.now() / 1000));
       newExpiry = expiryEpochMonths(months, base);
     }
@@ -353,8 +358,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       args: [walletId, token, newExpiry],
     });
 
-    // 8) Apply membership change only for Public->Supporter
-    if (currentRank < supporterRank && supporterTypeId) {
+    // 8) Upgrade membership type only for new supporters (Public -> Supporter)
+    if (isNewSupporter && supporterTypeId) {
       await db.execute({
         sql: `UPDATE wallets
                 SET membership_type_id = ?,
@@ -364,7 +369,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // 9) (Optional) Clear outbox row
+    // 9) Extend expiry for existing supporters (accumulate time, keep membership type)
+    if (isExistingSupporter && newExpiry) {
+      await db.execute({
+        sql: `UPDATE wallets SET membership_expires_at = ? WHERE id = ?`,
+        args: [newExpiry, walletId],
+      });
+    }
+
+    // 10) (Optional) Clear outbox row
     try {
       await db.execute({ sql: `DELETE FROM payment_outbox WHERE token = ?`, args: [token] });
     } catch {}
