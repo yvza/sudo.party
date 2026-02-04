@@ -93,9 +93,9 @@ export default function Page() {
 
           {/* Tagline */}
           <p className="text-xl sm:text-2xl text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-            Research, analytics, and content creation
+            Security research, blockchain analytics, and content
             <span className="block mt-2 text-neutral-500 dark:text-neutral-500">
-              From blockchain insights to gaming entertainment
+              Breaking things, building tools, and gaming in between
             </span>
           </p>
 
@@ -137,8 +137,8 @@ export default function Page() {
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">Projects</h2>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-xl mx-auto">
-              Research platforms, analytics tools, and content across crypto,
-              Web3, and gaming.
+              Security research, analytics tools, and content across crypto,
+              exploits, and gaming.
             </p>
           </div>
 
@@ -184,9 +184,8 @@ export default function Page() {
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6">About</h2>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed mb-8">
-            Creator focused on blockchain research, on-chain analytics, and
-            gaming content. Building tools and sharing insights across multiple
-            platforms.
+            Security researcher and content creator. Exploring vulnerabilities,
+            building analytics tools, and gaming on the side.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a
