@@ -172,24 +172,15 @@ export default function TopNav() {
               <SiweConnectButton />
             </div>
 
-            {/* Hamburger / Close button */}
+            {/* Hamburger button - only shows hamburger icon, X is in overlay */}
             <button
               type="button"
               onClick={toggleMobileMenu}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileMenuOpen}
-              className="relative z-[60] inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-200"
+              className="relative inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-200"
             >
-              <span
-                className={`absolute transition-all duration-300 ${mobileMenuOpen ? "rotate-90 opacity-0" : "rotate-0 opacity-100"}`}
-              >
-                <HamburgerMenuIcon />
-              </span>
-              <span
-                className={`absolute transition-all duration-300 ${mobileMenuOpen ? "rotate-0 opacity-100" : "-rotate-90 opacity-0"}`}
-              >
-                <Cross1Icon />
-              </span>
+              <HamburgerMenuIcon />
             </button>
           </div>
         </div>
@@ -214,19 +205,18 @@ export default function TopNav() {
 
         {/* Menu content */}
         <nav className="relative h-full flex flex-col items-center justify-center px-8">
-          {/* Close button */}
+          {/* Close button - synced with backdrop, no delay */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(false)}
             aria-label="Close menu"
-            className={`absolute top-5 right-5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 text-slate-700 dark:text-slate-200 transition-all duration-300 ${
+            className={`absolute top-5 right-5 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:bg-slate-50 dark:hover:bg-neutral-800 text-slate-700 dark:text-slate-200 transition-all duration-500 ${
               mobileMenuOpen
                 ? "opacity-100 scale-100 rotate-0"
-                : "opacity-0 scale-50 rotate-90"
+                : "opacity-0 scale-75 rotate-90"
             }`}
-            style={{ transitionDelay: mobileMenuOpen ? "300ms" : "0ms" }}
           >
-            <Cross1Icon className="w-5 h-5" />
+            <Cross1Icon className="w-4 h-4" />
           </button>
 
           <ul className="space-y-6 text-center">
